@@ -1,0 +1,46 @@
+{
+  "name": "rockmass_calculator",
+  "version": "1.0.0",
+  "description": "CINF矿山岩体质量分级软件",
+  "main": "electron/main.js",
+  "scripts": {
+    "postinstall": "node scripts/apply-electron-builder-nsis-patches.js",
+    "setup": "node scripts/npm-with-electron-mirrors.js install && node scripts/npm-with-electron-mirrors.js install --prefix frontend",
+    "setup:python": "node scripts/setup-python-venv.js",
+    "start": "electron .",
+    "dev": "npm run dev --prefix frontend",
+    "build": "node scripts/build-frontend.js",
+    "build:frontend": "node scripts/build-frontend.js",
+    "build:python": "node scripts/build-python.js",
+    "clean": "node scripts/clean.js",
+    "dist": "node scripts/build-frontend.js && node scripts/npm-with-electron-mirrors.js exec -- electron-builder",
+    "dist:win": "npm install && python scripts/convert-license-to-gbk.py && node scripts/clean.js && node scripts/build-frontend.js && node scripts/verify-frontend-dist.js && node scripts/clean.js release && node scripts/apply-electron-builder-nsis-patches.js && set CINF_PACK_LOCAL_AI=0&& node scripts/stage-pack-resources.js && set CINF_ELECTRON_BUILDER_CONFIG=electron-builder.win.no-ai.yml&& node scripts/build-win.js",
+    "dist:win:ai": "npm install && python scripts/convert-license-to-gbk.py && node scripts/clean.js && node scripts/build-frontend.js && node scripts/verify-frontend-dist.js && node scripts/clean.js release-ai && node scripts/apply-electron-builder-nsis-patches.js && set CINF_PACK_LOCAL_AI=1&& node scripts/stage-pack-resources.js && set CINF_ELECTRON_BUILDER_CONFIG=electron-builder.win.ai.yml&& node scripts/build-win.js",
+    "dist:win:full": "set CINF_PACK_LOCAL_AI=0&& npm run build:python && npm run dist:win",
+    "dist:win:ai-full": "set CINF_PACK_LOCAL_AI=1&& npm run build:python && npm run dist:win:ai",
+    "dist:win:legacy": "npm install && python scripts/convert-license-to-gbk.py && node scripts/clean.js legacy && node scripts/build-frontend.js && node scripts/verify-frontend-dist.js && node scripts/build-win7.js",
+    "dist:win:both": "npm run dist:win:full && npm run dist:win:legacy",
+    "dist:mac": "node scripts/build-frontend.js && node scripts/verify-frontend-dist.js && node scripts/clean.js release && npx electron-builder --mac",
+    "dist:linux": "node scripts/build-frontend.js && node scripts/verify-frontend-dist.js && node scripts/clean.js release && npx electron-builder --linux",
+    "disk:win": "npm run dist:win",
+    "disk:mac": "npm run dist:mac",
+    "disk:linux": "npm run dist:linux",
+    "pack": "node scripts/build-frontend.js && node scripts/verify-frontend-dist.js && npx electron-builder --dir",
+    "license:gen-keys": "node scripts/generate-offline-license-keys.js"
+  },
+  "keywords": [
+    "electron",
+    "react",
+    "calculation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "cinfAssistantLocalDeploy": true,
+  "dependencies": {
+    "electron-updater": "^6.7.3"
+  },
+  "devDependencies": {
+    "electron": "28.0.0",
+    "electron-builder": "^24.9.1"
+  }
+}

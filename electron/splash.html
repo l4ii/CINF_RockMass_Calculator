@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>启动中…</title>
+    <style>
+      :root { color-scheme: light; }
+      html, body { height: 100%; margin: 0; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "PingFang SC",
+          "Microsoft YaHei", sans-serif;
+        background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      .card {
+        width: 424px;
+        min-height: 196px;
+        padding: 30px 24px 13px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid #d5dde8;
+        box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+      }
+      .logo {
+        width: 88px;
+        height: 88px;
+        border-radius: 16px;
+        margin: 0 auto 14px;
+        display: grid;
+        place-items: center;
+        background: #f8fbff;
+        border: 1px solid #dbeafe;
+        box-shadow: 0 12px 30px rgba(37, 99, 235, 0.20);
+        overflow: hidden;
+      }
+      .logo img {
+        width: 92%;
+        height: 92%;
+        display: block;
+        object-fit: contain;
+        transform: scale(1.1);
+        border-radius: 12px;
+      }
+      .title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #0f172a;
+        letter-spacing: 0.2px;
+        line-height: 1.45;
+        margin: 0 0 8px;
+        text-align: center;
+        word-break: break-word;
+      }
+      .subtitle {
+        font-size: 13px;
+        line-height: 1.55;
+        color: #334155;
+        margin: 0 auto 13px;
+        max-width: 390px;
+        text-align: center;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .spinner {
+        width: 17px;
+        height: 17px;
+        border: 2px solid rgba(37, 99, 235, 0.25);
+        border-top-color: #4f7cff;
+        border-radius: 999px;
+        animation: spin 1s linear infinite;
+      }
+      .hint { font-size: 12px; color: #64748b; }
+      .status { display: flex; align-items: center; gap: 10px; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="logo" aria-hidden="true">
+        <img id="appIcon" alt="" />
+        <svg id="fallbackMark" width="42" height="42" viewBox="0 0 44 44" fill="none">
+          <path d="M16.3 29V15.1H24.9V17.7H19.4V20.8H24.3V23.3H19.4V29H16.3Z" fill="#2563eb"/>
+          <path d="M26.4 29V15.1H29.5V26.4H34.9V29H26.4Z" fill="#475569"/>
+        </svg>
+      </div>
+      <p class="title" id="appName">CINF矿山岩体质量分级软件</p>
+      <p class="subtitle" id="appSubtitle">
+        面向矿山工程建设与生产管理，提供岩体质量评价、分级计算、工程分析和成果整理等专业支持，帮助用户规范记录参数、复核结果并形成可追溯的技术资料。
+      </p>
+      <div class="row">
+        <div class="status">
+          <div class="spinner" aria-hidden="true"></div>
+          <div class="hint">启动中</div>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function () {
+        try {
+          var params = new URLSearchParams(location.search || '');
+          var icon = params.get('iconPng') || params.get('icon') || '';
+          var name = params.get('name') || '';
+          var tagline = params.get('tagline') || '';
+          var iconEl = document.getElementById('appIcon');
+          var fallback = document.getElementById('fallbackMark');
+          var nameEl = document.getElementById('appName');
+          var subEl = document.getElementById('appSubtitle');
+          if (name && nameEl) nameEl.textContent = name;
+          if (tagline && subEl) subEl.textContent = tagline;
+          if (icon && iconEl) {
+            iconEl.src = icon;
+            iconEl.onload = function () { if (fallback) fallback.style.display = 'none'; };
+            iconEl.onerror = function () { if (fallback) fallback.style.display = ''; };
+          } else {
+            if (iconEl) iconEl.style.display = 'none';
+          }
+        } catch (_) {}
+      })();
+    </script>
+  </body>
+</html>

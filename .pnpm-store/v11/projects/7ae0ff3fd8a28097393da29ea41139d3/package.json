@@ -1,0 +1,47 @@
+{
+  "name": "rockmass-cal-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node ../scripts/dev-clean-ports.js && concurrently \"vite\" \"wait-on http://localhost:5173 && npx electron ..\"",
+    "dev:web": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "dist:builder": "npx electron-builder --config ../electron-builder.yml",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:electron": "playwright test --config playwright.electron.config.ts"
+  },
+  "dependencies": {
+    "docx": "^9.7.1",
+    "electron-updater": "^6.7.3",
+    "exceljs": "^4.4.0",
+    "katex": "^0.16.45",
+    "lucide-react": "^1.31.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-katex": "^3.1.0",
+    "rockmass_calculator": "file:.."
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.16",
+    "concurrently": "^8.2.2",
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "jsdom": "^30.0.1",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.8",
+    "vitest": "^4.1.10",
+    "wait-on": "^7.2.0"
+  }
+}

@@ -1,0 +1,11 @@
+# 内含本地 GGUF（构建前放置 backend/models/assistant.gguf 或设置 CINF_ASSISTANT_GGUF）
+extends: ./electron-builder.yml
+
+directories:
+  output: release-ai
+
+win:
+  artifactName: CINF-RockMass-${version}-${arch}_AI.${ext}
+
+extraMetadata:
+  cinfAssistantLocalDeploy: true

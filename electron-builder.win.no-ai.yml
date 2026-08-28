@@ -1,0 +1,5 @@
+# 不含嵌入式 GGUF；智能助手仅能使用前端规则 FAQ
+extends: ./electron-builder.yml
+
+extraMetadata:
+  cinfAssistantLocalDeploy: false

@@ -1,0 +1,138 @@
+# 必须在项目根目录执行 electron-builder（npm run dist:win），这样 extraResources 的 from: frontend/dist 才会解析为根目录下的 frontend/dist
+appId: com.changsha.rockmass.calculator
+productName: CINF矿山岩体质量分级软件
+copyright: Copyright © 2024 长沙有色冶金设计研究院有限公司
+
+directories:
+  buildResources: electron/build
+  output: release
+
+# 更新服务器配置
+# 选项1: 使用 GitHub Releases (推荐)
+# publish:
+#   provider: github
+#   owner: your-username
+#   repo: your-repo-name
+
+# 选项2: 使用通用 HTTP 服务器
+# publish.url 若为占位域名，electron-updater 检查更新将失败——上线前务必替换为可用静态资源地址。
+publish:
+  provider: generic
+  url: https://your-update-server.com/updates
+
+# 前端不放进 asar，改由 extraResources 放到 resources/frontend-dist。backend 仅在 extraResources，勿再打進 asar 以免与 backend.exe/GGUF 重复体积翻倍。
+files:
+  - electron/**
+  - "!backend/**"
+  - requirements.txt
+  - requirements.noai.txt
+  - package.json
+  - "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}"
+  - "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}"
+  - "!**/node_modules/*.d.ts"
+  - "!**/node_modules/.bin"
+  - "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}"
+  - "!.editorconfig"
+  - "!**/._*"
+  - "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}"
+  - "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}"
+  - "!**/{appveyor.yml,.travis.yml,circle.yml}"
+  - "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  # 桌面快捷方式 / 程序 exe / 任务栏：由 frontend/public/logopng.png 生成的含 256 的 ICO
+  icon: icon.ico
+  artifactName: ${productName}-${version}-${arch}.${ext}
+  requestedExecutionLevel: asInvoker
+  sign: null
+  verifyUpdateCodeSignature: false
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: ${productName}
+  installerIcon: installer.ico
+  uninstallerIcon: installer.ico
+  installerHeaderIcon: installer.ico
+  license: LICENSE.nsis.txt
+  menuCategory: false
+  displayLanguageSelector: false
+  include: electron/build/installer.nsh
+  warningsAsErrors: false
+  # 与 Flow 安装器一致：完成页显示「运行应用」复选框（默认勾选）
+  runAfterFinish: true
+  # 不请求管理员权限；installer.nsh 中通过 customInstallMode 强制仅当前用户并跳过选择页，避免 UAC 导致安装程序重启、许可证页出现两次
+  allowElevation: false
+  perMachine: false
+  selectPerMachineByDefault: false
+
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+  # icon: icon.icns  # 暂时注释，等准备好 icon.icns 放入 electron/build 后再启用
+  category: public.app-category.utilities
+  artifactName: ${productName}-${version}-${arch}.${ext}
+
+dmg:
+  title: ${productName} ${version}
+  # icon: icon.icns  # 暂时注释，等准备好 icon.icns 放入 electron/build 后再启用
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+
+linux:
+  target:
+    - AppImage
+    - deb
+  icon: icon.png
+  category: Utility
+  artifactName: ${productName}-${version}-${arch}.${ext}
+
+appImage:
+  artifactName: ${productName}-${version}-${arch}.AppImage
+
+deb:
+  depends:
+    - python3
+    - python3-pip
+
+extraResources:
+  # 前端构建产物放到 resources/frontend-dist，主进程从这里加载，安装即覆盖
+  - from: frontend/dist
+    to: frontend-dist
+  # 安装包图标等（打包后运行时窗口图标从 resources/build 读取）
+  - from: electron/build
+    to: build
+  # 运行时后端：PyInstaller 产物 + 助手知识片段（不打入未编译 .py，以免暴露源码）
+  - from: backend
+    to: backend
+    filter:
+      - "**/*.exe"
+      - "**/dist/**"
+      - "**/assistant_knowledge/**/*.txt"
+      - "**/assistant_knowledge/**/*.md"
+      - "!**/__pycache__/**"
+      - "!**/*.pyc"
+      - "!**/build/**"
+      - "!**/*.spec"
+      - "!**/build_backend.py"
+      - "!**/python38/**"
+  - from: build/pack-resources/backend/models
+    to: backend/models
+    filter:
+      - "**/*.gguf"
+  - from: requirements.txt
+    to: requirements.txt
