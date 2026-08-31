@@ -591,8 +591,8 @@ export function buildA5ReferenceTable(criterion: A5Criterion): ReferenceTableSpe
     rows,
     scores: A5_BY_CRITERION.condition.map((option) => option.score),
     optionIds: A5_BY_CRITERION[criterion].map((option) => option.id),
-    footnote: '三条准则相互等效，任选其一即可；点击表内单元格可直接选中该列。',
-    footnoteEn: 'The three criteria are equivalent; use any one of them. Select a table cell to choose that range.',
+    footnote: '三条准则相互等效，任选其一即可。',
+    footnoteEn: 'The three criteria are equivalent; use any one of them.',
   }
 }
 

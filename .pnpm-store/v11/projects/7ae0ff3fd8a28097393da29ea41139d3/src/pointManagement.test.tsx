@@ -56,28 +56,25 @@ describe('point management actions', () => {
     expect(screen.getByRole('button', { name: '删除' })).toBeInTheDocument()
   })
 
-  it('shows BQ and corrected [BQ] with both classes in the point list', () => {
+  it('shows only BQ or [BQ] score and class in the point list', () => {
     render(
       <ClassificationPointListPage
         {...sharedProps}
         methodName="BQ分级"
         getPointResult={() => ({
-          value: 'BQ 375；[BQ] 265',
-          grade: 'III 级；IV 级',
+          value: '[BQ] 265',
+          grade: 'IV 级',
           incomplete: false,
           entries: [
-            { label: 'BQ', value: '375', grade: 'III 级' },
             { label: '[BQ]', value: '265', grade: 'IV 级' },
           ],
         })}
       />
     )
-    expect(screen.getByText('BQ')).toBeInTheDocument()
-    expect(screen.getByText('375')).toBeInTheDocument()
     expect(screen.getByText('[BQ]')).toBeInTheDocument()
     expect(screen.getByText('265')).toBeInTheDocument()
-    expect(screen.getByText('III 级')).toBeInTheDocument()
     expect(screen.getByText('IV 级')).toBeInTheDocument()
+    expect(screen.queryByText('修正 BQ')).not.toBeInTheDocument()
     expect(screen.queryByText(/岩体质量/)).not.toBeInTheDocument()
     expect(screen.queryByText(/\[BQ\] =/)).not.toBeInTheDocument()
   })

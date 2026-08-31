@@ -33,13 +33,13 @@ export default function RqdMethodForm({ form, onChange, darkMode, language }: Me
         darkMode={darkMode}
         prominent
         title={en ? 'Rock Quality Designation (RQD)' : 'RQD 基本原理与计算'}
-        description={en ? 'Core-recovery index for describing the degree of rock-mass fracturing.' : '以钻孔取芯资料定量表征岩体完整程度的指标。'}
+        description={en ? 'A core-recovery index for the degree of rock-mass fracturing. After Deere et al. (1964).' : '以钻孔取芯资料定量表征岩体完整程度的指标。依据 Deere 等（1964）。'}
       >
         <div className="md:col-span-2">
           <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
             {en
-              ? 'RQD (Rock Quality Designation) is determined from each individual core run. It is the percentage of the cumulative length of intact core pieces not shorter than 0.10 m relative to the total drilled length of that core run. Core pieces are measured along the centre line of the core and should be recorded using a consistent length unit.'
-              : '岩石质量指标（RQD）用于依据钻孔岩芯资料评价岩体的完整程度与破碎程度。应按同一岩芯回次分别统计：将单根长度不小于 10 cm 的完整岩芯试样，按岩芯轴线量测后累计，其累计长度与该回次钻孔总长的百分比即为 RQD。两项长度必须采用同一计量单位。'}
+              ? 'RQD is determined for each individual core run: the cumulative length of intact core pieces not shorter than 0.10 m, measured along the core axis, as a percentage of the total drilled length of that run. Use one length unit throughout.'
+              : '岩石质量指标（RQD）按同一岩芯回次统计：将单根长度不小于 10 cm 的完整岩芯试样沿岩芯轴线量测后累计，其累计长度与该回次钻孔总长的百分比即为 RQD。两项长度须采用同一计量单位。'}
           </p>
           <div className={`mt-4 mb-2 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{en ? 'General equation' : '计算公式'}</div>
           <div data-testid="rqd-formula">
@@ -56,7 +56,7 @@ export default function RqdMethodForm({ form, onChange, darkMode, language }: Me
         darkMode={darkMode}
         prominent
         title={en ? 'Core-run measurements' : '岩芯回次统计'}
-        description={en ? 'Enter measurements for one core run. The qualifying length must not exceed the total drilled length.' : '按单一岩芯回次录入。累计合格岩芯长度不得大于该回次的钻孔总长；本页以 m 为统一录入单位。'}
+        description={en ? 'Enter one core run. The qualifying length must not exceed the drilled length of that run; this page uses metres.' : '按单一岩芯回次录入。累计合格岩芯长度不得大于该回次钻孔总长；本页以 m 为统一录入单位。'}
       >
         <NumberField
           field="soundCoreLength"
@@ -92,7 +92,7 @@ export default function RqdMethodForm({ form, onChange, darkMode, language }: Me
         darkMode={darkMode}
         prominent
         title={en ? 'Evaluation result' : '评价结果'}
-        description={en ? 'The calculated RQD is compared with the following quality ranges.' : '根据上述岩芯回次统计结果计算 RQD，并与下表质量区间进行对应判定。'}
+        description={en ? 'RQD is compared with the class summary below.' : '按计算结果对照下表分级汇总。'}
       >
         <div data-testid="rqd-result-section" className="md:col-span-2 space-y-4">
           <div data-testid="rqd-live-calculation" className={`rounded-lg border px-4 py-4 text-center ${resultTone}`}>
@@ -102,6 +102,7 @@ export default function RqdMethodForm({ form, onChange, darkMode, language }: Me
           </div>
           <div data-testid="rqd-grade-reference" className={`overflow-x-auto rounded-lg border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
             <table className="w-full min-w-[520px] border-collapse text-sm">
+              <caption className={`px-3 py-2 text-left text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{en ? 'RQD class summary' : 'RQD 分级汇总'}</caption>
               <thead className={darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'}>
                 <tr><th className="px-3 py-2.5 text-center">{en ? 'RQD range (%)' : 'RQD 区间'}</th><th className="px-3 py-2.5 text-center">{en ? 'Rock-mass quality' : '岩体质量'}</th></tr>
               </thead>

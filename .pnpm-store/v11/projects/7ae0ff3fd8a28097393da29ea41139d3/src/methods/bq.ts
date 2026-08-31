@@ -75,9 +75,9 @@ export interface BqFormState {
   groundwaterInflowQ: number | null
   /** Recorded surrounding-rock strength to maximum stress ratio Rc/σmax. */
   undergroundStressRatio: number | null
-  /** Legacy numeric f₀ from older case files; no longer used as the primary foundation input. */
+  /** Measured basic bedrock bearing capacity f₀, MPa. Input auto-classifies Table 5.4.2. */
   foundationF0: number | null
-  /** Foundation class selected from qualitative characteristics (Table 4.1.1). */
+  /** Foundation class from Table 5.4.2 (typed f₀ or a clicked cell). */
   foundationGradeId: BqGradeId | null
   k1Value: number | null
   undergroundOrientationId: string
@@ -248,14 +248,15 @@ export interface BqFoundationGrade {
   range: BqCoefficientRange
   displayRange: string
   mathRange: string
+  tableCell: string
 }
 
 export const BQ_FOUNDATION_F0_GRADES: readonly BqFoundationGrade[] = [
-  { id: 'I', label: text('I 级', 'Class I'), range: range(7, Number.POSITIVE_INFINITY), displayRange: 'f₀＞7.0', mathRange: 'f_0>7.0' },
-  { id: 'II', label: text('II 级', 'Class II'), range: range(4, 7), displayRange: '4.0＜f₀≤7.0', mathRange: '4.0<f_0\\le 7.0' },
-  { id: 'III', label: text('III 级', 'Class III'), range: range(2, 4), displayRange: '2.0＜f₀≤4.0', mathRange: '2.0<f_0\\le 4.0' },
-  { id: 'IV', label: text('IV 级', 'Class IV'), range: range(0.5, 2), displayRange: '0.5＜f₀≤2.0', mathRange: '0.5<f_0\\le 2.0' },
-  { id: 'V', label: text('V 级', 'Class V'), range: range(0, 0.5), displayRange: 'f₀≤0.5', mathRange: 'f_0\\le 0.5' },
+  { id: 'I', label: text('I 级', 'Class I'), range: range(7, Number.POSITIVE_INFINITY), displayRange: 'f₀＞7.0', mathRange: 'f_0>7.0', tableCell: '＞7.0' },
+  { id: 'II', label: text('II 级', 'Class II'), range: range(4, 7), displayRange: '4.0＜f₀≤7.0', mathRange: '4.0<f_0\\le 7.0', tableCell: '4.0＜f₀≤7.0' },
+  { id: 'III', label: text('III 级', 'Class III'), range: range(2, 4), displayRange: '2.0＜f₀≤4.0', mathRange: '2.0<f_0\\le 4.0', tableCell: '2.0＜f₀≤4.0' },
+  { id: 'IV', label: text('IV 级', 'Class IV'), range: range(0.5, 2), displayRange: '0.5＜f₀≤2.0', mathRange: '0.5<f_0\\le 2.0', tableCell: '0.5＜f₀≤2.0' },
+  { id: 'V', label: text('V 级', 'Class V'), range: range(0, 0.5), displayRange: 'f₀≤0.5', mathRange: 'f_0\\le 0.5', tableCell: '≤0.5' },
 ]
 
 export function foundationGradeFromF0(value: number): BqFoundationGrade {
@@ -267,8 +268,8 @@ export function foundationGradeFromF0(value: number): BqFoundationGrade {
 }
 
 export function resolveFoundationGrade(state: Pick<BqFormState, 'foundationGradeId' | 'foundationF0'>): BqFoundationGrade | null {
-  return BQ_FOUNDATION_F0_GRADES.find((item) => item.id === state.foundationGradeId)
-    ?? (state.foundationF0 != null ? foundationGradeFromF0(state.foundationF0) : null)
+  if (state.foundationF0 != null) return foundationGradeFromF0(state.foundationF0)
+  return BQ_FOUNDATION_F0_GRADES.find((item) => item.id === state.foundationGradeId) ?? null
 }
 
 const zeroBandValues: readonly BqBandCoefficient[] = BQ_GRADES.map(({ id: grade }) => ({ grade, range: range(0) }))
@@ -710,7 +711,7 @@ export function validateBqState(input: BqFormState | unknown): BqValidationIssue
   }
 
   if (state.mode === 'foundation' && state.foundationGradeId == null && state.foundationF0 == null) {
-    issues.push(issue('foundationGradeId', 'required', 'error', '请根据岩体基本质量的定性特征选择等级。', 'Select a class from the qualitative characteristics of rock-mass basic quality.'))
+    issues.push(issue('foundationGradeId', 'required', 'error', '请根据岩体基本质量的定性特征点选地基工程岩体等级。', 'Select the foundation rock-mass class from the qualitative BQ table.'))
   }
 
   if (state.mode === 'slope') {
@@ -806,11 +807,15 @@ function requiredFactor(id: string | null, options: readonly BqFactorOption[]): 
   return options.find((option) => option.id === id) as BqFactorOption
 }
 
+function isBasicBqBlockingIssue(item: BqValidationIssue): boolean {
+  return item.severity === 'error' && (item.field === 'rc' || item.field === 'kv')
+}
+
 export function calculateBq(input: BqFormState | unknown): BqResult {
   const state = normalizeBqState(input)
   const issues = validateBqState(state)
-  const errors = issues.filter((item) => item.severity === 'error')
-  if (errors.length > 0) throw new BqValidationError(errors)
+  const blocking = issues.filter(isBasicBqBlockingIssue)
+  if (blocking.length > 0) throw new BqValidationError(blocking)
 
   const limitation = applyBqLimitations(state.rc as number, state.kv as number)
   const basicBq = 100 + 3 * limitation.after.rc + 250 * limitation.after.kv
@@ -906,7 +911,7 @@ export function describeBq(input: BqFormState | unknown, suppliedResult?: BqResu
     {
       key: 'mode',
       label: text('计算模式', 'Calculation mode'),
-      value: result.mode === 'basic' ? '基本 BQ' : result.mode === 'underground' ? '地下工程' : result.mode === 'foundation' ? '地基工程' : '边坡工程',
+      value: result.mode === 'basic' ? '基本 BQ' : result.mode === 'underground' ? '地下工程岩体' : result.mode === 'foundation' ? '地基工程岩体' : '边坡工程岩体',
       basis: text('按工程场景选择适用修正公式', 'Applicable correction formula selected by engineering scenario'),
     },
     {
@@ -957,13 +962,13 @@ export function describeBq(input: BqFormState | unknown, suppliedResult?: BqResu
         key: 'grade',
         label: text('修正 BQ（地基工程岩体级别）', 'Corrected BQ (foundation rock-mass class)'),
         value: result.foundationGrade.label.zh,
-        basis: text('按表 4.1.1 岩体基本质量的定性特征选定', 'Selected from Table 4.1.1 qualitative characteristics'),
+        basis: text('按岩体基本质量的定性特征判定等级', 'Class judged from qualitative characteristics of rock-mass basic quality'),
       },
       {
         key: 'foundationF0',
-        label: text('基岩承载力基本值 f₀', 'Basic bedrock bearing capacity f₀'),
+        label: text('基岩承载力基本值 f₀（参考）', 'Basic bedrock bearing capacity f₀ (reference)'),
         value: `${result.foundationGrade.displayRange} MPa`,
-        basis: text('GB/T 50218-2014 表 5.4.2', 'GB/T 50218-2014 Table 5.4.2'),
+        basis: text('由所选岩体级别给出的参考值，不参与修正公式', 'Reference value from the selected class; not used in a correction formula'),
       }
     )
     return rows
@@ -1008,29 +1013,30 @@ function formatBqNumber(value: number): string {
   return String(Number(value.toFixed(1)))
 }
 
-export function formatBqPointList(input: BqFormState | unknown, language: 'zh' | 'en' = 'zh'): BqPointListEntry[] {
+export function tryCalculateBq(input: BqFormState | unknown): BqResult | null {
   const state = normalizeBqState(input)
-  const basic = calculateBq({ ...state, mode: 'basic' })
-  const gradeLabel = (grade: { label: LocalizedText }) => grade.label[language]
-  const entries: BqPointListEntry[] = [
-    { label: 'BQ', value: formatBqNumber(basic.basicBq), grade: gradeLabel(basic.grade) },
-  ]
-  const undergroundReady = state.mode === 'underground' && (state.correctionStep ?? 0) >= 4
-  if (undergroundReady || state.mode === 'slope') {
-    const full = calculateBq(state)
-    entries.push({ label: '[BQ]', value: formatBqNumber(full.engineeringBq), grade: gradeLabel(full.grade) })
-  }
-  if (state.mode === 'foundation') {
-    const foundation = resolveFoundationGrade(state)
-    if (foundation) {
-      entries.push({
-        label: language === 'en' ? 'Corrected BQ' : '修正 BQ',
-        value: '',
-        grade: foundation.label[language],
-      })
+  try {
+    return calculateBq(state)
+  } catch {
+    try {
+      return calculateBq({ ...state, mode: 'basic' })
+    } catch {
+      return null
     }
   }
-  return entries
+}
+
+export function formatBqPointList(input: BqFormState | unknown, language: 'zh' | 'en' = 'zh'): BqPointListEntry[] {
+  const state = normalizeBqState(input)
+  const gradeLabel = (grade: { label: LocalizedText }) => grade.label[language]
+  if (state.mode === 'underground' || state.mode === 'slope') {
+    const full = tryCalculateBq(state)
+    if (!full) return []
+    return [{ label: '[BQ]', value: formatBqNumber(full.engineeringBq), grade: gradeLabel(full.grade) }]
+  }
+  const basic = tryCalculateBq({ ...state, mode: 'basic' })
+  if (!basic) return []
+  return [{ label: 'BQ', value: formatBqNumber(basic.basicBq), grade: gradeLabel(basic.grade) }]
 }
 
 export const createInitial = createInitialBqState

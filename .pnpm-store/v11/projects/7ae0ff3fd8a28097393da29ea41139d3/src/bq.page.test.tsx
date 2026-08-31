@@ -2,11 +2,12 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import BqClassificationPage from './components/bq/BqClassificationPage'
+import BqModule from './components/bq/BqModule'
 import { createInitialBqState } from './methods/bq'
 
-function renderPage(onComplete = vi.fn()) {
+function renderPage(onComplete = vi.fn(), initialForm: Record<string, unknown> = createInitialBqState() as unknown as Record<string, unknown>) {
   function Harness() {
-    const [form, setForm] = useState<Record<string, unknown>>(createInitialBqState() as unknown as Record<string, unknown>)
+    const [form, setForm] = useState<Record<string, unknown>>(initialForm)
     return (
       <BqClassificationPage
         darkMode={false}
@@ -41,7 +42,26 @@ function fillBasic() {
   fireEvent.change(inputs[1], { target: { value: '0.5' } })
 }
 
+function enterCorrectionStage() {
+  fireEvent.click(screen.getByRole('button', { name: '进入修正 [BQ]' }))
+}
+
+function selectCorrectionType(name: string) {
+  fireEvent.click(screen.getByLabelText('修正工程类型'))
+  fireEvent.click(screen.getByRole('option', { name }))
+}
+
+function enterUndergroundCorrection() {
+  enterCorrectionStage()
+  selectCorrectionType('地下工程岩体')
+}
+
 describe('BQ dedicated page', () => {
+  it('opens the BQ workspace from the sidebar entry without crashing', () => {
+    render(<BqModule darkMode={false} language="zh" onBackToHome={vi.fn()} />)
+    expect(screen.getByRole('heading', { name: /项目工作区/ })).toBeInTheDocument()
+  })
+
   it('keeps the basic workflow ordered and shows the compact preview', () => {
     renderPage()
     expect(screen.queryByText('工程岩体分级标准')).not.toBeInTheDocument()
@@ -60,8 +80,8 @@ describe('BQ dedicated page', () => {
     expect(screen.getByTestId('bq-limitation-formulas')).toBeInTheDocument()
     expect(screen.queryByTestId('bq-calculation-order')).not.toBeInTheDocument()
     expect(screen.getByTestId('bq-basic-quality-title').parentElement?.querySelector('span')).toBeNull()
-    expect(screen.getByLabelText('Rc 输入值（MPa）')).toHaveAttribute('placeholder', '如：80')
-    expect(screen.getByLabelText('Kv 输入值')).toHaveAttribute('placeholder', '如：0.65')
+    expect(screen.getByLabelText('Rc 输入值（MPa）')).toHaveAttribute('placeholder', '请输入数值')
+    expect(screen.getByLabelText('Kv 输入值')).toHaveAttribute('placeholder', '请输入数值')
   })
 
   it('uses engineering-language guidance for basic quality and auxiliary methods', () => {
@@ -82,7 +102,7 @@ describe('BQ dedicated page', () => {
   it('describes corrected BQ by its engineering purpose', () => {
     renderPage()
     const result = screen.getByTestId('bq-result-section')
-    expect(result).toHaveTextContent('修正 BQ 用于在地下工程条件下，综合考虑地下水、主要结构面产状和初始应力状态对基本 BQ 的影响。')
+    expect(result).toHaveTextContent('工程岩体详细定级应按工程类型分别进行：地下、边坡工程在基本 BQ 上计入地下水、主要结构面产状及初始应力等影响；地基工程按岩体基本质量的定性特征判定等级。')
     expect(result).not.toHaveTextContent('可选步骤')
     expect(result).not.toHaveTextContent('仅用于地下工程')
   })
@@ -115,49 +135,66 @@ describe('BQ dedicated page', () => {
   it('shows BQ grade ranges in the K1 table header and uses the software title', () => {
     renderPage()
     fillBasic()
-    fireEvent.click(screen.getByRole('button', { name: '进入修正 [BQ]' }))
+    enterUndergroundCorrection()
     expect(screen.getByTestId('bq-k1-table')).toHaveTextContent('BQ')
-    expect(screen.getByTestId('bq-k1-table')).toHaveTextContent('I级 ＞550')
-    expect(screen.getByTestId('bq-k1-table')).toHaveTextContent('V级 ≤250')
+    expect(screen.getByTestId('bq-k1-table')).toHaveTextContent('I 级')
+    expect(screen.getByTestId('bq-k1-table')).toHaveTextContent('V 级')
+    const k1HeaderTex = Array.from(screen.getByTestId('bq-k1-table').querySelectorAll('thead annotation')).map((node) => node.textContent)
+    expect(k1HeaderTex).toContain(String.raw`\mathrm{BQ}>550`)
+    expect(k1HeaderTex).toContain(String.raw`\mathrm{BQ}\le 250`)
     expect(screen.getByTestId('bq-k1-table')).not.toHaveTextContent('5.2.2-1')
   })
 
-  it('selects foundation class from qualitative characteristics and reports the f0 range', () => {
+  it('classifies foundation from the qualitative BQ table and reports reference f0', () => {
     renderPage()
     fillBasic()
-    fireEvent.click(screen.getByRole('button', { name: '进入修正 [BQ]' }))
-    fireEvent.click(screen.getByLabelText('修正工程类型'))
-    fireEvent.click(screen.getByRole('option', { name: '地基' }))
+    enterCorrectionStage()
+    selectCorrectionType('地基工程岩体')
 
     const intro = screen.getByTestId('bq-foundation-intro')
-    expect(intro).toHaveTextContent('岩石地基工程主要指以岩石作为承载层')
-    expect(intro).toHaveTextContent('应按表 4.1.1 的岩体基本质量级别定级')
+    expect(intro).toHaveTextContent('岩石地基工程以岩石作为承载层')
+    expect(intro).toHaveTextContent('不使用修正公式')
+    expect(intro).toHaveTextContent('定性特征')
     expect(intro).toHaveTextContent('基岩承载力基本值')
+    expect(intro).not.toHaveTextContent('4.1.1')
+    expect(intro).not.toHaveTextContent('5.4.2')
     expect(screen.queryByLabelText('岩体基岩承载力基本值 f₀（MPa）')).not.toBeInTheDocument()
 
     const table = screen.getByTestId('bq-foundation-table')
     expect(table).toHaveTextContent('岩体基本质量的定性特征')
     expect(table).toHaveTextContent('坚硬岩，岩体完整')
-    expect(table).not.toHaveTextContent('0.5＜f₀≤2.0')
+    expect(table).toHaveTextContent('250＜BQ≤350')
 
-    fireEvent.click(within(screen.getByTestId('bq-foundation-table')).getByText('坚硬岩，岩体破碎；较坚硬岩，岩体较破碎～破碎；较软岩，岩体较完整～较破碎；软岩，岩体完整～较完整'))
+    fireEvent.click(within(table).getByText('IV 级'))
     expect(screen.getByTestId('bq-foundation-result')).toHaveTextContent('修正 BQ 评价结果')
     expect(screen.getByTestId('bq-foundation-result')).toHaveTextContent('IV 级')
     expect(screen.getByTestId('bq-foundation-f0').querySelector('.katex')).toBeTruthy()
     expect(screen.getByTestId('bq-foundation-result')).not.toHaveTextContent('[BQ]')
     expect(screen.getByTestId('calculation-result-pane')).toHaveTextContent('BQ评价结果')
-    expect(screen.getByTestId('bq-preview-foundation-result')).toHaveTextContent('[BQ]评价结果')
-    expect(screen.getByTestId('bq-preview-foundation-result')).toHaveTextContent('IV 级')
-    expect(screen.queryByTestId('bq-preview-corrected-result')).not.toBeInTheDocument()
+    expect(screen.getByTestId('bq-preview-corrected-result').querySelector('annotation')?.textContent).toBe(String.raw`\left[\mathrm{BQ}\right]`)
+    expect(screen.getByTestId('bq-preview-corrected-result')).toHaveTextContent('评价结果')
+    expect(screen.getByTestId('bq-preview-corrected-result')).toHaveTextContent('IV 级')
+    expect(screen.getByTestId('bq-preview-corrected-result')).toHaveTextContent('岩体质量较差')
+    expect(screen.queryByTestId('bq-preview-foundation-result')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('bq-preview-foundation-grade-label')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('bq-preview-foundation-f0-label')).not.toBeInTheDocument()
   })
 
   it('adds p and Q inputs and adopts the interpolated K1 value', () => {
     renderPage()
     fillBasic()
-    fireEvent.click(screen.getByRole('button', { name: '进入修正 [BQ]' }))
-    fireEvent.change(screen.getByLabelText('p（地下工程围岩裂隙水压，MPa）'), { target: { value: '0.3' } })
+    enterUndergroundCorrection()
+    fireEvent.change(screen.getByLabelText('围岩裂隙水压 p'), { target: { value: '0.3' } })
     expect(screen.getByTestId('bq-k1-assessment')).toHaveTextContent('淋雨状或线流状出水')
+    expect(screen.getByTestId('bq-k1-score')).toHaveTextContent('0.3')
+    expect(screen.queryByLabelText('K1 输入值')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '修改 K1' }))
     expect(screen.getByLabelText('K1 输入值')).toHaveValue(0.3)
+
+    fireEvent.change(screen.getByLabelText('每10m洞长出水量 Q'), { target: { value: '10' } })
+    expect(screen.getByLabelText('围岩裂隙水压 p')).toHaveValue(null)
+    expect(screen.getByLabelText('每10m洞长出水量 Q')).toHaveValue(10)
+    expect(screen.getByTestId('bq-k1-assessment')).toHaveTextContent('潮湿或点滴状出水')
   })
 
   it('reserves stable space for auxiliary results and apply actions', () => {
@@ -176,11 +213,11 @@ describe('BQ dedicated page', () => {
   it('shows colored effective Rc and Kv values in the limitation area', () => {
     renderPage()
     fillBasic()
-    expect(screen.getByTestId('bq-limitation-status')).toHaveTextContent('未调整')
-    expect(screen.getByTestId('bq-limitation-rc-final')).toHaveClass('text-green-700')
+    expect(screen.getByTestId('bq-limitation-status')).toHaveTextContent('未触发规范限制，采用输入值')
+    expect(screen.queryByTestId('bq-limitation-rc-final')).not.toBeInTheDocument()
 
     fireEvent.change(screen.getByLabelText('Rc 输入值（MPa）'), { target: { value: '100' } })
-    expect(screen.getByTestId('bq-limitation-status')).toHaveTextContent('Rc')
+    expect(screen.getByTestId('bq-limitation-status')).toHaveTextContent('触发规范限制')
     expect(screen.getByTestId('bq-limitation-rc-final')).toHaveClass('text-amber-700')
   })
 
@@ -279,16 +316,18 @@ describe('BQ dedicated page', () => {
     expect(screen.getByTestId('bq-kv-jv-estimate')).not.toHaveTextContent('0.35–0.55')
   })
 
-  it('places limitation status below a neutral adopted-value display', () => {
+  it('puts the limitation outcome on the adopted half of the input row', () => {
     renderPage()
     fillBasic()
-    const panel = screen.getByTestId('bq-limitation-formulas')
     const status = screen.getByTestId('bq-limitation-status')
-    const display = screen.getByTestId('bq-limitation-rc-final').closest('div')?.parentElement?.parentElement
-    expect(display).toBeTruthy()
-    expect(display!.compareDocumentPosition(status) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    expect(status.className).not.toMatch(/bg-(green|amber)/)
-    expect(panel.querySelector('[data-testid="bq-limitation-rc-final"]')).toHaveClass('text-green-700')
+    expect(status).toHaveTextContent('未触发规范限制，采用输入值')
+    expect(status.closest('div')?.textContent).toMatch(/输入/)
+    expect(screen.queryByText(/输入 Rc 和 Kv 后/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/下面显示最终采用值/)).not.toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Rc 输入值（MPa）'), { target: { value: '100' } })
+    expect(screen.getByTestId('bq-limitation-status')).toHaveTextContent('触发规范限制，采用')
+    expect(screen.getByTestId('bq-limitation-rc-final')).toHaveClass('text-amber-700')
   })
 
   it('can complete basic BQ without entering the correction stage', () => {
@@ -301,39 +340,48 @@ describe('BQ dedicated page', () => {
 
   it('keeps basic and corrected BQ results in separate sections', () => {
     renderPage()
-    expect(screen.getByTestId('bq-result-table')).not.toHaveTextContent('[BQ]')
     expect(screen.getByTestId('bq-result-section')).toHaveTextContent('BQ评价结果')
+    expect(screen.queryByText('结果项目')).not.toBeInTheDocument()
     fillBasic()
-    fireEvent.click(screen.getByRole('button', { name: '进入修正 [BQ]' }))
-    expect(screen.getByTestId('bq-result-table')).not.toHaveTextContent('[BQ]')
+    enterUndergroundCorrection()
+    expect(screen.getByTestId('bq-result-section')).toHaveTextContent('BQ评价结果')
     expect(screen.getByTestId('bq-corrected-result')).toHaveTextContent('[BQ]评价结果')
+    expect(screen.queryByText('结果项目')).not.toBeInTheDocument()
   })
 
   it('shows BQ and [BQ] evaluation results separately in the preview pane', () => {
     renderPage()
     const preview = screen.getByTestId('calculation-result-pane')
-    expect(screen.getByTestId('bq-preview-basic-result')).toHaveTextContent('BQ评价结果')
+    expect(screen.getByTestId('bq-preview-basic-result').querySelector('annotation')?.textContent).toBe(String.raw`\mathrm{BQ}`)
+    expect(screen.getByTestId('bq-preview-basic-result')).toHaveTextContent('评价结果')
     expect(screen.getByTestId('bq-preview-basic-result')).not.toHaveTextContent('[BQ]')
     expect(screen.queryByTestId('bq-preview-corrected-result')).not.toBeInTheDocument()
-    expect(preview).not.toHaveTextContent('[BQ]评价结果')
+    expect(preview.querySelector('[data-testid="bq-preview-corrected-result"]')).toBeNull()
 
     fillBasic()
     expect(screen.getByTestId('bq-preview-basic-result')).toHaveTextContent('375')
     expect(screen.queryByTestId('bq-preview-corrected-result')).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: '进入修正 [BQ]' }))
+    expect(screen.queryByTestId('bq-preview-corrected-result')).not.toBeInTheDocument()
+    selectCorrectionType('地下工程岩体')
     fireEvent.click(screen.getByRole('button', { name: /0\.4～0\.6/ }))
-    expect(screen.getByTestId('bq-preview-basic-result')).toHaveTextContent('BQ评价结果')
     expect(screen.getByTestId('bq-preview-basic-result')).toHaveTextContent('375')
     expect(screen.getByTestId('bq-preview-basic-result')).not.toHaveTextContent('[BQ]')
-    expect(screen.getByTestId('bq-preview-corrected-result')).toHaveTextContent('[BQ]评价结果')
+    expect(screen.getByTestId('bq-preview-corrected-result').querySelector('annotation')?.textContent).toBe(String.raw`\left[\mathrm{BQ}\right]`)
+    expect(screen.getByTestId('bq-preview-corrected-result')).toHaveTextContent('评价结果')
     expect(screen.getByTestId('bq-preview-corrected-result')).toHaveTextContent('315')
+    expect(screen.getByTestId('bq-preview-corrected-result')).toHaveTextContent('IV 级')
+    expect(screen.getByTestId('bq-preview-corrected-result')).toHaveTextContent('岩体质量较差')
+    expect(screen.getByTestId('bq-preview-basic-result')).toHaveTextContent('III 级')
+    expect(screen.getByTestId('bq-preview-basic-result')).toHaveTextContent('岩体质量中等')
+    expect(screen.queryByTestId('bq-preview-deduction-label')).not.toBeInTheDocument()
   })
 
   it('shows all underground correction steps without sequential locking', () => {
     renderPage()
     fillBasic()
-    fireEvent.click(screen.getByRole('button', { name: '进入修正 [BQ]' }))
+    enterUndergroundCorrection()
     expect(screen.getByTestId('bq-k1-table')).toBeInTheDocument()
     expect(screen.getByTestId('bq-k2-table')).toBeInTheDocument()
     expect(screen.getByTestId('bq-k3-table')).toBeInTheDocument()
@@ -343,43 +391,70 @@ describe('BQ dedicated page', () => {
   it('shows K1, K2 and K3 together and treats empty coefficients as zero', () => {
     renderPage()
     fillBasic()
-    fireEvent.click(screen.getByRole('button', { name: '进入修正 [BQ]' }))
+    enterUndergroundCorrection()
     expect(screen.getByTestId('bq-k1-table')).toBeInTheDocument()
     expect(screen.getByTestId('bq-k2-table')).toBeInTheDocument()
     expect(screen.getByTestId('bq-k3-table')).toBeInTheDocument()
     expect(screen.getByTestId('bq-preview-k1-label')).toBeInTheDocument()
     expect(screen.getByTestId('bq-preview-k2-label')).toBeInTheDocument()
     expect(screen.getByTestId('bq-preview-k3-label')).toBeInTheDocument()
-    const k2Input = screen.getByLabelText('K2 输入值')
-    expect(k2Input.compareDocumentPosition(screen.getByTestId('bq-k2-table')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(screen.queryByLabelText('K2 输入值')).not.toBeInTheDocument()
+    expect(screen.queryByText(/（可选）/)).not.toBeInTheDocument()
   })
 
   it('warns when a typed K2 value falls outside the selected table range', () => {
     renderPage()
     fillBasic()
-    fireEvent.click(screen.getByRole('button', { name: '进入修正 [BQ]' }))
+    enterUndergroundCorrection()
     fireEvent.click(screen.getByRole('button', { name: /0\.4～0\.6/ }))
-    fireEvent.change(screen.getByLabelText('K2 输入值'), { target: { value: '0.9' } })
+    expect(screen.getByTestId('bq-k2-score')).toHaveTextContent('0.6')
+    expect(screen.getByRole('button', { name: '修改 K2' })).toHaveTextContent('*')
+    expect(screen.queryByLabelText('K2 输入值')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '修改 K2' }))
+    const k2Input = screen.getByLabelText('K2 输入值')
+    expect(k2Input).toHaveValue(0.6)
+    fireEvent.change(k2Input, { target: { value: '0.9' } })
     expect(screen.getByText('异常值：请输入 0.4～0.6 范围内的 K2。')).toBeInTheDocument()
   })
 
   it('shows the K3 stress-ratio input and its grade columns without a table number', () => {
     renderPage()
     fillBasic()
-    fireEvent.click(screen.getByRole('button', { name: '进入修正 [BQ]' }))
+    enterUndergroundCorrection()
     expect(screen.getByLabelText('围岩强度应力比 Rc/σmax')).toBeInTheDocument()
-    expect(screen.getByTestId('bq-k3-table')).toHaveTextContent('I级 ＞550')
+    expect(screen.getByTestId('bq-k3-table')).toHaveTextContent('I 级')
+    expect(screen.getByTestId('bq-k3-table').querySelectorAll('thead .katex').length).toBeGreaterThan(0)
     expect(screen.getByTestId('bq-k3-table')).not.toHaveTextContent('5.2.2-3')
   })
 
-  it('keeps the basic BQ result table visible after entering correction mode', () => {
+  it('keeps the basic BQ result visible after entering correction mode', () => {
     renderPage()
     fillBasic()
-    fireEvent.click(screen.getByRole('button', { name: '进入修正 [BQ]' }))
+    enterUndergroundCorrection()
     expect(screen.getByTestId('bq-result-section')).toBeInTheDocument()
-    expect(screen.getByTestId('bq-result-table')).toHaveTextContent('375')
+    expect(screen.getByTestId('bq-result-section')).toHaveTextContent('375')
     expect(screen.getByTestId('bq-corrected-result')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: '进入修正 [BQ]' })).not.toBeInTheDocument()
+  })
+
+  it('shows basic BQ whenever Rc and Kv are present, including incomplete foundation correction', () => {
+    renderPage()
+    fillBasic()
+    expect(screen.getByTestId('bq-result-section')).toHaveTextContent('375')
+    enterCorrectionStage()
+    selectCorrectionType('地基工程岩体')
+    expect(screen.getByLabelText('Rc 输入值（MPa）')).toHaveValue(50)
+    expect(screen.getByLabelText('Kv 输入值')).toHaveValue(0.5)
+    expect(screen.getByTestId('bq-result-section')).toHaveTextContent('375')
+    expect(screen.getByTestId('bq-preview-basic-result')).toHaveTextContent('375')
+  })
+
+  it('restores the same BQ result when reopening a point that already has Rc and Kv', () => {
+    renderPage(vi.fn(), { ...createInitialBqState(), mode: 'foundation', rc: 50, kv: 0.5 } as unknown as Record<string, unknown>)
+    expect(screen.getByLabelText('Rc 输入值（MPa）')).toHaveValue(50)
+    expect(screen.getByLabelText('Kv 输入值')).toHaveValue(0.5)
+    expect(screen.getByTestId('bq-result-section')).toHaveTextContent('375')
+    expect(screen.getByTestId('bq-preview-basic-result')).toHaveTextContent('375')
   })
 
   it('uses the standard three-condition K2 table and centers helper estimates', () => {
@@ -393,23 +468,37 @@ describe('BQ dedicated page', () => {
     expect(screen.getByTestId('bq-kv-jv-estimate')).toHaveClass('justify-center')
 
     fireEvent.click(screen.getByRole('button', { name: '进入修正 [BQ]' }))
+    selectCorrectionType('地下工程岩体')
     const table = screen.getByTestId('bq-k2-table')
     expect(table).toHaveTextContent('结构面产状及其与洞轴线的组合关系')
-    expect(table).toHaveTextContent('α≤30°，倾角 β=30°～75°')
-    expect(table).toHaveTextContent('α＞60°，倾角 β＞75°')
     expect(table).toHaveTextContent('其他组合')
+    expect(table).toHaveTextContent('无一组起控制作用的主要结构面')
     expect(table).toHaveTextContent('0.4～0.6')
     expect(table).toHaveTextContent('0～0.2')
     expect(table).toHaveTextContent('0.2～0.4')
+    const k2Tex = Array.from(table.querySelectorAll('annotation')).map((node) => node.textContent).join(' ')
+    expect(k2Tex).toContain(String.raw`\alpha\le 30^{\circ}`)
+    expect(k2Tex).toContain(String.raw`\alpha>60^{\circ}`)
+    expect(table.querySelectorAll('.katex').length).toBeGreaterThan(0)
   })
 
-  it('places the formal correction BQ introduction before its engineering type', () => {
+  it('shows the engineering type first, then the matching introduction and formula', () => {
     renderPage()
     fillBasic()
-    fireEvent.click(screen.getByRole('button', { name: '进入修正 [BQ]' }))
+    enterCorrectionStage()
+    expect(screen.getByTestId('bq-correction-scenario')).toBeInTheDocument()
+    const typeSelect = screen.getByLabelText('修正工程类型')
+    const heading = screen.getByRole('heading', { name: '修正 BQ' })
+    expect(heading.parentElement).toContainElement(typeSelect)
+    expect(heading.className).not.toMatch(/\bw-full\b/)
+    expect(screen.queryByTestId('bq-correction-intro')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('bq-k1-table')).not.toBeInTheDocument()
+    expect(screen.getByText('请先选择修正工程类型，再显示对应介绍与公式。')).toBeInTheDocument()
+
+    selectCorrectionType('地下工程岩体')
     const intro = screen.getByTestId('bq-correction-intro')
-    const engineeringType = screen.getByLabelText('修正工程类型')
-    expect(intro.compareDocumentPosition(engineeringType) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(heading.parentElement).toContainElement(typeSelect)
+    expect(typeSelect.compareDocumentPosition(intro) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(intro).toHaveTextContent('地下工程岩体详细定级时，基本质量指标 BQ 可根据地下水')
     expect(intro.querySelectorAll('.katex').length).toBeGreaterThan(0)
   })
@@ -417,13 +506,15 @@ describe('BQ dedicated page', () => {
   it('offers underground, foundation and slope engineering correction types', () => {
     renderPage()
     fillBasic()
-    fireEvent.click(screen.getByRole('button', { name: '进入修正 [BQ]' }))
+    enterCorrectionStage()
     fireEvent.click(screen.getByLabelText('修正工程类型'))
     const options = screen.getAllByRole('option')
     expect(options).toHaveLength(3)
+    expect(screen.queryByTestId('bq-correction-intro')).not.toBeInTheDocument()
+    expect(options).toHaveLength(3)
     expect(options[0]).toHaveTextContent('地下工程岩体')
-    expect(options[1]).toHaveTextContent('地基')
-    expect(options[2]).toHaveTextContent('边坡工程')
+    expect(options[1]).toHaveTextContent('边坡工程岩体')
+    expect(options[2]).toHaveTextContent('地基工程岩体')
     expect(options.every((option) => option.className.includes('text-center'))).toBe(true)
     expect(screen.queryByText(/已开发|未开发|暂未开发/)).not.toBeInTheDocument()
   })
@@ -431,9 +522,8 @@ describe('BQ dedicated page', () => {
   it('applies slope corrections from λ, K4 and computed K5', () => {
     renderPage()
     fillBasic()
-    fireEvent.click(screen.getByRole('button', { name: '进入修正 [BQ]' }))
-    fireEvent.click(screen.getByLabelText('修正工程类型'))
-    fireEvent.click(screen.getByRole('option', { name: '边坡工程' }))
+    enterCorrectionStage()
+    selectCorrectionType('边坡工程岩体')
 
     const intro = screen.getByTestId('bq-slope-intro')
     expect(intro).toHaveTextContent('边坡工程岩体详细定级时')
@@ -445,16 +535,27 @@ describe('BQ dedicated page', () => {
     expect(lambdaTable).toHaveTextContent('0.9～0.8')
     expect(lambdaTable).toHaveTextContent('0.7～0.6')
     fireEvent.click(screen.getByText('层面、贯通性较好的节理和裂隙'))
-    fireEvent.change(screen.getByLabelText('lambda 输入值'), { target: { value: '0.85' } })
+    expect(screen.getByTestId('bq-lambda-score')).toHaveTextContent('0.9')
+    expect(screen.queryByLabelText('lambda 输入值')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '修改 lambda' }))
+    const lambdaInput = screen.getByLabelText('lambda 输入值')
+    expect(lambdaInput).toHaveValue(0.9)
+    expect(screen.queryByText(/（可选）/)).not.toBeInTheDocument()
+    fireEvent.change(lambdaInput, { target: { value: '0.85' } })
 
     const k4Table = screen.getByTestId('bq-k4-table')
-    expect(k4Table).toHaveTextContent('I级 ＞550')
-    expect(k4Table).toHaveTextContent('450＜BQ≤550')
-    expect(k4Table).toHaveTextContent('V级 ≤250')
+    expect(k4Table).toHaveTextContent('I 级')
+    expect(k4Table).toHaveTextContent('V 级')
+    const k4HeaderTex = Array.from(k4Table.querySelectorAll('thead annotation')).map((node) => node.textContent)
+    expect(k4HeaderTex).toContain(String.raw`\mathrm{BQ}>550`)
+    expect(k4HeaderTex).toContain(String.raw`450<\mathrm{BQ}\le 550`)
     expect(k4Table).toHaveTextContent('pw≤0.2H')
-    fireEvent.change(screen.getByLabelText('pw（边坡地下水水头，m）'), { target: { value: '4' } })
-    fireEvent.change(screen.getByLabelText('H（边坡高度，m）'), { target: { value: '40' } })
-    expect(screen.getByTestId('bq-k4-assessment')).toHaveTextContent('潮湿或点滴状出水')
+    fireEvent.change(screen.getByLabelText('边坡地下水水头 pw'), { target: { value: '4' } })
+    fireEvent.change(screen.getByLabelText('边坡高度 H'), { target: { value: '40' } })
+    expect(screen.getByTestId('bq-k4-score')).toHaveTextContent('0.1')
+    expect(screen.queryByTestId('bq-k4-assessment')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('K4 输入值')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '修改 K4' }))
     fireEvent.change(screen.getByLabelText('K4 输入值'), { target: { value: '0.1' } })
 
     const k5Table = screen.getByTestId('bq-k5-table')
@@ -467,6 +568,9 @@ describe('BQ dedicated page', () => {
     fireEvent.click(within(k5Table).getAllByText('≤−10')[0])
     expect(screen.getByTestId('bq-k5-product')).toHaveTextContent('2.5')
     expect(screen.getByTestId('bq-corrected-result')).toHaveTextContent('[BQ]评价结果')
-    expect(screen.getByTestId('bq-preview-corrected-result')).toHaveTextContent('[BQ]评价结果')
+    expect(screen.getByTestId('bq-preview-corrected-result').querySelector('annotation')?.textContent).toBe(String.raw`\left[\mathrm{BQ}\right]`)
+    expect(screen.getByTestId('bq-preview-corrected-result')).toHaveTextContent('评价结果')
+    expect(screen.getByTestId('bq-preview-corrected-result')).toHaveTextContent('V 级')
+    expect(screen.getByTestId('bq-preview-corrected-result')).toHaveTextContent('岩体质量差')
   })
 })

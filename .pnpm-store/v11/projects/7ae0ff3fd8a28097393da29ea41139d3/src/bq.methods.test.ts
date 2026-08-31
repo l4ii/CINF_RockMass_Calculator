@@ -75,6 +75,38 @@ describe('BQ domain calculations', () => {
     expect(result.basicBq).toBeCloseTo(375, 10)
   })
 
+  it('still computes basic BQ when Rc and Kv are present but correction is incomplete', () => {
+    const foundation = calculateBq({
+      ...createInitialBqState(),
+      mode: 'foundation',
+      rc: 50,
+      kv: 0.5,
+    })
+    expect(foundation.basicBq).toBeCloseTo(375, 10)
+    expect(foundation.foundationGrade).toBeNull()
+
+    const underground = calculateBq({
+      ...createInitialBqState(),
+      mode: 'underground',
+      rc: 50,
+      kv: 0.5,
+      k1Value: 2,
+    })
+    expect(underground.basicBq).toBeCloseTo(375, 10)
+  })
+
+  it('classifies foundation from a recorded f0 value with inclusive upper bounds', () => {
+    const result = calculateBq({
+      ...createInitialBqState(),
+      mode: 'foundation',
+      rc: 50,
+      kv: 0.5,
+      foundationF0: 2,
+    })
+    expect(result.foundationGrade?.id).toBe('IV')
+    expect(result.foundationGrade?.tableCell).toBe('0.5＜f₀≤2.0')
+  })
+
   it('applies underground K1, K2 and K3 corrections to basic BQ', () => {
     const result = calculateBq({
       ...createInitialBqState(),
@@ -181,8 +213,16 @@ describe('BQ domain calculations', () => {
     expect(result.engineeringBq).toBe(result.basicBq)
   })
 
-  it('lists basic BQ and corrected [BQ] with their classes for point management', () => {
+  it('lists the preferred final BQ result for point management', () => {
     expect(formatBqPointList({ ...createInitialBqState(), rc: 50, kv: 0.5 })).toEqual([
+      { label: 'BQ', value: '375', grade: 'III 级' },
+    ])
+    expect(formatBqPointList({
+      ...createInitialBqState(),
+      mode: 'foundation',
+      rc: 50,
+      kv: 0.5,
+    })).toEqual([
       { label: 'BQ', value: '375', grade: 'III 级' },
     ])
     expect(formatBqPointList({
@@ -198,7 +238,6 @@ describe('BQ domain calculations', () => {
       undergroundStressId: 'ratio_4_7',
       k3Value: 0.5,
     })).toEqual([
-      { label: 'BQ', value: '375', grade: 'III 级' },
       { label: '[BQ]', value: '265', grade: 'IV 级' },
     ])
     expect(formatBqPointList({
@@ -207,9 +246,9 @@ describe('BQ domain calculations', () => {
       rc: 50,
       kv: 0.5,
       foundationGradeId: 'IV',
+      foundationF0: 2,
     })).toEqual([
       { label: 'BQ', value: '375', grade: 'III 级' },
-      { label: '修正 BQ', value: '', grade: 'IV 级' },
     ])
   })
 

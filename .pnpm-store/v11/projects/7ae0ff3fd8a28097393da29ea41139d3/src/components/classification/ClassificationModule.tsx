@@ -18,6 +18,7 @@ import {
   normalizeRockMassGroup,
   rockMassGroups,
 } from '../../utils/rockmassCaseStore'
+import ConfirmDialog from '../ConfirmDialog'
 import ClassificationEditorPage from './ClassificationEditorPage'
 import ClassificationExportDialog, { type ClassificationExportFormat } from './ClassificationExportDialog'
 import ClassificationPointListPage from './ClassificationPointListPage'

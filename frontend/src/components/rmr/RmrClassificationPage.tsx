@@ -16,6 +16,7 @@ import {
   buildA1ReferenceTable,
   buildA5ReferenceTable,
   DIP_BANDS,
+  RMR_CLASSES,
   STRIKE_RELATIONS,
   type DipBand,
   type StrikeRelation,
@@ -64,28 +65,28 @@ interface RmrClassificationPageProps {
 
 const SECTION_HELP = {
   a1: {
-    zh: '完整岩石材料强度可由现场试验或钻孔资料确定。低强度范围宜采用单轴抗压强度；输入点荷载强度指标或单轴抗压强度后自动匹配评分，也可直接点击表1。',
-    en: 'Determine intact-rock strength from field tests or borehole data. For the low-strength range, uniaxial compressive strength is preferred. Enter a point-load index or uniaxial compressive strength to match a rating, or click Table 1.',
+    zh: '完整岩石材料强度评分表。可由现场试验或钻孔资料确定；低强度范围宜采用单轴抗压强度。',
+    en: 'Intact-rock strength rating table. Determine from field tests or borehole data; uniaxial compressive strength is preferred in the low-strength range.',
   },
   a2: {
-    zh: 'RQD 可由现场取芯或钻孔资料获得。输入 RQD 值自动匹配评分，也可直接点击表2；需要时可打开快速计算并回填。',
-    en: 'RQD can be obtained from field core measurements or borehole data. Enter an RQD value to match a rating, or click Table 2; the quick calculator can be used when needed.',
+    zh: '岩石质量指标 RQD 评分表。可由现场取芯或钻孔资料获得。',
+    en: 'RQD rating table. Obtain from field core measurements or borehole data.',
   },
   a3: {
-    zh: '按控制性结构面组的平均间距确定评分；也可输入数值自动匹配或直接点击表3。间距评分以发育3组结构面为基础，只有2组时评价偏于保守。',
-    en: 'Rate the mean spacing of the controlling discontinuity set, or enter a value to match a rating or click Table 3. Spacing ratings assume three discontinuity sets; with only two sets, the assessment is conservative.',
+    zh: '控制性结构面组平均间距评分表。以发育 3 组结构面为前提，只有 2 组时评价偏于保守。',
+    en: 'Mean spacing rating table for the controlling discontinuity set. Ratings assume three sets; with only two sets the assessment is conservative.',
   },
   a4: {
-    zh: '根据结构面的延续性、张开度、粗糙度、充填物和蚀变/风化情况进行评分；应采用结构分区内具有代表性的通常条件。',
-    en: 'Rate discontinuity conditions by persistence, separation, roughness, infilling, and alteration/weathering. Use representative typical conditions for the structural region.',
+    zh: '结构面条件评分表，包括延续性、张开度、粗糙度、充填物和蚀变/风化。应采用结构分区内具有代表性的通常条件。',
+    en: 'Discontinuity-condition rating table: persistence, separation, roughness, infilling, and alteration/weathering. Use representative typical conditions for the structural region.',
   },
   a5: {
-    zh: '地下水条件可用每10 m隧道长度涌水量、结构面水压力比（pw / σ1）或一般状况表示，三种方式任选其一输入或选择，系统自动匹配评分，也可直接点击表5。',
-    en: 'Describe groundwater using inflow per 10 m of tunnel, joint-water pressure ratio (pw / σ1), or general conditions. Choose one method to match a rating, or click Table 5.',
+    zh: '地下水条件评分表，可用每 10 m 洞长涌水量、结构面水压力比（pw / σ1）或一般状况表示。',
+    en: 'Groundwater rating table, expressed as inflow per 10 m of tunnel, joint-water pressure ratio (pw / σ1), or general conditions.',
   },
   a6: {
-    zh: '根据结构面方向与工程的关系确定方向修正。隧道项目可选择走向和倾角自动匹配，也可直接点击表7；修正值为0或负分。',
-    en: 'Determine the orientation adjustment from the relationship between discontinuity orientation and the engineering work. For tunnels, select strike and dip to match it automatically, or click Table 7; the adjustment is zero or negative.',
+    zh: '结构面方向修正表。按结构面方向与工程的关系确定修正值，取 0 或负分。',
+    en: 'Orientation-adjustment table. The adjustment is determined from the relationship between discontinuity orientation and the engineering work; it is zero or negative.',
   },
 } as const
 
@@ -362,7 +363,7 @@ export default function RmrClassificationPage({
               </label>
               <label className="block space-y-1">
                 <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                  {isEn ? 'Point note (chainage / borehole, optional)' : '点位说明（桩号 / 钻孔号，可选）'}
+                  {isEn ? 'Point note (chainage / borehole)' : '点位说明（桩号 / 钻孔号）'}
                 </span>
                 <input
                   className={inputCls}
@@ -379,21 +380,14 @@ export default function RmrClassificationPage({
               {isEn ? (
                 <>
                   The RMR (Rock Mass Rating) system was developed by Bieniawski in 1973 and revised in 1989; this page follows the 1989 revision.
-                  It uses six measurable rock-mass parameters: uniaxial compressive strength of intact rock material <InlineMath math="A_1" />,
-                  RQD <InlineMath math="A_2" />, spacing of discontinuities <InlineMath math="A_3" />, condition of discontinuities <InlineMath math="A_4" />,
-                  groundwater conditions <InlineMath math="A_5" />, and orientation of discontinuities <InlineMath math="A_6" />.
-                  Discontinuity condition includes persistence, separation, roughness, infilling, and alteration/weathering. The six ratings are summed to obtain RMR,
-                  which is classified into Classes I-V at 81-100, 61-80, 41-60, 21-40, and 20 or below.
-                  For application, divide the tunnel route into structural regions with broadly uniform geological features and determine the parameters from field or borehole data.
-                  Rate representative typical conditions rather than isolated worst conditions.
+                  Six ratings are summed: intact-rock uniaxial compressive strength <InlineMath math="A_1" />, RQD <InlineMath math="A_2" />, discontinuity spacing <InlineMath math="A_3" />, discontinuity condition <InlineMath math="A_4" />, groundwater <InlineMath math="A_5" />, and discontinuity orientation <InlineMath math="A_6" />.
+                  Discontinuity condition includes persistence, separation, roughness, infilling, and alteration/weathering. Apply the system to structural regions of broadly uniform geology and rate representative typical conditions.
                 </>
               ) : (
                 <>
-                  RMR（Rock Mass Rating）岩体地质力学分级系统由Bieniawski于1973年提出，并于1989年修订；本页采用其1989年修订版本。
-                  该系统采用6项可在现场测定、部分也可由钻孔资料获得的岩体参数：完整岩石材料的单轴抗压强度 <InlineMath math="A_1" />、RQD值 <InlineMath math="A_2" />、结构面间距 <InlineMath math="A_3" />、结构面条件 <InlineMath math="A_4" />、地下水条件 <InlineMath math="A_5" /> 和结构面方向 <InlineMath math="A_6" />。
-                  其中结构面条件包括延续性、张开度、粗糙度、充填物和蚀变/风化。各项参数分别评分并求和得到RMR值，再按RMR总评分将岩体划分为I～V级。
-                  应用RMR时，应沿隧道线路按地质特征大致均一的区段划分结构分区，在每个分区内依据现场测量或钻孔资料确定上述参数，并按对应表格评分；评价时应采用具有代表性的通常条件，而不是局部最不利条件。
-                  结构面间距评分以存在3组结构面为前提，只有2组时所得评价偏于保守。
+                  RMR（Rock Mass Rating）岩体地质力学分级系统由 Bieniawski 于 1973 年提出，1989 年修订；本页采用 1989 年修订版。
+                  六项评分求和：完整岩石单轴抗压强度 <InlineMath math="A_1" />、RQD <InlineMath math="A_2" />、结构面间距 <InlineMath math="A_3" />、结构面条件 <InlineMath math="A_4" />、地下水 <InlineMath math="A_5" /> 和结构面方向 <InlineMath math="A_6" />。
+                  结构面条件包括延续性、张开度、粗糙度、充填物和蚀变/风化。应按地质特征大致均一的结构分区评价，并采用具有代表性的通常条件。
                 </>
               )}
             </p>
@@ -404,6 +398,33 @@ export default function RmrClassificationPage({
               </div>
             </FormulaFrame>
 
+            <div data-testid="rmr-class-summary" className="mt-4 space-y-1.5">
+              <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{isEn ? 'RMR class summary' : 'RMR 分级汇总'}</div>
+              <div className="overflow-x-auto">
+                <table className={`w-full min-w-[420px] border-collapse border text-sm ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>
+                  <thead className={darkMode ? 'bg-gray-700/60 text-gray-200' : 'bg-gray-100 text-gray-700'}>
+                    <tr>
+                      <th className="border px-2 py-2 text-center font-medium">{isEn ? 'Rock-mass class' : '岩体质量等级'}</th>
+                      <th className="border px-2 py-2 text-center font-medium">{isEn ? 'RMR range' : 'RMR 区间'}</th>
+                      <th className="border px-2 py-2 text-center font-medium">{isEn ? 'Rock-mass quality' : '岩体质量'}</th>
+                    </tr>
+                  </thead>
+                  <tbody className={darkMode ? 'text-gray-300' : 'text-gray-700'}>
+                    {RMR_CLASSES.map((entry) => {
+                      const selected = scores.classInfo?.id === entry.id
+                      return (
+                        <tr key={entry.id} className={selected ? (darkMode ? 'bg-blue-900/50 text-blue-100' : 'bg-blue-100 text-blue-900') : undefined}>
+                          <td className="border px-2 py-2 text-center font-medium">{isEn ? entry.labelEn : entry.label}</td>
+                          <td className="border px-2 py-2 text-center tabular-nums">{entry.rmrRange}</td>
+                          <td className="border px-2 py-2 text-center">{isEn ? entry.qualityEn : entry.quality}</td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
             <div className="space-y-4 mt-2">
               <RmrParamSection
                 darkMode={darkMode}
@@ -413,7 +434,6 @@ export default function RmrClassificationPage({
                 title={isEn ? RMR_PARAM_TITLES.A1.titleEn : RMR_PARAM_TITLES.A1.title}
                 description={SECTION_HELP.a1[language]}
                 score={scores.A1}
-                hint={isEn ? 'Determine intact-rock strength from field tests or borehole data. For the low-strength range, use uniaxial compressive strength; enter a value or click Table 1.' : '完整岩石材料强度可由现场试验或钻孔资料确定；低强度范围宜采用单轴抗压强度。可输入数值自动匹配，也可直接点击表1。'}
               >
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   <label className="block space-y-1">
@@ -482,16 +502,13 @@ export default function RmrClassificationPage({
                 description={SECTION_HELP.a2[language]}
                 score={scores.A2}
                 hint={
-                  <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                    <span>{isEn ? 'RQD can be obtained from field core measurements or borehole data. Enter a value or click Table 2; use the quick calculator when needed.' : 'RQD可由现场取芯或钻孔资料获得。可输入数值自动匹配，也可直接点击表2；需要时可进入RQD计算。'}</span>
-                    <button
-                      type="button"
-                      onClick={() => setRqdCalculatorOpen(true)}
-                      className="font-semibold underline"
-                    >
-                      {isEn ? 'Open RQD calculator' : '进入 RQD 计算'}
-                    </button>
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setRqdCalculatorOpen(true)}
+                    className="font-semibold underline"
+                  >
+                    {isEn ? 'Open RQD calculator' : '进入 RQD 计算'}
+                  </button>
                 }
               >
                 <label className="block max-w-xs space-y-1">
@@ -531,7 +548,6 @@ export default function RmrClassificationPage({
                 title={isEn ? RMR_PARAM_TITLES.A3.titleEn : `${RMR_PARAM_TITLES.A3.title}（cm）`}
                 description={SECTION_HELP.a3[language]}
                 score={scores.A3}
-                hint={isEn ? 'Rate the mean spacing of the controlling discontinuity set, or enter a value or click Table 3. The spacing ratings assume three discontinuity sets; two sets give a conservative assessment.' : '按控制性结构面组的平均间距评分，可输入数值或直接点击表3。间距评分以3组结构面为基础，只有2组时评价偏于保守。'}
               >
                 <label className="block max-w-xs space-y-1">
                   <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{isEn ? 'Discontinuity spacing (cm)' : '结构面间距（cm）'}</span>
@@ -567,14 +583,12 @@ export default function RmrClassificationPage({
                 title={isEn ? RMR_PARAM_TITLES.A4.titleEn : RMR_PARAM_TITLES.A4.title}
                 description={SECTION_HELP.a4[language]}
                 score={scores.A4}
-                  hint={
-                    value.a4Detailed
+                hint={
+                  value.a4Detailed
                     ? isEn
-                      ? `Current basis: detailed Table 4 ratings; their sum is A4. Current sum: ${a4SumExpression}`
+                      ? `Current basis: detailed ratings; their sum is A4. Current sum: ${a4SumExpression}`
                       : `当前口径：详细评分，五项评分之和即为 A4。当前求和：${a4SumExpression}`
-                    : isEn
-                      ? 'Click a summary description in Table 4, or complete the five selections in detailed ratings.'
-                      : '按结构分区内具有代表性的通常条件，对延续性、张开度、粗糙度、充填物和蚀变/风化评分；可直接点击表4的综合描述，也可完成五项详细选择。'
+                    : undefined
                 }
                 panels={[
                   referencePanel(
@@ -624,7 +638,6 @@ export default function RmrClassificationPage({
                 title={isEn ? RMR_PARAM_TITLES.A5.titleEn : RMR_PARAM_TITLES.A5.title}
                 description={SECTION_HELP.a5[language]}
                 score={scores.A5}
-                hint={isEn ? 'Describe groundwater by inflow per 10 m of tunnel, joint-water pressure ratio (pw / σ1), or general conditions. Choose one method or click Table 5.' : '地下水条件可用每10 m隧道长度涌水量、结构面水压力比（pw / σ1）或一般状况表示；三种方式任选其一，或直接点击表5。'}
               >
                 <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
                   <label className="block space-y-1">
@@ -718,7 +731,6 @@ export default function RmrClassificationPage({
                 title={isEn ? RMR_PARAM_TITLES.A6.titleEn : RMR_PARAM_TITLES.A6.title}
                 description={SECTION_HELP.a6[language]}
                 score={scores.A6}
-                hint={isEn ? 'Determine the adjustment from the relationship between discontinuity orientation and the engineering work. For tunnels, choose strike and dip or click the matching cell in Table 7.' : '根据结构面方向与工程的关系确定方向修正；隧道项目可选择走向和倾角自动匹配，也可直接点击表7中的对应单元格。'}
               >
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   <label className="block space-y-1">

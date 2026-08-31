@@ -12,6 +12,7 @@ import {
   BQ_UNDERGROUND_WATER_OPTIONS,
   normalizeBqState,
   type BqFormState,
+  foundationGradeFromF0,
 } from '../../../methods/bq'
 import { MethodSection, NumberField, SegmentedField, SelectField, type LocalOption } from '../MethodFormControls'
 
@@ -55,10 +56,11 @@ export default function BqMethodForm({ form, onChange, darkMode, language }: Met
             <label htmlFor="bq-correction-scenario" className={`mb-1 block text-xs font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{en ? 'Correction scenario' : '修正工程类型'}</label>
             <select id="bq-correction-scenario" value={state.mode} onChange={(event) => { const mode = event.target.value as BqFormState['mode']; if (mode === 'underground' || mode === 'foundation' || mode === 'slope') patch({ mode }) }} className={helperInput}>
               <option value="underground">{en ? 'Underground engineering rock mass' : '地下工程岩体'}</option>
-              <option value="foundation">{en ? 'Foundation' : '地基'}</option>
-              <option value="slope">{en ? 'Slope engineering' : '边坡工程'}</option>
+              <option value="slope">{en ? 'Slope engineering rock mass' : '边坡工程岩体'}</option>
+              <option value="foundation">{en ? 'Foundation engineering rock mass' : '地基工程岩体'}</option>
             </select>
-            {state.mode === 'foundation' ? <SelectField field="foundationGradeId" label={en ? 'Foundation class from qualitative characteristics' : '按定性特征选择地基工程级别'} value={state.foundationGradeId} options={localOptions(BQ_FOUNDATION_F0_GRADES)} darkMode={darkMode} language={language} onChange={(foundationGradeId) => patch({ foundationGradeId: (foundationGradeId || null) as BqFormState['foundationGradeId'], foundationF0: null })} /> : null}
+            {state.mode === 'foundation' ? <SelectField field="foundationGradeId" label={en ? 'Foundation rock-mass class' : '地基工程岩体级别'} value={state.foundationGradeId} options={localOptions(BQ_FOUNDATION_F0_GRADES)} darkMode={darkMode} language={language} onChange={(foundationGradeId) => patch({ foundationGradeId: (foundationGradeId || null) as BqFormState['foundationGradeId'], foundationF0: null })} /> : null}
+            {state.mode === 'foundation' ? <NumberField field="foundationF0" label={en ? 'Basic bedrock bearing capacity f0' : '岩体基岩承载力基本值 f₀'} value={state.foundationF0} unit="MPa" min={0} darkMode={darkMode} onChange={(foundationF0) => patch({ foundationF0, foundationGradeId: foundationF0 == null ? state.foundationGradeId : foundationGradeFromF0(foundationF0).id })} /> : null}
           </div>
         ) : null}
       </MethodSection>
@@ -96,15 +98,15 @@ export default function BqMethodForm({ form, onChange, darkMode, language }: Met
         <MethodSection
           darkMode={darkMode}
           title={en ? 'Underground engineering corrections' : '地下工程修正'}
-          description={en ? 'Select K1, K2 and K3 from the code tables. Optional numeric values must stay inside the selected range.' : '按原表选择 K1、K2、K3；区间内工程取值可留空，留空时保守采用上限并给出提示。'}
+          description={en ? 'Select K1, K2 and K3 from the code tables. A typed value must stay inside the selected range.' : '按原表选择 K1、K2、K3；区间内工程取值须落在所选档位范围内。'}
           source="5.2.2"
         >
           <SelectField field="undergroundWaterId" label={en ? 'K1 · Groundwater influence' : 'K1 · 地下水影响'} value={state.undergroundWaterId} options={localOptions(BQ_UNDERGROUND_WATER_OPTIONS)} darkMode={darkMode} language={language} onChange={(undergroundWaterId) => patch({ undergroundWaterId, k1Value: null })} />
-          <NumberField field="k1Value" label={en ? 'K1 · Adopted value within range' : 'K1 · 区间内采用值'} value={state.k1Value} min={0} max={1} step={0.01} hint={en ? 'Optional' : '可留空'} darkMode={darkMode} onChange={(k1Value) => patch({ k1Value })} />
+          <NumberField field="k1Value" label={en ? 'K1 · Adopted value within range' : 'K1 · 区间内采用值'} value={state.k1Value} min={0} max={1} step={0.01} darkMode={darkMode} onChange={(k1Value) => patch({ k1Value })} />
           <SelectField field="undergroundOrientationId" label={en ? 'K2 · Major discontinuity orientation' : 'K2 · 主要结构面产状'} value={state.undergroundOrientationId} options={localOptions(BQ_UNDERGROUND_ORIENTATION_OPTIONS)} darkMode={darkMode} language={language} onChange={(undergroundOrientationId) => patch({ undergroundOrientationId, k2Value: null })} />
-          <NumberField field="k2Value" label={en ? 'K2 · Adopted value within range' : 'K2 · 区间内采用值'} value={state.k2Value} min={0} max={1} step={0.01} hint={en ? 'Optional' : '可留空'} darkMode={darkMode} onChange={(k2Value) => patch({ k2Value })} />
+          <NumberField field="k2Value" label={en ? 'K2 · Adopted value within range' : 'K2 · 区间内采用值'} value={state.k2Value} min={0} max={1} step={0.01} darkMode={darkMode} onChange={(k2Value) => patch({ k2Value })} />
           <SelectField field="undergroundStressId" label={en ? 'K3 · Initial stress condition' : 'K3 · 初始应力状态'} value={state.undergroundStressId} options={localOptions(BQ_UNDERGROUND_STRESS_OPTIONS)} darkMode={darkMode} language={language} onChange={(undergroundStressId) => patch({ undergroundStressId, k3Value: null })} />
-          <NumberField field="k3Value" label={en ? 'K3 · Adopted value within range' : 'K3 · 区间内采用值'} value={state.k3Value} min={0} max={1} step={0.01} hint={en ? 'Optional' : '可留空'} darkMode={darkMode} onChange={(k3Value) => patch({ k3Value })} />
+          <NumberField field="k3Value" label={en ? 'K3 · Adopted value within range' : 'K3 · 区间内采用值'} value={state.k3Value} min={0} max={1} step={0.01} darkMode={darkMode} onChange={(k3Value) => patch({ k3Value })} />
         </MethodSection>
       ) : null}
 
@@ -112,15 +114,15 @@ export default function BqMethodForm({ form, onChange, darkMode, language }: Met
         <MethodSection
           darkMode={darkMode}
           title={en ? 'Slope engineering corrections' : '边坡工程修正'}
-          description={en ? 'Select λ and K4 from the code tables; K5 is computed from F1, F2 and F3. Optional numeric values must stay inside the selected range.' : '按原表选择 λ、K4；K5 由 F1、F2、F3 连乘得到。区间内工程取值可留空，留空时保守采用上限并给出提示。'}
+          description={en ? 'Select λ and K4 from the code tables; K5 is computed from F1, F2 and F3. A typed value must stay inside the selected range.' : '按原表选择 λ、K4；K5 由 F1、F2、F3 连乘得到。区间内工程取值须落在所选档位范围内。'}
           source="5.3.2"
         >
           <SelectField field="slopeStructureTypeId" label={en ? 'λ · Main discontinuity type and persistence' : 'λ · 主要结构面类型及其延伸性'} value={state.slopeStructureTypeId} options={localOptions(BQ_SLOPE_LAMBDA_OPTIONS)} darkMode={darkMode} language={language} onChange={(slopeStructureTypeId) => patch({ slopeStructureTypeId, lambdaValue: null, ...(slopeStructureTypeId === 'none' ? { slopeF1Id: null, slopeF2Id: null, slopeF3Id: null } : {}) })} />
-          <NumberField field="lambdaValue" label={en ? 'λ · Adopted value within range' : 'λ · 区间内采用值'} value={state.lambdaValue} min={0} max={1} step={0.01} hint={en ? 'Optional' : '可留空'} darkMode={darkMode} onChange={(lambdaValue) => patch({ lambdaValue })} />
+          <NumberField field="lambdaValue" label={en ? 'λ · Adopted value within range' : 'λ · 区间内采用值'} value={state.lambdaValue} min={0} max={1} step={0.01} darkMode={darkMode} onChange={(lambdaValue) => patch({ lambdaValue })} />
           <SelectField field="slopeWaterId" label={en ? 'K4 · Groundwater influence' : 'K4 · 地下水影响'} value={state.slopeWaterId} options={localOptions(BQ_SLOPE_WATER_OPTIONS)} darkMode={darkMode} language={language} onChange={(slopeWaterId) => patch({ slopeWaterId, k4Value: null })} />
-          <NumberField field="k4Value" label={en ? 'K4 · Adopted value within range' : 'K4 · 区间内采用值'} value={state.k4Value} min={0} max={1} step={0.01} hint={en ? 'Optional' : '可留空'} darkMode={darkMode} onChange={(k4Value) => patch({ k4Value })} />
-          <NumberField field="slopeWaterHeadPw" label={en ? 'pw · Slope water head' : 'pw · 边坡地下水水头'} value={state.slopeWaterHeadPw} unit="m" min={0} hint={en ? 'Optional' : '可留空'} darkMode={darkMode} onChange={(slopeWaterHeadPw) => patch({ slopeWaterHeadPw })} />
-          <NumberField field="slopeHeightH" label={en ? 'H · Slope height' : 'H · 边坡高度'} value={state.slopeHeightH} unit="m" min={0} hint={en ? 'Optional' : '可留空'} darkMode={darkMode} onChange={(slopeHeightH) => patch({ slopeHeightH })} />
+          <NumberField field="k4Value" label={en ? 'K4 · Adopted value within range' : 'K4 · 区间内采用值'} value={state.k4Value} min={0} max={1} step={0.01} darkMode={darkMode} onChange={(k4Value) => patch({ k4Value })} />
+          <NumberField field="slopeWaterHeadPw" label={en ? 'pw · Slope water head' : 'pw · 边坡地下水水头'} value={state.slopeWaterHeadPw} unit="m" min={0} darkMode={darkMode} onChange={(slopeWaterHeadPw) => patch({ slopeWaterHeadPw })} />
+          <NumberField field="slopeHeightH" label={en ? 'H · Slope height' : 'H · 边坡高度'} value={state.slopeHeightH} unit="m" min={0} darkMode={darkMode} onChange={(slopeHeightH) => patch({ slopeHeightH })} />
           <SelectField field="slopeF1Id" label={en ? 'F1 · Dip-direction relationship' : 'F1 · 结构面倾向与坡面倾向夹角'} value={state.slopeF1Id} options={localOptions(BQ_SLOPE_F1_OPTIONS)} darkMode={darkMode} language={language} onChange={(slopeF1Id) => patch({ slopeF1Id: slopeF1Id || null })} />
           <SelectField field="slopeF2Id" label={en ? 'F2 · Discontinuity dip' : 'F2 · 结构面倾角'} value={state.slopeF2Id} options={localOptions(BQ_SLOPE_F2_OPTIONS)} darkMode={darkMode} language={language} onChange={(slopeF2Id) => patch({ slopeF2Id: slopeF2Id || null })} />
           <SelectField field="slopeF3Id" label={en ? 'F3 · Dip minus slope dip' : 'F3 · 结构面倾角与边坡坡角之差'} value={state.slopeF3Id} options={localOptions(BQ_SLOPE_F3_OPTIONS)} darkMode={darkMode} language={language} onChange={(slopeF3Id) => patch({ slopeF3Id: slopeF3Id || null })} />

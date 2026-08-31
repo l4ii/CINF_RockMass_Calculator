@@ -16,7 +16,7 @@ import {
   BQ_UNDERGROUND_ORIENTATION_OPTIONS,
   BQ_UNDERGROUND_STRESS_OPTIONS,
   BQ_UNDERGROUND_WATER_OPTIONS,
-  calculateBq,
+  tryCalculateBq,
   assessGroundwaterK1,
   assessSlopeK4,
   estimateKvFromJv,
@@ -29,6 +29,7 @@ import {
   type BqFactorOption,
   type BqFormState,
   type BqCoefficientRange,
+  type BqFoundationGrade,
   type BqGradeId,
   type BqResult,
 } from '../../methods/bq'
@@ -44,12 +45,14 @@ function CenteredSelect({
   value,
   ariaLabel,
   options,
+  placeholder,
   onChange,
 }: {
   darkMode: boolean
   value: string
   ariaLabel: string
   options: Array<{ id: string; label: string }>
+  placeholder?: string
   onChange: (id: string) => void
 }) {
   const [open, setOpen] = useState(false)
@@ -73,7 +76,7 @@ function CenteredSelect({
         onClick={() => setOpen((current) => !current)}
         className={`relative w-full rounded-lg border px-10 py-2 text-center text-sm outline-none focus:ring-2 focus:ring-blue-500/30 ${darkMode ? 'border-gray-500 bg-gray-700 text-gray-100' : 'border-gray-300 bg-white text-gray-900'}`}
       >
-        {selected?.label}
+        <span className={selected ? '' : (darkMode ? 'text-gray-400' : 'text-gray-500')}>{selected?.label ?? placeholder}</span>
         <ChevronDown className={`pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden />
       </button>
       {open ? (
@@ -107,8 +110,12 @@ function CenteredSelect({
   )
 }
 
-function numberFieldClass(darkMode: boolean) {
-  return `bq-number-input ${fieldClass(darkMode)}`
+function correctionTypeOptions(en: boolean): Array<{ id: 'underground' | 'slope' | 'foundation'; label: string }> {
+  return [
+    { id: 'underground', label: en ? 'Underground engineering rock mass' : '地下工程岩体' },
+    { id: 'slope', label: en ? 'Slope engineering rock mass' : '边坡工程岩体' },
+    { id: 'foundation', label: en ? 'Foundation engineering rock mass' : '地基工程岩体' },
+  ]
 }
 
 function sectionClass(darkMode: boolean) {
@@ -129,7 +136,83 @@ function preventNumberArrow(event: KeyboardEvent<HTMLInputElement>) {
 }
 
 function rangeText(range: BqCoefficientRange) {
-  return range.min === range.max ? String(range.min) : `${range.min}–${range.max}`
+  return range.min === range.max ? String(range.min) : `${range.min}～${range.max}`
+}
+
+const BQ_GRADE_MATH: Record<BqGradeId, string> = {
+  I: String.raw`\mathrm{BQ}>550`,
+  II: String.raw`450<\mathrm{BQ}\le 550`,
+  III: String.raw`350<\mathrm{BQ}\le 450`,
+  IV: String.raw`250<\mathrm{BQ}\le 350`,
+  V: String.raw`\mathrm{BQ}\le 250`,
+}
+
+function undergroundWaterLabel(id: string, en: boolean): ReactNode {
+  if (id === 'none') return en ? 'No groundwater correction' : '无地下水修正'
+  if (id === 'damp_or_drip') {
+    return (
+      <span className="leading-6">
+        {en ? 'Damp or dripping' : '潮湿或点滴状出水'}
+        <span className="mt-1 block font-normal">
+          <InlineMath math={String.raw`p\le 0.1`} /> {en ? 'or' : '或'} <InlineMath math={String.raw`Q\le 25`} />
+        </span>
+      </span>
+    )
+  }
+  if (id === 'rain_or_linear_flow') {
+    return (
+      <span className="leading-6">
+        {en ? 'Rain-like or linear flow' : '淋雨状或线流状出水'}
+        <span className="mt-1 block font-normal">
+          <InlineMath math={String.raw`0.1<p\le 0.5`} /> {en ? 'or' : '或'} <InlineMath math={String.raw`25<Q\le 125`} />
+        </span>
+      </span>
+    )
+  }
+  return (
+    <span className="leading-6">
+      {en ? 'Surging inflow' : '涌流状出水'}
+      <span className="mt-1 block font-normal">
+        <InlineMath math={String.raw`p>0.5`} /> {en ? 'or' : '或'} <InlineMath math={String.raw`Q>125`} />
+      </span>
+    </span>
+  )
+}
+
+function undergroundStressLabel(id: string, en: boolean): ReactNode {
+  if (id === 'none_or_ratio_gt7') {
+    return (
+      <span className="leading-6">
+        {en ? 'No initial-stress correction' : '无初始应力修正'}
+        <span className="mt-1 block font-normal"><InlineMath math={String.raw`R_c/\sigma_{\max}>7`} /></span>
+      </span>
+    )
+  }
+  if (id === 'ratio_lt4') return <InlineMath math={String.raw`R_c/\sigma_{\max}<4`} />
+  return <InlineMath math={String.raw`4\le R_c/\sigma_{\max}\le 7`} />
+}
+
+function orientationConditionLabel(id: string, en: boolean): ReactNode {
+  if (id === 'none') return en ? 'No controlling major discontinuity' : '无一组起控制作用的主要结构面'
+  if (id === 'axis_angle_lt30_dip_30_75') {
+    return (
+      <span className="leading-6">
+        {en ? 'Strike-to-axis angle ' : '结构面走向与洞轴线夹角 '}
+        <InlineMath math={String.raw`\alpha\le 30^{\circ}`} />
+        <span className="mt-1 block font-normal">{en ? 'dip ' : '倾角 '}<InlineMath math={String.raw`\beta=30^{\circ}\sim 75^{\circ}`} /></span>
+      </span>
+    )
+  }
+  if (id === 'axis_angle_gt60_dip_gt75') {
+    return (
+      <span className="leading-6">
+        {en ? 'Strike-to-axis angle ' : '结构面走向与洞轴线夹角 '}
+        <InlineMath math={String.raw`\alpha>60^{\circ}`} />
+        <span className="mt-1 block font-normal">{en ? 'dip ' : '倾角 '}<InlineMath math={String.raw`\beta>75^{\circ}`} /></span>
+      </span>
+    )
+  }
+  return en ? 'Other combinations' : '其他组合'
 }
 
 function lambdaRangeText(range: BqCoefficientRange) {
@@ -168,12 +251,12 @@ function BqTable({
   darkMode: boolean
   language: 'zh' | 'en'
   title: ReactNode
-  rows: Array<{ id: string; label: string; range: string; note?: string; gradeRanges?: Partial<Record<BqGradeId, string>> }>
+  rows: Array<{ id: string; label: string; labelNode?: ReactNode; range: string; note?: string; gradeRanges?: Partial<Record<BqGradeId, string>> }>
   selectedId: string | null
   activeGrade?: BqGradeId
   onSelect: (id: string) => void
   testId?: string
-  rowHeader?: string
+  rowHeader?: ReactNode
 }) {
   const border = darkMode ? 'border-gray-600' : 'border-gray-300'
   const head = darkMode ? 'bg-gray-700/60 text-gray-200' : 'bg-gray-100 text-gray-700'
@@ -181,16 +264,24 @@ function BqTable({
   const en = language === 'en'
   const hasGradeColumns = rows.some((row) => row.gradeRanges)
   const gradeHeaders: BqGradeId[] = ['I', 'II', 'III', 'IV', 'V']
+  const cell = 'border px-3 py-2.5 leading-6'
 
   return (
-    <div data-testid={testId} className="mt-3 space-y-1.5">
-      <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{title}</div>
+    <div data-testid={testId} className="mt-4 space-y-2">
+      <div className={`text-sm font-medium leading-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{title}</div>
       <div className="overflow-x-auto">
-        <table className={`w-full min-w-[520px] border-collapse border text-sm ${border}`}>
+        <table className={`w-full min-w-[560px] border-collapse border text-sm ${border}`}>
           <thead className={head}>
             <tr>
-              <th className="border px-2 py-1.5 text-left font-medium">{rowHeader ?? (en ? 'Condition' : '工程条件')}</th>
-              {hasGradeColumns ? gradeHeaders.map((grade) => <th key={grade} className={`border px-2 py-1.5 text-center font-medium ${activeGrade === grade ? (darkMode ? 'bg-blue-900/40' : 'bg-blue-100') : ''}`}><div>{en ? `Class ${grade}` : `${grade}级 ${({ I: '＞550', II: '450＜BQ≤550', III: '350＜BQ≤450', IV: '250＜BQ≤350', V: '≤250' } as Record<BqGradeId, string>)[grade]}`}</div>{en ? <div className="font-normal tabular-nums">{({ I: '>550', II: '450<BQ≤550', III: '350<BQ≤450', IV: '250<BQ≤350', V: '≤250' } as Record<BqGradeId, string>)[grade]}</div> : null}</th>) : <th className="border px-2 py-1.5 text-center font-medium">{en ? 'Range' : '系数区间'}</th>}
+              <th className={`${cell} text-left font-medium`}>{rowHeader ?? (en ? 'Condition' : '工程条件')}</th>
+              {hasGradeColumns
+                ? gradeHeaders.map((grade) => (
+                    <th key={grade} className={`${cell} text-center font-medium ${activeGrade === grade ? (darkMode ? 'bg-blue-900/40' : 'bg-blue-100') : ''}`}>
+                      <div>{en ? `Class ${grade}` : `${grade} 级`}</div>
+                      <div className="mt-1 font-normal"><InlineMath math={BQ_GRADE_MATH[grade]} /></div>
+                    </th>
+                  ))
+                : <th className={`${cell} text-center font-medium`}>{en ? 'Range' : '系数区间'}</th>}
             </tr>
           </thead>
           <tbody>
@@ -206,8 +297,12 @@ function BqTable({
                   }}
                   className={`cursor-pointer ${selected ? (darkMode ? 'bg-blue-900/50 text-blue-100' : 'bg-blue-100 text-blue-900') : `${body} ${darkMode ? 'hover:bg-gray-700/40' : 'hover:bg-gray-50'}`}`}
                 >
-                  <td className="border px-2 py-1.5 font-medium" title={row.note}>{row.label}</td>
-              {hasGradeColumns ? gradeHeaders.map((grade) => <td key={grade} className={`border px-2 py-1.5 text-center tabular-nums ${activeGrade === grade ? (darkMode ? 'bg-blue-900/20' : 'bg-blue-50') : (darkMode ? 'bg-gray-900/60 text-gray-600' : 'bg-gray-100 text-gray-400')}`}>{row.gradeRanges?.[grade] ?? '—'}</td>) : <td className="border px-2 py-1.5 text-center tabular-nums">{row.range}</td>}
+                  <td className={`${cell} align-top font-medium`} title={row.note}>{row.labelNode ?? row.label}</td>
+                  {hasGradeColumns
+                    ? gradeHeaders.map((grade) => (
+                        <td key={grade} className={`${cell} text-center tabular-nums ${activeGrade === grade ? (darkMode ? 'bg-blue-900/20' : 'bg-blue-50') : (darkMode ? 'bg-gray-900/60 text-gray-600' : 'bg-gray-100 text-gray-400')}`}>{row.gradeRanges?.[grade] ?? '—'}</td>
+                      ))
+                    : <td className={`${cell} text-center tabular-nums`}>{row.range}</td>}
                 </tr>
               )
             })}
@@ -223,31 +318,40 @@ export function BqOrientationTable({ darkMode, language, rows, selectedId, onSel
   const head = darkMode ? 'bg-gray-700/60 text-gray-200' : 'bg-gray-100 text-gray-700'
   const body = darkMode ? 'text-gray-300' : 'text-gray-700'
   const en = language === 'en'
+  const cell = 'border px-3 py-2.5 leading-6'
   return (
-    <div data-testid="bq-k2-table" className="mt-3 space-y-1.5">
-      <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{en ? 'Major discontinuity orientation correction coefficient (K₂)' : '主要结构面产状影响修正系数（K₂）'}</div>
+    <div data-testid="bq-k2-table" className="mt-4 space-y-2">
+      <div className={`text-sm font-medium leading-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{en ? <>Major discontinuity orientation · <InlineMath math="K_2" /></> : <>主要结构面产状影响修正系数 <InlineMath math="K_2" /></>}</div>
       <div className="overflow-x-auto">
-        <table className={`w-full min-w-[680px] border-collapse border text-sm ${border}`}>
+        <table className={`w-full border-collapse border text-sm ${border}`}>
           <thead className={head}>
             <tr>
-              <th className="border px-2 py-2 text-center font-medium">{en ? 'Combination of discontinuity orientation and tunnel-axis relationship' : '结构面产状及其与洞轴线的组合关系'}</th>
-              <th className="border px-2 py-2 text-center font-medium">{en ? 'α≤30°, dip β=30°–75°' : <>结构面走向与洞轴线夹角<br />α≤30°，倾角 β=30°～75°</>}</th>
-              <th className="border px-2 py-2 text-center font-medium">{en ? 'α&gt;60°, dip β&gt;75°' : <>结构面走向与洞轴线夹角<br />α＞60°，倾角 β＞75°</>}</th>
-              <th className="border px-2 py-2 text-center font-medium">{en ? 'Other combinations' : '其他组合'}</th>
+              <th className={`${cell} text-left font-medium`}>{en ? 'Combination of discontinuity orientation and tunnel axis' : '结构面产状及其与洞轴线的组合关系'}</th>
+              <th className={`${cell} w-28 text-center font-medium`}><InlineMath math="K_2" /></th>
             </tr>
           </thead>
           <tbody>
-            <tr className={body}>
-              <th className="border px-2 py-2 text-center font-medium"><InlineMath math="K_2" /></th>
-              {rows.map((row) => {
-                const selected = row.id === selectedId
-                return <td key={row.id} role="button" tabIndex={0} aria-selected={selected} onClick={() => onSelect(row.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelect(row.id) } }} className={`border px-2 py-2 text-center align-middle font-semibold tabular-nums ${selected ? (darkMode ? 'bg-blue-900/50 text-blue-100' : 'bg-blue-100 text-blue-900') : (darkMode ? 'hover:bg-gray-700/40' : 'hover:bg-gray-50')}`}>{row.range.replace('–', '～')}</td>
-              })}
-            </tr>
+            {rows.map((row) => {
+              const selected = row.id === selectedId
+              return (
+                <tr
+                  key={row.id}
+                  data-testid={row.id === 'none' ? 'bq-k2-none-option' : undefined}
+                  tabIndex={0}
+                  onClick={() => onSelect(row.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelect(row.id) }
+                  }}
+                  className={`cursor-pointer ${selected ? (darkMode ? 'bg-blue-900/50 text-blue-100' : 'bg-blue-100 text-blue-900') : `${body} ${darkMode ? 'hover:bg-gray-700/40' : 'hover:bg-gray-50'}`}`}
+                >
+                  <td className={`${cell} align-top font-medium`}>{orientationConditionLabel(row.id, en)}</td>
+                  <td role="button" aria-selected={selected} className={`${cell} text-center font-semibold tabular-nums`}>{row.range.replace('–', '～')}</td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>
-      <button type="button" data-testid="bq-k2-none-option" onClick={() => onSelect('none')} className={`text-sm ${selectedId === 'none' ? (darkMode ? 'font-semibold text-blue-200' : 'font-semibold text-blue-800') : (darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-900')}`}>{en ? 'No controlling major discontinuity (K₂ = 0)' : '无一组起控制作用的主要结构面（K₂ = 0）'}</button>
     </div>
   )
 }
@@ -260,7 +364,7 @@ function BqGradeTable({ darkMode, language, activeGrade, selectedGrade, onSelect
   const highlighted = selectedGrade ?? (onSelect ? null : activeGrade)
   return (
     <div data-testid={testId ?? 'bq-grade-reference'} className="mt-4 space-y-1.5">
-      <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{caption ?? (en ? 'BQ rock-mass class reference' : 'BQ 岩体质量等级判定')}</div>
+      <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{caption ?? (en ? 'BQ class summary' : 'BQ 分级汇总')}</div>
       <div className="overflow-x-auto">
         <table className={`w-full min-w-[420px] border-collapse border text-sm ${border}`}>
           <thead className={head}>
@@ -301,16 +405,18 @@ function F0RangeMath({ latex }: { latex: string }) {
 function BqFoundationResult({ darkMode, language, grade }: { darkMode: boolean; language: 'zh' | 'en'; grade: BqFoundationGrade | null }) {
   const en = language === 'en'
   const quality = grade ? BQ_GRADES.find((item) => item.id === grade.id) : null
+  const gradeLine = grade && quality
+    ? (en ? `${grade.label.en} · ${quality.quality.en}` : `${grade.label.zh} · ${quality.quality.zh}`)
+    : '—'
   return (
     <div data-testid="bq-foundation-result" className={`mt-4 border-t pt-3 ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
-      <div className="flex items-center justify-between gap-3">
+      <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-3">
         <h3 className={`text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Corrected BQ evaluation result' : '修正 BQ 评价结果'}</h3>
-        <span className={`text-xl font-bold ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>{grade ? grade.label[language] : '—'}</span>
-      </div>
-      {quality ? <p className={`mt-2 text-sm ${darkMode ? 'text-green-300' : 'text-green-800'}`}>{en ? `${quality.quality.en} · ${quality.qualitative.en}` : `${quality.quality.zh} · ${quality.qualitative.zh}`}</p> : <p className={`mt-2 text-sm ${mutedClass(darkMode)}`}>{en ? 'Select a class from the qualitative characteristics table.' : '请从定性特征表中选择岩体级别。'}</p>}
-      <div className={`mt-3 rounded-lg border px-3 py-2.5 text-sm ${darkMode ? 'border-gray-600 bg-gray-800/50' : 'border-gray-200 bg-gray-50'}`}>
-        <div className={mutedClass(darkMode)}>{en ? <>Basic bedrock bearing capacity <InlineMath math="f_0" /></> : <>基岩承载力基本值 <InlineMath math="f_0" /></>}</div>
-        <div data-testid="bq-foundation-f0" className={`mt-1 font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{grade ? <F0RangeMath latex={grade.mathRange} /> : '—'}</div>
+        <p className={`text-sm font-medium sm:text-center ${grade ? (darkMode ? 'text-green-300' : 'text-green-800') : mutedClass(darkMode)}`}>{gradeLine}</p>
+        <div data-testid="bq-foundation-f0" className={`font-semibold tabular-nums sm:text-right ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+          <span className={`mr-2 text-sm font-normal ${mutedClass(darkMode)}`}>{en ? <>Reference <InlineMath math="f_0" /></> : <>参考 <InlineMath math="f_0" /></>}</span>
+          {grade ? <F0RangeMath latex={grade.mathRange} /> : '—'}
+        </div>
       </div>
     </div>
   )
@@ -320,19 +426,20 @@ function BqLimitationPanel({ darkMode, language, result }: { darkMode: boolean; 
   const en = language === 'en'
   const applied = result?.limitation.applied ?? false
   const finalTextTone = applied ? (darkMode ? 'text-amber-200' : 'text-amber-700') : (darkMode ? 'text-green-200' : 'text-green-700')
-  const status = !result
-    ? (en ? <>Enter <InlineMath math="R_c" /> and <InlineMath math="K_v" /> to evaluate the two code limits.</> : <>输入 <InlineMath math="R_c" /> 和 <InlineMath math="K_v" /> 后，按两条规范限定进行判断。</>)
-    : applied
-      ? (en ? <>The <InlineMath math={result.limitation.rule === 'rc_limit' ? 'R_c' : 'K_v'} /> limit is active; the adopted value is shown below.</> : <>触发 <InlineMath math={result.limitation.rule === 'rc_limit' ? 'R_c' : 'K_v'} /> 限定，下面显示最终采用值。</>)
-      : (en ? 'Neither limit is active; the input values are adopted.' : '未触发规范限定，未调整，直接采用输入值。')
+  const adopted = !result
+    ? '—'
+    : result.limitation.rule === 'rc_limit'
+      ? (en
+        ? <>Code limit triggered; adopt <InlineMath math="R_c^*" /> = <span data-testid="bq-limitation-rc-final" className={`font-semibold tabular-nums ${finalTextTone}`}>{result.effective.rc} MPa</span></>
+        : <>触发规范限制，采用 <InlineMath math="R_c^*" /> = <span data-testid="bq-limitation-rc-final" className={`font-semibold tabular-nums ${finalTextTone}`}>{result.effective.rc} MPa</span></>)
+      : result.limitation.rule === 'kv_limit'
+        ? (en
+          ? <>Code limit triggered; adopt <InlineMath math="K_v^*" /> = <span data-testid="bq-limitation-kv-final" className={`font-semibold tabular-nums ${finalTextTone}`}>{result.effective.kv}</span></>
+          : <>触发规范限制，采用 <InlineMath math="K_v^*" /> = <span data-testid="bq-limitation-kv-final" className={`font-semibold tabular-nums ${finalTextTone}`}>{result.effective.kv}</span></>)
+        : (en ? 'No code limit triggered; input values adopted.' : '未触发规范限制，采用输入值')
   return (
     <section data-testid="bq-limitation-formulas" className={`rounded-lg border p-4 sm:p-5 ${darkMode ? 'border-gray-600 bg-gray-800/50' : 'border-gray-200 bg-white'}`}>
       <h3 className={`mb-3 text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Code limits' : '规范限定'}</h3>
-      <p className={`mb-3 text-sm leading-relaxed ${mutedClass(darkMode)}`}>
-        {en
-          ? <>Before calculating <InlineMath math="\mathrm{BQ}" />, the standard constrains the combined use of intact-rock strength <InlineMath math="R_c" /> and rock-mass integrity <InlineMath math="K_v" />. Evaluate the two limits independently. If <InlineMath math="R_c>90K_v+30" />, adopt <InlineMath math="R_c^*=90K_v+30" />; if <InlineMath math="K_v>0.04R_c+0.4" />, adopt <InlineMath math="K_v^*=0.04R_c+0.4" />. When neither condition is met, retain the measured values.</>
-          : <>在计算 <InlineMath math="\mathrm{BQ}" /> 前，规范对完整岩石强度 <InlineMath math="R_c" /> 与岩体完整性指数 <InlineMath math="K_v" /> 的组合使用进行限定。以下两条分别判断：若 <InlineMath math="R_c>90K_v+30" />，采用 <InlineMath math="R_c^*=90K_v+30" />；若 <InlineMath math="K_v>0.04R_c+0.4" />，采用 <InlineMath math="K_v^*=0.04R_c+0.4" />。两条均未超限时，保留实测值。</>}
-      </p>
       <FormulaFrame darkMode={darkMode}>
         <div className={`space-y-1 text-center ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
           <BlockMath math={String.raw`R_c>90K_v+30\quad\Rightarrow\quad R_c=90K_v+30`} />
@@ -342,17 +449,14 @@ function BqLimitationPanel({ darkMode, language, result }: { darkMode: boolean; 
       <div className={`mt-3 rounded-lg border px-3 py-3 text-sm ${darkMode ? 'border-gray-600 bg-gray-800/50' : 'border-gray-200 bg-gray-50'}`}>
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
           <span>{en ? 'Input' : '输入'}：<InlineMath math="R_c" /> = <span data-testid="bq-limitation-rc-original" className="font-semibold tabular-nums">{result ? `${result.original.rc} MPa` : '—'}</span>，<InlineMath math="K_v" /> = <span data-testid="bq-limitation-kv-original" className="font-semibold tabular-nums">{result ? result.original.kv : '—'}</span></span>
-          <span className={result ? finalTextTone : ''}>{en ? 'Adopted' : '采用'}：<InlineMath math="R_c^*" /> = <span data-testid="bq-limitation-rc-final" className={`font-semibold tabular-nums ${result ? finalTextTone : ''}`}>{result ? `${result.effective.rc} MPa` : '—'}</span>，<InlineMath math="K_v^*" /> = <span data-testid="bq-limitation-kv-final" className={`font-semibold tabular-nums ${result ? finalTextTone : ''}`}>{result ? result.effective.kv : '—'}</span></span>
+          <span data-testid="bq-limitation-status" className={result ? finalTextTone : mutedClass(darkMode)}>{adopted}</span>
         </div>
-      </div>
-      <div data-testid="bq-limitation-status" className={`mt-2 text-sm font-medium ${result ? finalTextTone : mutedClass(darkMode)}`}>
-        {status}
       </div>
     </section>
   )
 }
 
-function BqResultSection({ darkMode, language, result, baseReady, mode, onEnterCorrection }: { darkMode: boolean; language: 'zh' | 'en'; result: BqResult | null; baseReady: boolean; mode: BqFormState['mode']; onEnterCorrection: () => void }) {
+function BqResultSection({ darkMode, language, result, baseReady, mode, enteredCorrection, onEnterCorrection }: { darkMode: boolean; language: 'zh' | 'en'; result: BqResult | null; baseReady: boolean; mode: BqFormState['mode']; enteredCorrection?: boolean; onEnterCorrection: () => void }) {
   const en = language === 'en'
   const grade = result ? gradeForBq(result.basicBq) : null
   return (
@@ -362,19 +466,12 @@ function BqResultSection({ darkMode, language, result, baseReady, mode, onEnterC
         <span className={`text-2xl font-bold tabular-nums ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>{result ? result.basicBq : '—'}</span>
       </div>
       {grade ? <p className={`mt-2 text-sm ${darkMode ? 'text-green-300' : 'text-green-800'}`}>{en ? `${grade.label.en} · ${grade.quality.en}` : `${grade.label.zh} · ${grade.quality.zh}`}</p> : <p className={`mt-2 text-sm ${mutedClass(darkMode)}`}>{en ? <>Enter <InlineMath math="R_c" /> and <InlineMath math="K_v" /> to calculate the basic <InlineMath math="\mathrm{BQ}" />.</> : <>请输入 <InlineMath math="R_c" /> 和 <InlineMath math="K_v" /> 后查看基本 <InlineMath math="\mathrm{BQ}" /> 结果。</>}</p>}
-      <div data-testid="bq-result-table" className={`mt-3 overflow-x-auto rounded-lg border ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
-        <table className="w-full border-collapse text-sm">
-          <thead className={darkMode ? 'bg-gray-700/60 text-gray-200' : 'bg-gray-100 text-gray-700'}><tr><th className="border-b px-3 py-2 text-left font-medium">{en ? 'Result item' : '结果项目'}</th><th className="border-b px-3 py-2 text-right font-medium">{en ? 'Value' : '数值'}</th></tr></thead>
-          <tbody className={darkMode ? 'text-gray-200' : 'text-gray-800'}>
-            <tr><td className="border-b px-3 py-2"><InlineMath math="\mathrm{BQ}" /></td><td className="border-b px-3 py-2 text-right font-semibold tabular-nums">{result?.basicBq ?? '—'}</td></tr>
-            <tr><td className="px-3 py-2">{en ? 'Grade' : '等级'}</td><td className="px-3 py-2 text-right">{grade ? (en ? grade.label.en : grade.label.zh) : '—'}</td></tr>
-          </tbody>
-        </table>
-      </div>
       <BqGradeTable darkMode={darkMode} language={language} activeGrade={grade?.id ?? null} />
-      {mode === 'basic' ? <div className={`mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-3 ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
-        <p className={`text-sm ${mutedClass(darkMode)}`}>{en ? 'Corrected BQ is used for underground engineering conditions, incorporating the effects of groundwater, major discontinuity orientation, and initial stress on the basic BQ.' : '修正 BQ 用于在地下工程条件下，综合考虑地下水、主要结构面产状和初始应力状态对基本 BQ 的影响。'}</p>
-        <button type="button" onClick={onEnterCorrection} disabled={!baseReady} className="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-3 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-40">{en ? 'Enter corrected [BQ]' : '进入修正 [BQ]'}<ArrowRight className="h-4 w-4" aria-hidden /></button>
+      {mode === 'basic' && !enteredCorrection ? <div className={`mt-4 space-y-3 border-t pt-3 ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
+        <p className={`text-sm ${mutedClass(darkMode)}`}>{en ? 'Detailed classification follows the engineering type: underground and slope works correct the basic BQ for groundwater, discontinuity orientation and in-situ stress; foundation works are judged from the qualitative characteristics of rock-mass basic quality.' : '工程岩体详细定级应按工程类型分别进行：地下、边坡工程在基本 BQ 上计入地下水、主要结构面产状及初始应力等影响；地基工程按岩体基本质量的定性特征判定等级。'}</p>
+        <div className="flex justify-end">
+          <button type="button" onClick={onEnterCorrection} disabled={!baseReady} className="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-3 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-40">{en ? 'Enter corrected [BQ]' : '进入修正 [BQ]'}<ArrowRight className="h-4 w-4" aria-hidden /></button>
+        </div>
       </div> : null}
     </section>
   )
@@ -386,28 +483,12 @@ function BqCorrectedResult({ darkMode, language, result, variant = 'underground'
   const formula = slope
     ? String.raw`\left[\mathrm{BQ}\right]=\mathrm{BQ}-100\left(K_4+\lambda K_5\right)`
     : String.raw`\left[\mathrm{BQ}\right]=\mathrm{BQ}-100\left(K_1+K_2+K_3\right)`
-  const steps = slope
-    ? [
-        { key: 'lambda' as const, label: '\\lambda' },
-        { key: 'k4' as const, label: 'K_4' },
-      ]
-    : [
-        { key: 'k1' as const, label: 'K_1' },
-        { key: 'k2' as const, label: 'K_2' },
-        { key: 'k3' as const, label: 'K_3' },
-      ]
   return (
     <section data-testid="bq-corrected-result" className={sectionClass(darkMode)}>
       <div className="flex items-center justify-between gap-3"><h2 className={`text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? '[BQ] evaluation result' : '[BQ]评价结果'}</h2><span className={`text-2xl font-bold tabular-nums ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>{result ? result.engineeringBq : '—'}</span></div>
       <FormulaFrame darkMode={darkMode} compact>
         <div className={`text-center ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}><BlockMath math={formula} /></div>
       </FormulaFrame>
-      <div className={`mt-3 grid grid-cols-2 gap-2 ${slope ? 'sm:grid-cols-5' : 'sm:grid-cols-5'}`}>
-        <div className={`rounded-lg border px-2.5 py-2 text-sm ${darkMode ? 'border-gray-600 bg-gray-800/50' : 'border-gray-200 bg-gray-50'}`}><div className={mutedClass(darkMode)}><InlineMath math="\mathrm{BQ}" /></div><div className="mt-1 font-semibold tabular-nums">{result ? result.basicBq : '—'}</div></div>
-        {steps.map((step) => <div key={step.key} className={`rounded-lg border px-2.5 py-2 text-sm ${darkMode ? 'border-gray-600 bg-gray-800/50' : 'border-gray-200 bg-gray-50'}`}><div className={mutedClass(darkMode)}><InlineMath math={step.label} /></div><div className="mt-1 font-semibold tabular-nums">{result?.corrections[step.key]?.value ?? 0}</div></div>)}
-        {slope ? <div className={`rounded-lg border px-2.5 py-2 text-sm ${darkMode ? 'border-gray-600 bg-gray-800/50' : 'border-gray-200 bg-gray-50'}`}><div className={mutedClass(darkMode)}><InlineMath math="K_5" /></div><div data-testid="bq-slope-k5-value" className="mt-1 font-semibold tabular-nums">{result?.corrections.slopeFactors?.k5 ?? 0}</div></div> : null}
-        <div className={`rounded-lg border px-2.5 py-2 text-sm ${darkMode ? 'border-gray-600 bg-gray-800/50' : 'border-gray-200 bg-gray-50'}`}><div className={mutedClass(darkMode)}><InlineMath math="\Delta\mathrm{BQ}" /></div><div className="mt-1 font-semibold tabular-nums">{result ? result.corrections.deduction : '—'}</div></div>
-      </div>
       {result ? <p className={`mt-3 text-sm font-medium ${darkMode ? 'text-green-300' : 'text-green-800'}`}>{en ? `${result.grade.label.en} · ${result.grade.quality.en}` : `${result.grade.label.zh} · ${result.grade.quality.zh}`}</p> : <p className={`mt-3 text-sm ${mutedClass(darkMode)}`}>{en ? <>Enter <InlineMath math="R_c" /> and <InlineMath math="K_v" /> to show the corrected <InlineMath math="\mathrm{BQ}" /> and final class.</> : <>请输入 <InlineMath math="R_c" /> 和 <InlineMath math="K_v" /> 后显示修正 <InlineMath math="\mathrm{BQ}" /> 和最终等级。</>}</p>}
       <BqGradeTable darkMode={darkMode} language={language} activeGrade={result?.grade.id ?? null} />
     </section>
@@ -564,7 +645,7 @@ function RcHelper({ darkMode, language, value, onValueChange, estimate, onApply 
         </FormulaFrame>
       </div>
       <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_150px_120px] sm:items-end">
-        <label className="min-w-0"><span className={`mb-1 block text-sm font-medium ${mutedClass(darkMode)}`}><InlineMath math="I_s(50)" /> · MPa</span><input aria-label="Is(50) · MPa" placeholder={en ? 'e.g. 4' : '如：4'} type="number" min="0" step="any" value={value} onChange={(event) => onValueChange(event.target.value)} onWheel={preventNumberWheel} onKeyDown={preventNumberArrow} className={numberFieldClass(darkMode)} /></label>
+        <MeasuredNumberField darkMode={darkMode} language={language} name={en ? 'Point-load strength index' : '点荷载强度指数'} symbol="I_s(50)" unit="MPa" ariaLabel="Is(50) · MPa" value={value} min={0} onChange={onValueChange} />
         <span data-testid="bq-rc-helper-estimate" className={`flex min-h-[40px] min-w-[150px] items-center justify-center text-center text-sm font-semibold ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>{estimate == null ? '—' : <><InlineMath math="R_c" /> ≈ {estimate.toFixed(1)} MPa</>}</span>
         <ApplyButton darkMode={darkMode} className="w-[120px]" disabled={estimate == null} onClick={onApply} ariaLabel={en ? 'Apply to Rc' : '应用到 Rc'}>{en ? <>Apply to <InlineMath math="R_c" /></> : <>应用到 <InlineMath math="R_c" /></>}</ApplyButton>
       </div>
@@ -600,8 +681,8 @@ function KvHelper({ darkMode, language, vpm, vpr, jv, selectedJvBand, onVpmChang
           {en ? <><InlineMath math="v_{pm}" /> is the rock-mass elastic longitudinal-wave velocity and <InlineMath math="v_{pr}" /> is the intact-rock core longitudinal-wave velocity. Both values must come from the same engineering zone and use the same unit (km/s). Their squared ratio estimates <InlineMath math="K_v" />; the result must satisfy <InlineMath math="0\leq K_v\leq1" />.</> : <><InlineMath math="v_{pm}" /> 为岩体弹性纵波速度，<InlineMath math="v_{pr}" /> 为完整岩石岩芯纵波速度。两项资料应来自同一工程分区并采用相同计量单位（km/s）。两者比值的平方用于估算 <InlineMath math="K_v" />，计算结果应满足 <InlineMath math="0\leq K_v\leq1" />。</>}
         </p>
         <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_150px_120px] md:items-end">
-          <label className="min-w-0"><span className={`mb-1 block text-sm font-medium ${mutedClass(darkMode)}`}><InlineMath math="v_{pm}" />：{en ? 'Rock-mass elastic longitudinal-wave velocity' : '岩体弹性纵波速度'}（km/s）</span><input aria-label={en ? 'vpm · km/s' : 'vpm · km/s'} placeholder={en ? 'e.g. 3.2' : '如：3.2'} type="number" min="0" step="any" value={vpm} onChange={(event) => onVpmChange(event.target.value)} onWheel={preventNumberWheel} onKeyDown={preventNumberArrow} className={numberFieldClass(darkMode)} /></label>
-          <label className="min-w-0"><span className={`mb-1 block text-sm font-medium ${mutedClass(darkMode)}`}><InlineMath math="v_{pr}" />：{en ? 'Intact-core longitudinal-wave velocity' : '完整岩石岩芯纵波速度'}（km/s）</span><input aria-label={en ? 'vpr · km/s' : 'vpr · km/s'} placeholder={en ? 'e.g. 4.5' : '如：4.5'} type="number" min="0" step="any" value={vpr} onChange={(event) => onVprChange(event.target.value)} onWheel={preventNumberWheel} onKeyDown={preventNumberArrow} className={numberFieldClass(darkMode)} /></label>
+          <MeasuredNumberField darkMode={darkMode} language={language} name={en ? 'Rock-mass elastic longitudinal-wave velocity' : '岩体弹性纵波速度'} symbol="v_{pm}" unit="km/s" ariaLabel={en ? 'vpm · km/s' : 'vpm · km/s'} value={vpm} min={0} onChange={onVpmChange} />
+          <MeasuredNumberField darkMode={darkMode} language={language} name={en ? 'Intact-core longitudinal-wave velocity' : '完整岩石岩芯纵波速度'} symbol="v_{pr}" unit="km/s" ariaLabel={en ? 'vpr · km/s' : 'vpr · km/s'} value={vpr} min={0} onChange={onVprChange} />
           <span data-testid="bq-kv-velocity-estimate" className={`flex min-h-[40px] min-w-[150px] items-center justify-center text-center text-sm font-semibold ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>{velocityEstimate == null ? '—' : <><InlineMath math="K_v" /> ≈ {velocityEstimate.toFixed(3)}</>}</span>
           <ApplyButton darkMode={darkMode} className="w-[120px]" disabled={velocityEstimate == null || velocityEstimate > 1} onClick={onApplyVelocity} ariaLabel={en ? 'Apply to Kv' : '应用到 Kv'}>{en ? <>Apply to <InlineMath math="K_v" /></> : <>应用到 <InlineMath math="K_v" /></>}</ApplyButton>
         </div>
@@ -617,7 +698,7 @@ function KvHelper({ darkMode, language, vpm, vpr, jv, selectedJvBand, onVpmChang
           })}</tbody>
         </table>
         <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_170px_170px] sm:items-end">
-          <label className="min-w-0"><span className={`mb-1 block text-sm font-medium ${mutedClass(darkMode)}`}><InlineMath math="J_v" />：{en ? 'Volumetric joint count' : '岩体体积节理数'}（条/m³）</span><input aria-label={en ? 'Jv · joints/m³' : 'Jv · 条/m³'} placeholder={en ? 'e.g. 12' : '如：12'} type="number" min="0" step="any" value={jv} onChange={(event) => onJvChange(event.target.value)} onWheel={preventNumberWheel} onKeyDown={preventNumberArrow} className={numberFieldClass(darkMode)} /></label>
+          <MeasuredNumberField darkMode={darkMode} language={language} name={en ? 'Volumetric joint count' : '岩体体积节理数'} symbol="J_v" unit={en ? 'joints/m³' : '条/m³'} ariaLabel={en ? 'Jv · joints/m³' : 'Jv · 条/m³'} value={jv} min={0} onChange={onJvChange} />
           <span data-testid="bq-kv-jv-estimate" className={`flex min-h-[40px] min-w-[170px] items-center justify-center text-center text-sm font-semibold ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>{jvEstimate == null ? '—' : <><InlineMath math="K_v" /> ≈ {jvEstimate.value.toFixed(3)}</>}</span>
           <ApplyButton darkMode={darkMode} className="w-[170px]" disabled={jvEstimate == null} onClick={onApplyJv} ariaLabel={en ? 'Apply midpoint to Kv' : '应用区间中值到 Kv'}>{en ? <>Apply midpoint to <InlineMath math="K_v" /></> : <>应用区间中值到 <InlineMath math="K_v" /></>}</ApplyButton>
         </div>
@@ -631,29 +712,42 @@ function BqPreview({ darkMode, language, state, correctionStep, result }: { dark
   void correctionStep
   const panel = `sticky top-0 rounded-lg border p-4 ${darkMode ? 'border-gray-600 bg-gray-800/80' : 'border-gray-200 bg-white shadow-sm'}`
   const basicGrade = result ? gradeForBq(result.basicBq) : null
+  const correctedGrade = result && (state.mode === 'underground' || state.mode === 'slope') ? gradeForBq(result.engineeringBq) : null
   const foundationGrade = state.mode === 'foundation' ? resolveFoundationGrade(state) : null
+  const foundationQuality = foundationGrade ? BQ_GRADES.find((item) => item.id === foundationGrade.id) : null
   const rcLimited = result?.limitation.applied && result.limitation.rule === 'rc_limit'
   const kvLimited = result?.limitation.applied && result.limitation.rule === 'kv_limit'
   const slopeK5Ready = state.slopeStructureTypeId === 'none' || Boolean(state.slopeF1Id && state.slopeF2Id && state.slopeF3Id)
-  const totalItems = state.mode === 'underground' || state.mode === 'slope' ? 5 : state.mode === 'foundation' ? 3 : 2
+  const totalItems = state.mode === 'underground' || state.mode === 'slope' ? 5 : 2
   const completedItems = [
     state.rc,
     state.kv,
     state.mode === 'underground' ? result?.corrections.k1?.value : null,
     state.mode === 'underground' ? result?.corrections.k2?.value : null,
     state.mode === 'underground' ? result?.corrections.k3?.value : null,
-    state.mode === 'foundation' ? (state.foundationGradeId != null || state.foundationF0 != null ? 1 : null) : null,
     state.mode === 'slope' ? result?.corrections.lambda?.value : null,
     state.mode === 'slope' ? result?.corrections.k4?.value : null,
     state.mode === 'slope' && slopeK5Ready && result != null ? (result.corrections.slopeFactors?.k5 ?? 0) : null,
   ].filter((value) => value != null).length
   const correctionValue = (coefficient: BqResult['corrections']['k1'], complete: boolean) =>
     complete && coefficient ? coefficient.value : (en ? 'Pending' : '待完成')
+  const gradeText = (grade: { label: { zh: string; en: string }; quality: { zh: string; en: string } } | null | undefined) =>
+    grade ? (en ? `${grade.label.en} · ${grade.quality.en}` : `${grade.label.zh} · ${grade.quality.zh}`) : null
+  const emptyGrade = en ? <>Enter <InlineMath math="R_c" /> and <InlineMath math="K_v" /> to show the class.</> : <>输入 <InlineMath math="R_c" /> 和 <InlineMath math="K_v" /> 后显示正式等级</>
   const row = (label: ReactNode, value: ReactNode, done = true, testId?: string) => (
     <li className={`flex items-center justify-between rounded-lg px-2.5 py-2 text-sm ${done ? (darkMode ? 'bg-blue-950/35' : 'bg-blue-50/80') : (darkMode ? 'bg-gray-700/40' : 'bg-gray-50')}`}>
       <span className={`flex min-w-0 items-center gap-2 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}><span className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${done ? 'bg-blue-600 text-white' : (darkMode ? 'bg-gray-600 text-gray-300' : 'bg-gray-200 text-gray-500')}`}>{done ? <Check className="h-3 w-3" aria-hidden /> : '·'}</span><span data-testid={testId} className="min-w-0 break-words leading-5">{label}</span></span>
       <span className={`ml-2 shrink-0 font-semibold tabular-nums ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{value}</span>
     </li>
+  )
+  const evaluation = (testId: string, title: ReactNode, value: ReactNode, line: string | null, empty: ReactNode) => (
+    <div data-testid={testId}>
+      <div className="flex items-baseline justify-between">
+        <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{title}</span>
+        <span className={`text-2xl font-bold tabular-nums ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>{value}</span>
+      </div>
+      {line ? <p className={`mt-2 text-sm ${darkMode ? 'text-green-300' : 'text-green-800'}`}>{line}</p> : <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{empty}</p>}
+    </div>
   )
   return (
     <aside data-testid="calculation-result-pane" className={panel}>
@@ -667,56 +761,163 @@ function BqPreview({ darkMode, language, state, correctionStep, result }: { dark
         {state.mode === 'underground' ? row(<InlineMath math="K_1" />, correctionValue(result?.corrections.k1 ?? null, result != null), result != null, 'bq-preview-k1-label') : null}
         {state.mode === 'underground' ? row(<InlineMath math="K_2" />, correctionValue(result?.corrections.k2 ?? null, result != null), result != null, 'bq-preview-k2-label') : null}
         {state.mode === 'underground' ? row(<InlineMath math="K_3" />, correctionValue(result?.corrections.k3 ?? null, result != null), result != null, 'bq-preview-k3-label') : null}
-        {state.mode === 'underground' && result ? row(<InlineMath math="\Delta\mathrm{BQ}" />, result.corrections.deduction, true, 'bq-preview-deduction-label') : null}
         {state.mode === 'underground' && result ? row(<InlineMath math="\left[\mathrm{BQ}\right]" />, result.engineeringBq, true, 'bq-preview-corrected-bq-label') : null}
         {state.mode === 'slope' ? row(<InlineMath math="\lambda" />, correctionValue(result?.corrections.lambda ?? null, result != null), result != null, 'bq-preview-lambda-label') : null}
         {state.mode === 'slope' ? row(<InlineMath math="K_4" />, correctionValue(result?.corrections.k4 ?? null, result != null), result != null, 'bq-preview-k4-label') : null}
         {state.mode === 'slope' ? row(<InlineMath math="K_5" />, slopeK5Ready ? (result?.corrections.slopeFactors?.k5 ?? 0) : (en ? 'Pending' : '待完成'), slopeK5Ready && result != null, 'bq-preview-k5-label') : null}
-        {state.mode === 'slope' && result ? row(<InlineMath math="\Delta\mathrm{BQ}" />, result.corrections.deduction, true, 'bq-preview-deduction-label') : null}
         {state.mode === 'slope' && result ? row(<InlineMath math="\left[\mathrm{BQ}\right]" />, result.engineeringBq, true, 'bq-preview-corrected-bq-label') : null}
-        {state.mode === 'foundation' ? row(<InlineMath math="\left[\mathrm{BQ}\right]" />, foundationGrade ? foundationGrade.label[language] : (en ? 'Pending' : '待选择'), foundationGrade != null, 'bq-preview-foundation-grade-label') : null}
-        {state.mode === 'foundation' ? row(<>{en ? 'Bedrock' : '基岩'} <InlineMath math="f_0" /></>, foundationGrade ? <F0RangeMath latex={foundationGrade.mathRange} /> : (en ? 'Pending' : '待选择'), foundationGrade != null, 'bq-preview-foundation-f0-label') : null}
       </ul>
       <div className={`mt-4 space-y-3 border-t pt-3 ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
-        <div data-testid="bq-preview-basic-result">
-          <div className="flex items-baseline justify-between">
-            <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{en ? 'BQ evaluation result' : 'BQ评价结果'}</span>
-            <span className={`text-2xl font-bold tabular-nums ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>{result ? result.basicBq : '—'}</span>
-          </div>
-          {result && basicGrade ? <p className={`mt-2 text-sm ${darkMode ? 'text-green-300' : 'text-green-800'}`}>{en ? `${basicGrade.label.en} · ${basicGrade.quality.en}` : `${basicGrade.label.zh} · ${basicGrade.quality.zh}`}</p> : <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{en ? <>Enter <InlineMath math="R_c" /> and <InlineMath math="K_v" /> to show the class.</> : <>输入 <InlineMath math="R_c" /> 和 <InlineMath math="K_v" /> 后显示正式等级</>}</p>}
-        </div>
-        {state.mode === 'underground' || state.mode === 'slope' ? (
-          <div data-testid="bq-preview-corrected-result">
-            <div className="flex items-baseline justify-between">
-              <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{en ? '[BQ] evaluation result' : '[BQ]评价结果'}</span>
-              <span className={`text-2xl font-bold tabular-nums ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>{result ? result.engineeringBq : '—'}</span>
-            </div>
-            {result ? <p className={`mt-2 text-sm ${darkMode ? 'text-green-300' : 'text-green-800'}`}>{en ? `${result.grade.label.en} · ${result.grade.quality.en}` : `${result.grade.label.zh} · ${result.grade.quality.zh}`}</p> : null}
-          </div>
-        ) : null}
-        {state.mode === 'foundation' ? (
-          <div data-testid="bq-preview-foundation-result">
-            <div className="flex items-baseline justify-between">
-              <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{en ? <>[BQ] evaluation result</> : <>[BQ]评价结果</>}</span>
-              <span className={`text-2xl font-bold ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>{foundationGrade ? foundationGrade.label[language] : '—'}</span>
-            </div>
-            {foundationGrade ? <p className={`mt-2 text-sm ${darkMode ? 'text-green-300' : 'text-green-800'}`}>{en ? <>Bedrock <InlineMath math="f_0" /> · </> : <>基岩 <InlineMath math="f_0" /> · </>}<F0RangeMath latex={foundationGrade.mathRange} /></p> : <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{en ? 'Select a qualitative class to show the corrected BQ and f₀ range.' : '选择定性特征等级后显示修正 BQ 和 f₀ 区间。'}</p>}
-          </div>
-        ) : null}
+        {evaluation('bq-preview-basic-result', <><InlineMath math="\mathrm{BQ}" />{en ? ' evaluation result' : '评价结果'}</>, result ? result.basicBq : '—', gradeText(basicGrade), emptyGrade)}
+        {state.mode === 'underground' || state.mode === 'slope' ? evaluation('bq-preview-corrected-result', <><InlineMath math={String.raw`\left[\mathrm{BQ}\right]`} />{en ? ' evaluation result' : '评价结果'}</>, result ? result.engineeringBq : '—', gradeText(correctedGrade), emptyGrade) : null}
+        {state.mode === 'foundation' ? evaluation('bq-preview-corrected-result', <><InlineMath math={String.raw`\left[\mathrm{BQ}\right]`} />{en ? ' evaluation result' : '评价结果'}</>, foundationGrade ? foundationGrade.label[language] : '—', gradeText(foundationQuality ?? null), en ? 'Select a class from the qualitative table to show the class.' : '点选岩体基本质量等级后显示正式等级') : null}
       </div>
     </aside>
   )
 }
 
-function StepHeader({ darkMode, title, number, complete }: { darkMode: boolean; title: ReactNode; number: number; complete: boolean }) {
-  return <div className="mb-2 flex items-center justify-between gap-2"><h2 className={`text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{title}</h2><span className={`text-sm font-semibold ${complete ? 'text-blue-700 dark:text-blue-300' : mutedClass(darkMode)}`}>{complete ? '✓' : number}</span></div>
+function measuredFieldClass(darkMode: boolean, unit?: string) {
+  const pad = !unit ? '' : unit.length > 10 ? 'pr-28' : unit.length > 8 ? 'pr-24' : unit.length > 4 ? 'pr-14' : 'pr-10'
+  return `w-full rounded-lg border px-3 py-2 ${pad} text-sm outline-none focus:ring-2 focus:ring-blue-500/30 ${darkMode ? 'border-gray-500 bg-gray-700 text-gray-100' : 'border-gray-300 bg-white text-gray-900'}`
 }
 
-function CoefficientInput({ darkMode, language, symbol, value, min, max, validationMin = min, validationMax = max, onChange }: { darkMode: boolean; language: 'zh' | 'en'; symbol: string; value: number | null; min: number; max: number; validationMin?: number; validationMax?: number; onChange: (value: number | null) => void }) {
+function MeasuredNumberField({
+  darkMode,
+  language,
+  name,
+  symbol,
+  unit,
+  value,
+  min,
+  max,
+  step = 'any',
+  ariaLabel,
+  inputId,
+  onChange,
+}: {
+  darkMode: boolean
+  language: 'zh' | 'en'
+  name: ReactNode
+  symbol?: string
+  unit?: string
+  value: number | string | null
+  min?: number
+  max?: number
+  step?: number | 'any'
+  ariaLabel: string
+  inputId?: string
+  onChange: (raw: string) => void
+}) {
   const en = language === 'en'
-  const mathSymbol = symbol === 'K1' ? 'K_1' : symbol === 'K2' ? 'K_2' : symbol === 'K3' ? 'K_3' : symbol === 'K4' ? 'K_4' : symbol === 'lambda' ? '\\lambda' : 'K_5'
+  return (
+    <label className="block space-y-1">
+      <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+        {name}
+        {symbol ? <>{' '}<InlineMath math={symbol} /></> : null}
+      </span>
+      <div className="relative">
+        <input
+          id={inputId}
+          aria-label={ariaLabel}
+          type="number"
+          min={min}
+          max={max}
+          step={step}
+          placeholder={en ? 'Enter value' : '请输入数值'}
+          value={value ?? ''}
+          onChange={(event) => onChange(event.target.value)}
+          onWheel={preventNumberWheel}
+          onKeyDown={preventNumberArrow}
+          className={measuredFieldClass(darkMode, unit)}
+        />
+        {unit ? <span className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 whitespace-nowrap text-xs ${mutedClass(darkMode)}`}>{unit}</span> : null}
+      </div>
+    </label>
+  )
+}
+
+function formatCoefficientScore(value: number | null | undefined) {
+  if (value == null) return '—'
+  return String(Number(value.toFixed(3)))
+}
+
+function CoefficientSectionHeader({
+  darkMode,
+  language,
+  title,
+  symbol,
+  score,
+  editing,
+  canEdit,
+  value,
+  validationMin,
+  validationMax,
+  onStartEdit,
+  onChange,
+  onEndEdit,
+}: {
+  darkMode: boolean
+  language: 'zh' | 'en'
+  title: ReactNode
+  symbol: string
+  score: number | null | undefined
+  editing: boolean
+  canEdit: boolean
+  value: number | null
+  validationMin: number
+  validationMax: number
+  onStartEdit: () => void
+  onChange: (value: number | null) => void
+  onEndEdit: () => void
+}) {
+  const en = language === 'en'
   const invalid = value != null && (value < validationMin || value > validationMax)
-  return <div className="mt-3 flex flex-wrap items-end gap-2"><label className="min-w-[170px] flex-1"><span className={`mb-1 block text-sm font-medium ${mutedClass(darkMode)}`}>{en ? <>Adopted <InlineMath math={mathSymbol} /> within range (optional)</> : <><InlineMath math={mathSymbol} /> 区间内采用值（可选）</>}</span><input aria-label={en ? `${symbol} adopted value` : `${symbol} 输入值`} placeholder={en ? 'e.g. 0.20' : '如：0.20'} type="number" min={min} max={max} step="0.01" value={value ?? ''} onChange={(event) => onChange(event.target.value === '' ? null : Number(event.target.value))} onWheel={preventNumberWheel} onKeyDown={preventNumberArrow} className={numberFieldClass(darkMode)} />{invalid ? <span className="mt-1 block text-xs text-red-600 dark:text-red-300">{en ? `Value must be between ${validationMin} and ${validationMax}.` : `异常值：请输入 ${validationMin}～${validationMax} 范围内的 ${symbol}。`}</span> : null}</label></div>
+  const editHint = en ? 'Click to edit' : '点击修改'
+  const invalidText = en
+    ? `Value must be between ${validationMin} and ${validationMax}.`
+    : `异常值：请输入 ${validationMin}～${validationMax} 范围内的 ${symbol}。`
+  const scoreClass = `text-sm font-semibold tabular-nums ${score != null ? (darkMode ? 'text-blue-200' : 'text-blue-800') : mutedClass(darkMode)}`
+  const slotClass = 'relative h-8 w-24 shrink-0'
+  return (
+    <div className="mb-2 flex items-center justify-between gap-3">
+      <h2 className={`min-w-0 text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{title}</h2>
+      <div className={slotClass}>
+        {editing ? (
+          <input
+            aria-label={en ? `${symbol} adopted value` : `${symbol} 输入值`}
+            autoFocus
+            type="number"
+            step="0.01"
+            value={value ?? ''}
+            onChange={(event) => onChange(event.target.value === '' ? null : Number(event.target.value))}
+            onBlur={onEndEdit}
+            onWheel={preventNumberWheel}
+            onKeyDown={(event) => {
+              preventNumberArrow(event)
+              if (event.key === 'Enter') event.currentTarget.blur()
+            }}
+            placeholder={en ? 'Enter value' : '请输入数值'}
+            className={`absolute inset-0 h-8 w-24 rounded-lg border px-2 text-right text-sm tabular-nums outline-none focus:ring-2 focus:ring-blue-500/30 ${darkMode ? 'border-gray-500 bg-gray-700 text-gray-100' : 'border-gray-300 bg-white text-gray-900'}`}
+          />
+        ) : canEdit ? (
+          <button
+            type="button"
+            aria-label={en ? `Edit ${symbol}` : `修改 ${symbol}`}
+            title={editHint}
+            onClick={onStartEdit}
+            className="group absolute inset-0 flex items-center justify-end pr-2.5"
+          >
+            <span data-testid={`bq-${symbol.toLowerCase()}-score`} className={scoreClass}>{formatCoefficientScore(score)}</span>
+            <span className={`absolute right-0 top-0 text-[11px] font-semibold leading-none ${invalid ? 'text-red-600 dark:text-red-300' : (darkMode ? 'text-blue-300' : 'text-blue-700')}`} aria-hidden>*</span>
+            <span className={`pointer-events-none absolute bottom-full right-0 z-20 mb-1 hidden whitespace-nowrap rounded-md px-2 py-1 text-xs shadow-sm group-hover:block ${darkMode ? 'bg-gray-700 text-gray-100' : 'bg-gray-900 text-white'}`}>{editHint}</span>
+          </button>
+        ) : (
+          <div data-testid={`bq-${symbol.toLowerCase()}-score`} className={`flex h-full w-full items-center justify-end ${scoreClass}`}>{formatCoefficientScore(score)}</div>
+        )}
+        {invalid ? <p role="alert" className={`pointer-events-none absolute right-0 top-full z-20 mt-1 w-max max-w-[16rem] rounded-md px-2 py-1 text-left text-xs shadow-sm ${darkMode ? 'bg-gray-800 text-red-300' : 'bg-white text-red-600 ring-1 ring-red-200'}`}>{invalidText}</p> : null}
+      </div>
+    </div>
+  )
 }
 
 export default function BqClassificationPage(props: BqProps) {
@@ -724,6 +925,7 @@ export default function BqClassificationPage(props: BqProps) {
   const en = language === 'en'
   const state = normalizeBqState(form)
   const [correctionStep, setCorrectionStep] = useState(state.mode === 'underground' ? Math.max(1, state.correctionStep ?? 1) : 0)
+  const [correctionOpen, setCorrectionOpen] = useState(state.mode !== 'basic')
   const [rcHelperOpen, setRcHelperOpen] = useState(false)
   const [kvHelperOpen, setKvHelperOpen] = useState(false)
   const [is50, setIs50] = useState('')
@@ -732,17 +934,18 @@ export default function BqClassificationPage(props: BqProps) {
   const [jv, setJv] = useState('')
   const [selectedJvBand, setSelectedJvBand] = useState<number | null>(null)
   const [attempted, setAttempted] = useState(false)
+  const [editingCoefficient, setEditingCoefficient] = useState<'K1' | 'K2' | 'K3' | 'lambda' | 'K4' | null>(null)
 
   const patch = (next: Partial<BqFormState>) => {
     const baseChanged = (state.mode === 'underground' || state.mode === 'slope') && ('rc' in next || 'kv' in next)
     const nextStep = baseChanged ? 4 : next.correctionStep
     onFormChange({ ...state, ...next, ...(baseChanged && state.mode === 'underground' ? { k1Value: null, k2Value: null, k3Value: null } : {}), ...(baseChanged && state.mode === 'slope' ? { k4Value: null } : {}), ...(nextStep != null ? { correctionStep: nextStep } : {}) } as unknown as Record<string, unknown>)
-    if (baseChanged) setCorrectionStep(1)
+    if (baseChanged) {
+      setCorrectionStep(1)
+      setEditingCoefficient(null)
+    }
   }
-  const result = useMemo(() => {
-    if (state.rc == null || state.kv == null) return null
-    try { return calculateBq(state) } catch { return null }
-  }, [state])
+  const result = useMemo(() => tryCalculateBq(state), [state])
   const baseIssues = validateBqState({ ...state, mode: 'basic' }).filter((item) => item.severity === 'error')
   const baseReady = state.rc != null && state.kv != null && baseIssues.length === 0
   const foundationGrade = resolveFoundationGrade(state)
@@ -754,13 +957,14 @@ export default function BqClassificationPage(props: BqProps) {
   const selectedSlopeWater = BQ_SLOPE_WATER_OPTIONS.find((item) => item.id === state.slopeWaterId)
   const selectedLambda = BQ_SLOPE_LAMBDA_OPTIONS.find((item) => item.id === state.slopeStructureTypeId)
   const baseGrade: BqGradeId = result ? gradeForBq(result.basicBq).id : 'V'
-  const basicGrade = result ? gradeForBq(result.basicBq) : null
+  const selectedWaterRange = selectedWater?.values.find((item) => item.grade === baseGrade)?.range
+  const selectedSlopeWaterRange = selectedSlopeWater?.values.find((item) => item.grade === baseGrade)?.range
+  const selectedStressRange = selectedStress?.values.find((item) => item.grade === baseGrade)?.range
   const groundwaterAssessment = assessGroundwaterK1(state.groundwaterPressureP, state.groundwaterInflowQ, baseGrade)
-  const slopeWaterAssessment = assessSlopeK4(state.slopeWaterHeadPw, state.slopeHeightH, baseGrade)
-  const waterRows = BQ_UNDERGROUND_WATER_OPTIONS.map((item) => ({ id: item.id, label: en ? item.label.en : item.label.zh, range: rangeText(item.values.find((value) => value.grade === baseGrade)?.range ?? { min: 0, max: 0 }), gradeRanges: Object.fromEntries(item.values.map((value) => [value.grade, rangeText(value.range)])) as Partial<Record<BqGradeId, string>>, note: item.id === 'none' ? (en ? 'No groundwater correction' : '不产生地下水修正') : undefined }))
-  const slopeWaterRows = BQ_SLOPE_WATER_OPTIONS.map((item) => ({ id: item.id, label: en ? item.label.en : item.label.zh, range: rangeText(item.values.find((value) => value.grade === baseGrade)?.range ?? { min: 0, max: 0 }).replace('–', '～'), gradeRanges: Object.fromEntries(item.values.map((value) => [value.grade, rangeText(value.range).replace('–', '～')])) as Partial<Record<BqGradeId, string>>, note: item.id === 'none' ? (en ? 'No slope groundwater correction' : '不产生边坡地下水修正') : undefined }))
+  const waterRows = BQ_UNDERGROUND_WATER_OPTIONS.map((item) => ({ id: item.id, label: en ? item.label.en : item.label.zh, labelNode: undergroundWaterLabel(item.id, en), range: rangeText(item.values.find((value) => value.grade === baseGrade)?.range ?? { min: 0, max: 0 }), gradeRanges: Object.fromEntries(item.values.map((value) => [value.grade, rangeText(value.range)])) as Partial<Record<BqGradeId, string>>, note: item.id === 'none' ? (en ? 'No groundwater correction' : '不产生地下水修正') : undefined }))
+  const slopeWaterRows = BQ_SLOPE_WATER_OPTIONS.map((item) => ({ id: item.id, label: en ? item.label.en : item.label.zh, range: rangeText(item.values.find((value) => value.grade === baseGrade)?.range ?? { min: 0, max: 0 }), gradeRanges: Object.fromEntries(item.values.map((value) => [value.grade, rangeText(value.range)])) as Partial<Record<BqGradeId, string>>, note: item.id === 'none' ? (en ? 'No slope groundwater correction' : '不产生边坡地下水修正') : undefined }))
   const lambdaRows = BQ_SLOPE_LAMBDA_OPTIONS.filter((item) => item.id !== 'none').map((item) => ({ id: item.id, label: en ? item.label.en : item.label.zh, range: lambdaRangeText(item.range) }))
-  const stressRows = BQ_UNDERGROUND_STRESS_OPTIONS.map((item) => ({ id: item.id, label: en ? item.label.en : item.label.zh, range: rangeText(item.values.find((value) => value.grade === baseGrade)?.range ?? { min: 0, max: 0 }), gradeRanges: Object.fromEntries(item.values.map((value) => [value.grade, rangeText(value.range)])) as Partial<Record<BqGradeId, string>> }))
+  const stressRows = BQ_UNDERGROUND_STRESS_OPTIONS.map((item) => ({ id: item.id, label: en ? item.label.en : item.label.zh, labelNode: undergroundStressLabel(item.id, en), range: rangeText(item.values.find((value) => value.grade === baseGrade)?.range ?? { min: 0, max: 0 }), gradeRanges: Object.fromEntries(item.values.map((value) => [value.grade, rangeText(value.range)])) as Partial<Record<BqGradeId, string>> }))
   const orientationRows = BQ_UNDERGROUND_ORIENTATION_OPTIONS.map((item) => ({ id: item.id, label: en ? item.label.en : item.label.zh, range: rangeText(item.range), note: item.note ? (en ? item.note.en : item.note.zh) : undefined }))
   const rcEstimate = is50.trim() === '' ? null : estimateRcFromIs50(Number(is50))
   const kvVelocity = vpm.trim() === '' || vpr.trim() === '' ? null : estimateKvFromVelocities(Number(vpm), Number(vpr))
@@ -778,10 +982,13 @@ export default function BqClassificationPage(props: BqProps) {
   }
   const updateGroundwaterInput = (field: 'groundwaterPressureP' | 'groundwaterInflowQ', value: string) => {
     const parsed = value === '' ? null : Number(value)
-    const next = { ...state, [field]: parsed }
+    const exclusive = field === 'groundwaterPressureP'
+      ? { groundwaterPressureP: parsed, ...(parsed != null ? { groundwaterInflowQ: null as number | null } : {}) }
+      : { groundwaterInflowQ: parsed, ...(parsed != null ? { groundwaterPressureP: null as number | null } : {}) }
+    const next = { ...state, ...exclusive }
     const assessment = assessGroundwaterK1(next.groundwaterPressureP, next.groundwaterInflowQ, baseGrade)
     const assessedRange = assessment ? BQ_UNDERGROUND_WATER_OPTIONS.find((item) => item.id === assessment.optionId)?.values.find((item) => item.grade === baseGrade)?.range : null
-    patch({ [field]: parsed, ...(assessment ? { undergroundWaterId: assessment.optionId, k1Value: assessedRange?.max ?? 0 } : {}) })
+    patch({ ...exclusive, ...(assessment ? { undergroundWaterId: assessment.optionId, k1Value: assessedRange?.max ?? 0 } : {}) })
   }
   const midpointForSlopeWater = (id: string) => {
     const option = BQ_SLOPE_WATER_OPTIONS.find((item) => item.id === id)
@@ -835,8 +1042,8 @@ export default function BqClassificationPage(props: BqProps) {
   }
 
   const completeBasic = () => { if (!baseReady) { setAttempted(true); return }; setAttempted(false); onComplete() }
-  const enterCorrection = () => { if (!baseReady) { setAttempted(true); return }; patch({ mode: 'underground', correctionStep: 4 }); setCorrectionStep(4) }
-  const completeCorrection = () => { if (!baseReady || !correctionReady) { setAttempted(true); return }; setAttempted(false); onComplete() }
+  const enterCorrection = () => { if (!baseReady) { setAttempted(true); return }; setCorrectionOpen(true) }
+  const completeCorrection = () => { if (!baseReady || state.mode === 'basic' || !correctionReady) { setAttempted(true); return }; setAttempted(false); onComplete() }
 
   return (
     <div className={`flex min-h-0 min-w-0 flex-1 flex-col ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -850,15 +1057,13 @@ export default function BqClassificationPage(props: BqProps) {
             <p className={`text-sm leading-relaxed mb-4 ${mutedClass(darkMode)}`}>
               {en ? (
                 <>
-                  The 2014 revision of the Ministry of Water Resources engineering rock-mass classification standard applies to rock-mass projects across sectors and project types.
                   Basic rock-mass quality is evaluated using the saturated uniaxial compressive strength of intact rock <InlineMath math="R_c" /> and the rock-mass integrity index <InlineMath math="K_v" />. <InlineMath math="R_c" /> represents the strength of the intact rock material, while <InlineMath math="K_v" /> reflects the influence of discontinuities such as joints and fractures on rock-mass integrity.
-                  The standard calculates the basic quality index with <InlineMath math="\mathrm{BQ}=100+3R_c+250K_v" />; representative measured data from the same engineering zone should be used whenever available. Underground-engineering evaluation may also account for groundwater, discontinuity orientation, and the initial stress condition.
+                  The basic quality index is <InlineMath math="\mathrm{BQ}=100+3R_c+250K_v" />; representative measured data from the same engineering zone should be used whenever available.
                 </>
               ) : (
                 <>
-                  水利部 2014 年修订的《工程岩体分级标准》适用于各行业、各种类型的岩体工程。
                   岩体基本质量评价以完整岩石饱和单轴抗压强度 <InlineMath math="R_c" /> 和岩体完整性指数 <InlineMath math="K_v" /> 为主要评价指标。<InlineMath math="R_c" /> 反映完整岩石材料的强度特征，<InlineMath math="K_v" /> 综合反映节理、裂隙等不连续面对岩体完整性的影响。
-                  依据标准采用 <InlineMath math="\mathrm{BQ}=100+3R_c+250K_v" /> 计算岩体基本质量指标；<InlineMath math="R_c" /> 和 <InlineMath math="K_v" /> 应优先采用同一工程分区内具有代表性的实测资料。地下工程评价还可根据地下水、主要结构面产状和初始应力状态进行修正。
+                  依据标准采用 <InlineMath math="\mathrm{BQ}=100+3R_c+250K_v" /> 计算岩体基本质量指标；<InlineMath math="R_c" /> 和 <InlineMath math="K_v" /> 应优先采用同一工程分区内具有代表性的实测资料。
                 </>
               )}
             </p>
@@ -876,15 +1081,13 @@ export default function BqClassificationPage(props: BqProps) {
             <div className="mb-2 flex items-center gap-2"><h2 data-testid="bq-basic-quality-title" className={`text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Basic rock-mass quality' : '岩体基本质量'}</h2></div>
             <p className={`mb-4 text-sm leading-relaxed ${mutedClass(darkMode)}`}>{en ? <>Use representative measured <InlineMath math="R_c" /> and <InlineMath math="K_v" /> from the same engineering zone whenever available. If direct test results are unavailable, use one of the auxiliary methods below to obtain an estimate, review its applicability against the geological data, and apply it only after confirmation.</> : <>有条件时应优先采用同一工程分区内具有代表性的实测 <InlineMath math="R_c" /> 和 <InlineMath math="K_v" />。缺少直接试验成果时，可使用下方辅助方法进行估算；估算结果应结合工程地质资料复核，确认后方可应用。</>}</p>
             <div data-field="rc" className={`border-t pt-4 ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-              <label htmlFor="bq-rc" className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{en ? <>Saturated UCS <InlineMath math="R_c" /></> : <>饱和岩石单轴抗压强度 <InlineMath math="R_c" /></>} <span className={mutedClass(darkMode)}>（MPa）</span></label>
-              <input id="bq-rc" aria-label={en ? 'Rc input (MPa)' : 'Rc 输入值（MPa）'} placeholder={en ? 'e.g. 80' : '如：80'} type="number" min="0" step="any" value={state.rc ?? ''} onChange={(event) => patch({ rc: event.target.value === '' ? null : Number(event.target.value) })} onWheel={preventNumberWheel} onKeyDown={preventNumberArrow} className={`mt-2 ${numberFieldClass(darkMode)}`} />
+              <MeasuredNumberField darkMode={darkMode} language={language} inputId="bq-rc" name={en ? 'Saturated UCS' : '饱和岩石单轴抗压强度'} symbol="R_c" unit="MPa" ariaLabel={en ? 'Rc input (MPa)' : 'Rc 输入值（MPa）'} value={state.rc} min={0} onChange={(raw) => patch({ rc: raw === '' ? null : Number(raw) })} />
               <p className={`mt-2 text-sm leading-relaxed ${mutedClass(darkMode)}`}>{en ? <>Use the saturated uniaxial compressive strength of intact rock. If only a point-load test is available, convert <InlineMath math="I_s(50)" /> with the helper below.</> : <>输入完整岩石在饱和状态下的单轴抗压强度。只有点荷载试验结果时，可用下方 <InlineMath math="I_s(50)" /> 换算辅助计算。</>}</p>
               <HelperToggle darkMode={darkMode} open={rcHelperOpen} onToggle={() => setRcHelperOpen((open) => !open)} label={en ? 'Open point-load estimate' : '展开点荷载换算'} />
               {rcHelperOpen ? <RcHelper darkMode={darkMode} language={language} value={is50} onValueChange={setIs50} estimate={rcEstimate} onApply={() => rcEstimate != null && patch({ rc: Number(rcEstimate.toFixed(2)) })} /> : null}
             </div>
             <div data-field="kv" className={`mt-4 border-t pt-4 ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-              <label htmlFor="bq-kv" className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{en ? <>Rock-mass integrity index <InlineMath math="K_v" /> <span className={mutedClass(darkMode)}>（dimensionless, 0–1）</span></> : <>岩体完整性指数 <InlineMath math="K_v" /> <span className={mutedClass(darkMode)}>（无量纲，0–1）</span></>}</label>
-              <input id="bq-kv" aria-label={en ? 'Kv input' : 'Kv 输入值'} placeholder={en ? 'e.g. 0.65' : '如：0.65'} type="number" min="0" max="1" step="0.01" value={state.kv ?? ''} onChange={(event) => updateDirectKv(event.target.value)} onWheel={preventNumberWheel} onKeyDown={preventNumberArrow} className={`mt-2 ${numberFieldClass(darkMode)}`} />
+              <MeasuredNumberField darkMode={darkMode} language={language} inputId="bq-kv" name={en ? 'Rock-mass integrity index' : '岩体完整性指数'} symbol="K_v" ariaLabel={en ? 'Kv input' : 'Kv 输入值'} value={state.kv} min={0} max={1} step={0.01} onChange={updateDirectKv} />
               <p className={`mt-2 text-sm leading-relaxed ${mutedClass(darkMode)}`}>{en ? <>Enter the tested integrity index after joints and fractures are considered. If <InlineMath math="K_v" /> is unavailable, use the wave-velocity method or the <InlineMath math="J_v" /> table below.</> : <>输入考虑节理、裂隙后的岩体完整性指数。没有实测 <InlineMath math="K_v" /> 时，可用波速法或下方 <InlineMath math="J_v" /> 对照表估算。</>}</p>
               <HelperToggle darkMode={darkMode} open={kvHelperOpen} onToggle={() => setKvHelperOpen((open) => !open)} label={en ? 'Open velocity / Jv helpers' : '展开波速法 / Jv 对照'} />
               {kvHelperOpen ? <KvHelper darkMode={darkMode} language={language} vpm={vpm} vpr={vpr} jv={jv} selectedJvBand={selectedJvBand} onVpmChange={(value) => updateVelocityInput(setVpm, value)} onVprChange={(value) => updateVelocityInput(setVpr, value)} onJvChange={updateJvInput} onJvBandSelect={selectJvBand} velocityEstimate={kvVelocity} jvEstimate={kvJv} onApplyVelocity={applyVelocityKv} onApplyJv={applyJvKv} /> : null}
@@ -894,51 +1097,191 @@ export default function BqClassificationPage(props: BqProps) {
             </div>
           </section>
 
-          <BqResultSection darkMode={darkMode} language={language} result={result} baseReady={baseReady} mode={state.mode} onEnterCorrection={enterCorrection} />
+          <BqResultSection darkMode={darkMode} language={language} result={result} baseReady={baseReady} mode={state.mode} enteredCorrection={correctionOpen} onEnterCorrection={enterCorrection} />
 
-            {state.mode !== 'basic' ? <>
-            {state.mode === 'underground' ? <section data-testid="bq-correction-intro" className={sectionClass(darkMode)}><h2 className={`mb-3 text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Corrected BQ' : '修正 BQ'}</h2><p className={`text-sm leading-relaxed ${mutedClass(darkMode)}`}>{en ? 'For detailed classification of rock masses in underground engineering, the basic quality index BQ shall be corrected for groundwater, discontinuity orientation, and initial stress.' : '地下工程岩体详细定级时，基本质量指标 BQ 可根据地下水、主要结构面产状和初始应力状态进行修正。'}</p><FormulaFrame darkMode={darkMode}><div className={`text-center ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}><BlockMath math={String.raw`\left[\mathrm{BQ}\right]=\mathrm{BQ}-100\left(K_1+K_2+K_3\right)`} /></div></FormulaFrame></section> : null}
-            {state.mode === 'slope' ? <section data-testid="bq-slope-intro" className={sectionClass(darkMode)}><h2 className={`mb-3 text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Corrected BQ' : '修正 BQ'}</h2><p className={`text-sm leading-relaxed ${mutedClass(darkMode)}`}>{en ? <>For detailed classification of rock masses in slope engineering, the basic quality index <InlineMath math="\mathrm{BQ}" /> shall be corrected for groundwater and for the type, persistence and orientation of the main discontinuity relative to the slope face. The corrected index is <InlineMath math="\left[\mathrm{BQ}\right]=\mathrm{BQ}-100\left(K_4+\lambda K_5\right)" />, where <InlineMath math="K_5=F_1\times F_2\times F_3" />. <InlineMath math="K_4" /> is the groundwater-influence coefficient, <InlineMath math="\lambda" /> is the coefficient for main-discontinuity type and persistence, and <InlineMath math="K_5" /> is the orientation-influence coefficient.</> : <>边坡工程岩体详细定级时，应对地下水影响以及主要结构面的类型、延伸性及其产状与边坡临空面的空间组合关系进行修正。修正后的岩体质量指标按 <InlineMath math="\left[\mathrm{BQ}\right]=\mathrm{BQ}-100\left(K_4+\lambda K_5\right)" /> 计算，其中 <InlineMath math="K_5=F_1\times F_2\times F_3" />。<InlineMath math="K_4" /> 为地下水影响修正系数，<InlineMath math="\lambda" /> 为主要结构面类型及其延伸性修正系数，<InlineMath math="K_5" /> 为主要结构面产状影响修正系数。</>}</p><FormulaFrame darkMode={darkMode}><div className={`space-y-1 text-center ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}><BlockMath math={String.raw`\left[\mathrm{BQ}\right]=\mathrm{BQ}-100\left(K_4+\lambda K_5\right)`} /><BlockMath math={String.raw`K_5=F_1\times F_2\times F_3`} /></div></FormulaFrame></section> : null}
-            {state.mode === 'foundation' ? <section data-testid="bq-foundation-intro" className={sectionClass(darkMode)}><h2 className={`mb-3 text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Foundation engineering rock-mass class' : '地基工程岩体级别'}</h2><p className={`text-sm leading-relaxed ${mutedClass(darkMode)}`}>{en ? <>Rock foundation engineering covers industrial and civil buildings, highway and railway bridges, and port works founded on rock. Design is governed by bearing capacity. Because basic rock-mass quality already combines intact-rock strength and integrity—the two main controls on bedrock bearing capacity—the foundation class is taken directly from Table 4.1.1. Select the class from the qualitative characteristics; that selection is the corrected BQ (engineering class) and yields the corresponding basic bedrock bearing capacity <InlineMath math="f_0" /> range in Table 5.4.2.</> : <>岩石地基工程主要指以岩石作为承载层的工业与民用建筑、公路与铁路桥涵以及港口工程地基。设计中最关心的是地基承载能力。岩体基本质量已综合反映岩石坚硬程度和岩体完整程度，而这正是影响基岩承载力的主要因素，因此地基工程岩体应按表 4.1.1 的岩体基本质量级别定级，不再另作公式修正。请根据岩体基本质量的定性特征选择级别；选定结果即为本点的修正 BQ（工程岩体级别），并给出表 5.4.2 对应的基岩承载力基本值 <InlineMath math="f_0" /> 区间。</>}</p></section> : null}
-            <section className={sectionClass(darkMode)}>
-              <h2 className={`mb-3 text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Correction engineering type' : '修正工程类型'}</h2>
-              <CenteredSelect
-                darkMode={darkMode}
-                value={state.mode}
-                ariaLabel={en ? 'Correction engineering type' : '修正工程类型'}
-                options={[
-                  { id: 'underground', label: en ? 'Underground engineering rock mass' : '地下工程岩体' },
-                  { id: 'foundation', label: en ? 'Foundation' : '地基' },
-                  { id: 'slope', label: en ? 'Slope engineering' : '边坡工程' },
-                ]}
-                onChange={(mode) => {
-                  if (mode === 'underground' || mode === 'foundation' || mode === 'slope') {
-                    patch({ mode, correctionStep: 4, foundationF0: null })
-                    setCorrectionStep(4)
-                  }
-                }}
-              />
+            {correctionOpen || state.mode !== 'basic' ? <>
+            <section data-testid="bq-correction-scenario" className={sectionClass(darkMode)}>
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                <h2 className={`text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Corrected BQ' : '修正 BQ'}</h2>
+                <div className="min-w-[220px] max-w-sm flex-1">
+                  <CenteredSelect
+                    darkMode={darkMode}
+                    value={state.mode === 'basic' ? '' : state.mode}
+                    ariaLabel={en ? 'Correction engineering type' : '修正工程类型'}
+                    placeholder={en ? 'Select engineering type' : '请选择修正工程类型'}
+                    options={correctionTypeOptions(en)}
+                    onChange={(mode) => {
+                      if (mode === 'underground' || mode === 'foundation' || mode === 'slope') {
+                        patch({ mode, correctionStep: 4, foundationF0: null })
+                        setCorrectionStep(4)
+                        setEditingCoefficient(null)
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+              {state.mode === 'basic' ? <p className={`mt-3 text-sm ${mutedClass(darkMode)}`}>{en ? 'Select an engineering type to show the corresponding introduction and formula.' : '请先选择修正工程类型，再显示对应介绍与公式。'}</p> : null}
+              {state.mode === 'underground' ? <div data-testid="bq-correction-intro" className="mt-4 space-y-3"><p className={`text-sm leading-relaxed ${mutedClass(darkMode)}`}>{en ? 'For detailed classification of rock masses in underground engineering, the basic quality index BQ shall be corrected for groundwater, discontinuity orientation, and initial stress.' : '地下工程岩体详细定级时，基本质量指标 BQ 可根据地下水、主要结构面产状和初始应力状态进行修正。'}</p><FormulaFrame darkMode={darkMode}><div className={`text-center ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}><BlockMath math={String.raw`\left[\mathrm{BQ}\right]=\mathrm{BQ}-100\left(K_1+K_2+K_3\right)`} /></div></FormulaFrame></div> : null}
+              {state.mode === 'slope' ? <div data-testid="bq-slope-intro" className="mt-4 space-y-3"><p className={`text-sm leading-relaxed ${mutedClass(darkMode)}`}>{en ? <>For detailed classification of rock masses in slope engineering, the basic quality index shall be corrected for groundwater and for the type, persistence and orientation of the main discontinuity relative to the slope face. <InlineMath math="K_4" /> is the groundwater-influence coefficient, <InlineMath math="\lambda" /> is the coefficient for main-discontinuity type and persistence, and <InlineMath math="K_5" /> is the orientation-influence coefficient.</> : <>边坡工程岩体详细定级时，应对地下水影响以及主要结构面的类型、延伸性及其产状与边坡临空面的空间组合关系进行修正。<InlineMath math="K_4" /> 为地下水影响修正系数，<InlineMath math="\lambda" /> 为主要结构面类型及其延伸性修正系数，<InlineMath math="K_5" /> 为主要结构面产状影响修正系数。</>}</p><FormulaFrame darkMode={darkMode}><div className={`space-y-1 text-center ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}><BlockMath math={String.raw`\left[\mathrm{BQ}\right]=\mathrm{BQ}-100\left(K_4+\lambda K_5\right)`} /><BlockMath math={String.raw`K_5=F_1\times F_2\times F_3`} /></div></FormulaFrame></div> : null}
+              {state.mode === 'foundation' ? <div data-testid="bq-foundation-intro" className="mt-4 space-y-3">
+                <p className={`text-sm leading-relaxed ${mutedClass(darkMode)}`}>{en ? <>Rock foundation engineering uses rock as the bearing stratum; design is governed by bearing capacity. There is no correction formula. Judge the class from the qualitative characteristics of rock-mass basic quality; the corresponding basic bedrock bearing capacity <InlineMath math="f_0" /> is given for reference only.</> : <>岩石地基工程以岩石作为承载层，设计中最关心的是地基承载能力。本项不使用修正公式：请根据岩体基本质量的定性特征判定等级；判定后给出对应的基岩承载力基本值 <InlineMath math="f_0" />，仅供参考。</>}</p>
+                <div data-testid="bq-foundation-correction">
+                  <BqGradeTable darkMode={darkMode} language={language} testId="bq-foundation-table" caption={en ? 'Judge the class from qualitative characteristics of rock-mass basic quality' : '按岩体基本质量的定性特征判定等级'} activeGrade={null} selectedGrade={foundationGrade?.id ?? null} onSelect={(id) => { patch({ foundationGradeId: id, foundationF0: null, correctionStep: 4 }); setCorrectionStep(4) }} />
+                  <BqFoundationResult darkMode={darkMode} language={language} grade={foundationGrade} />
+                </div>
+              </div> : null}
             </section>
-            {state.mode === 'foundation' ? <section data-testid="bq-foundation-correction" className={sectionClass(darkMode)}>
-              <h2 className={`mb-3 text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Qualitative characteristics of rock-mass basic quality' : '岩体基本质量的定性特征'}</h2>
-              <p className={`text-sm leading-relaxed ${mutedClass(darkMode)}`}>{en ? <>Select the class that matches the observed rock hardness and integrity. The current basic BQ corresponds to {basicGrade ? basicGrade.label.en : '—' } and may be used as a reference when qualitative and quantitative classes differ.</> : <>请按岩石坚硬程度与岩体完整程度选择级别。当前基本 BQ 对应 {basicGrade ? basicGrade.label.zh : '—'}，当定性特征与定量指标不一致时，应结合工程地质情况综合确认。</>}</p>
-              <BqGradeTable darkMode={darkMode} language={language} activeGrade={basicGrade?.id ?? null} selectedGrade={foundationGrade?.id ?? null} onSelect={(id) => { patch({ foundationGradeId: id, foundationF0: null, correctionStep: 4 }); setCorrectionStep(4) }} testId="bq-foundation-table" caption={en ? 'Click a row to adopt the engineering class' : '点击行选定工程岩体级别'} />
-              <BqFoundationResult darkMode={darkMode} language={language} grade={foundationGrade} />
-            </section> : null}
             {state.mode === 'underground' ? <>
-              <section className={sectionClass(darkMode)}><StepHeader darkMode={darkMode} title={<><InlineMath math="K_1" /> · {en ? 'Groundwater influence' : '地下水影响'}</>} number={1} complete={correctionStep >= 2} /><p className={`text-sm leading-relaxed ${mutedClass(darkMode)}`}>{en ? 'Select the groundwater condition or enter p/Q. A selected condition adopts the upper bound of its K1 range; p/Q input selects the applicable condition.' : <>按地下水出水状态选择 <InlineMath math="K_1" />，或输入 <InlineMath math="p" />、<InlineMath math="Q" /> 自动判断；选择状态取当前等级区间最大值，输入值按判断档位取区间最大值。</>}</p><div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2"><label className="block space-y-1"><span className={`text-sm font-medium ${mutedClass(darkMode)}`}>{en ? 'p (fissure water pressure, MPa)' : 'p（地下工程围岩裂隙水压，MPa）'}</span><input aria-label={en ? 'p (fissure water pressure, MPa)' : 'p（地下工程围岩裂隙水压，MPa）'} type="number" min="0" step="any" value={state.groundwaterPressureP ?? ''} onChange={(event) => updateGroundwaterInput('groundwaterPressureP', event.target.value)} onWheel={preventNumberWheel} onKeyDown={preventNumberArrow} className={numberFieldClass(darkMode)} /></label><label className="block space-y-1"><span className={`text-sm font-medium ${mutedClass(darkMode)}`}>{en ? 'Q (inflow per 10 m, L/min·10m)' : 'Q（每10m洞长出水量，L/min·10m）'}</span><input aria-label={en ? 'Q (inflow per 10 m, L/min·10m)' : 'Q（每10m洞长出水量，L/min·10m）'} type="number" min="0" step="any" value={state.groundwaterInflowQ ?? ''} onChange={(event) => updateGroundwaterInput('groundwaterInflowQ', event.target.value)} onWheel={preventNumberWheel} onKeyDown={preventNumberArrow} className={numberFieldClass(darkMode)} /></label></div>{groundwaterAssessment ? <p data-testid="bq-k1-assessment" className={`mt-2 text-sm ${mutedClass(darkMode)}`}>{en ? `Assessed condition: ${BQ_UNDERGROUND_WATER_OPTIONS.find((item) => item.id === groundwaterAssessment.optionId)?.label.en ?? ''}; default K1 = ${groundwaterAssessment.value.toFixed(3)}` : <>判断结果：{BQ_UNDERGROUND_WATER_OPTIONS.find((item) => item.id === groundwaterAssessment.optionId)?.label.zh ?? ''}；默认 <InlineMath math="K_1" /> = {groundwaterAssessment.value.toFixed(3)}</>}</p> : null}<BqTable testId="bq-k1-table" rowHeader={en ? 'Groundwater outflow condition' : '地下水出水状态'} darkMode={darkMode} language={language} title={en ? <>Groundwater condition · <InlineMath math="K_1" /> · BQ grade ranges</> : <>地下水出水状态与 <InlineMath math="K_1" /> 修正系数（BQ等级）</>} rows={waterRows} activeGrade={baseGrade} selectedId={state.undergroundWaterId} onSelect={(id) => { patch({ undergroundWaterId: id, groundwaterPressureP: null, groundwaterInflowQ: null, k1Value: midpointForWater(id), correctionStep: 4 }); setCorrectionStep(4) }} />{selectedWater ? <CoefficientInput darkMode={darkMode} language={language} symbol="K1" min={0} max={1} value={state.k1Value} onChange={(value) => patch({ k1Value: value })} /> : null}</section>
-              <section className={sectionClass(darkMode)}><StepHeader darkMode={darkMode} title={<><InlineMath math="K_2" /> · {en ? 'Major discontinuity orientation' : '主要结构面产状'}</>} number={2} complete={correctionStep >= 3} /><p className={`text-sm leading-relaxed ${mutedClass(darkMode)}`}>{en ? 'Select the controlling discontinuity orientation relationship or enter a tested K2 value. Empty input is treated as 0.' : <>可点击表格选择 <InlineMath math="K_2" /> 区间最大值，也可输入测试值；未输入按 0 处理，异常值即时提示。</>}</p>{selectedOrientation ? <CoefficientInput darkMode={darkMode} language={language} symbol="K2" min={0} max={1} validationMin={selectedOrientation.range.min} validationMax={selectedOrientation.range.max} value={state.k2Value} onChange={(value) => patch({ k2Value: value })} /> : null}<BqOrientationTable darkMode={darkMode} language={language} rows={orientationRows.filter((row) => row.id !== 'none')} selectedId={state.undergroundOrientationId} onSelect={(id) => { const option = BQ_UNDERGROUND_ORIENTATION_OPTIONS.find((item) => item.id === id); patch({ undergroundOrientationId: id, k2Value: option ? option.range.max : 0, correctionStep: Math.max(correctionStep, 2) }); setCorrectionStep(Math.max(correctionStep, 2)) }} /></section>
-              <section className={sectionClass(darkMode)}><StepHeader darkMode={darkMode} title={<><InlineMath math="K_3" /> · {en ? 'Initial stress condition' : '初始应力状态'}</>} number={3} complete={correctionStep >= 4} /><p className={`text-sm leading-relaxed ${mutedClass(darkMode)}`}>{en ? <>Select the initial stress ratio condition <InlineMath math="R_c/\sigma_{\max}" /> or enter a tested ratio. K3 defaults to the lower bound of the selected range; empty input is treated as 0.</> : <>输入围岩强度应力比 <InlineMath math="R_c/\sigma_{\max}" /> 作为记录并自动选择档位；K3 默认取所选区间最小值，也可在区间内修改，未输入按 0 处理。</>}</p><label className="mt-3 block space-y-1"><span className={`text-sm font-medium ${mutedClass(darkMode)}`}>{en ? 'Rock strength-stress ratio Rc/σmax' : '围岩强度应力比 Rc/σmax'}</span><input aria-label={en ? 'Rock strength-stress ratio Rc/σmax' : '围岩强度应力比 Rc/σmax'} type="number" min="0" step="any" value={state.undergroundStressRatio ?? ''} onChange={(event) => updateStressRatio(event.target.value)} onWheel={preventNumberWheel} onKeyDown={preventNumberArrow} className={numberFieldClass(darkMode)} /></label>{selectedStress ? <CoefficientInput darkMode={darkMode} language={language} symbol="K3" min={0} max={1.5} value={state.k3Value} onChange={(value) => patch({ k3Value: value })} /> : null}<BqTable testId="bq-k3-table" rowHeader={en ? 'Rock strength-stress ratio Rc/σmax' : '围岩强度应力比 Rc/σmax'} darkMode={darkMode} language={language} title={en ? <>Initial stress condition · <InlineMath math="K_3" /></> : <>初始应力状态与 <InlineMath math="K_3" /> 修正系数</>} rows={stressRows} activeGrade={baseGrade} selectedId={state.undergroundStressId} onSelect={(id) => { const option = BQ_UNDERGROUND_STRESS_OPTIONS.find((item) => item.id === id); const cell = option?.values.find((item) => item.grade === baseGrade)?.range; patch({ undergroundStressId: id, k3Value: cell ? cell.min : 0, undergroundStressRatio: null, correctionStep: Math.max(correctionStep, 3) }); setCorrectionStep(Math.max(correctionStep, 3)) }} /></section>
+              <section className={sectionClass(darkMode)}>
+                <CoefficientSectionHeader
+                  darkMode={darkMode}
+                  language={language}
+                  title={<><InlineMath math="K_1" /> · {en ? 'Groundwater influence' : '地下水影响'}</>}
+                  symbol="K1"
+                  score={result?.corrections.k1?.value ?? state.k1Value}
+                  editing={editingCoefficient === 'K1'}
+                  canEdit={Boolean(selectedWater && selectedWater.id !== 'none')}
+                  value={state.k1Value}
+                  validationMin={selectedWaterRange?.min ?? 0}
+                  validationMax={selectedWaterRange?.max ?? 1}
+                  onStartEdit={() => {
+                    if (state.k1Value == null) patch({ k1Value: selectedWaterRange?.max ?? result?.corrections.k1?.value ?? 0 })
+                    setEditingCoefficient('K1')
+                  }}
+                  onChange={(value) => patch({ k1Value: value })}
+                  onEndEdit={() => setEditingCoefficient(null)}
+                />
+                <p className={`text-sm leading-relaxed ${mutedClass(darkMode)}`}>{en ? <>This table gives the groundwater-influence coefficient <InlineMath math="K_1" /> by outflow condition and rock-mass basic quality class. Fissure water pressure <InlineMath math="p" /> or inflow per 10 m of tunnel <InlineMath math="Q" /> may be entered.</> : <>本表为地下水影响修正系数 <InlineMath math="K_1" />，按地下水出水状态及岩体基本质量等级给出。可输入围岩裂隙水压 <InlineMath math="p" /> 或每 10 m 洞长出水量 <InlineMath math="Q" />。</>}</p>
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-end">
+                  <MeasuredNumberField darkMode={darkMode} language={language} name={en ? 'Fissure water pressure' : '围岩裂隙水压'} symbol="p" unit="MPa" ariaLabel={en ? 'Fissure water pressure p' : '围岩裂隙水压 p'} value={state.groundwaterPressureP} min={0} onChange={(raw) => updateGroundwaterInput('groundwaterPressureP', raw)} />
+                  <div className={`flex items-center justify-center px-1 text-sm ${mutedClass(darkMode)} sm:h-10`}>{en ? 'or' : '或'}</div>
+                  <MeasuredNumberField darkMode={darkMode} language={language} name={en ? 'Inflow per 10 m of tunnel' : '每10m洞长出水量'} symbol="Q" unit="L/min·10m" ariaLabel={en ? 'Inflow per 10 m Q' : '每10m洞长出水量 Q'} value={state.groundwaterInflowQ} min={0} onChange={(raw) => updateGroundwaterInput('groundwaterInflowQ', raw)} />
+                </div>
+                {groundwaterAssessment ? <p data-testid="bq-k1-assessment" className={`mt-2 text-sm ${mutedClass(darkMode)}`}>{en ? `Assessed condition: ${BQ_UNDERGROUND_WATER_OPTIONS.find((item) => item.id === groundwaterAssessment.optionId)?.label.en ?? ''}; default K1 = ${groundwaterAssessment.value.toFixed(3)}` : <>判断结果：{BQ_UNDERGROUND_WATER_OPTIONS.find((item) => item.id === groundwaterAssessment.optionId)?.label.zh ?? ''}；默认 <InlineMath math="K_1" /> = {groundwaterAssessment.value.toFixed(3)}</>}</p> : null}
+                <BqTable testId="bq-k1-table" rowHeader={en ? 'Groundwater outflow condition' : '地下水出水状态'} darkMode={darkMode} language={language} title={en ? <>Groundwater condition · <InlineMath math="K_1" /></> : <>地下水出水状态与 <InlineMath math="K_1" /></>} rows={waterRows} activeGrade={baseGrade} selectedId={state.undergroundWaterId} onSelect={(id) => { patch({ undergroundWaterId: id, groundwaterPressureP: null, groundwaterInflowQ: null, k1Value: midpointForWater(id), correctionStep: 4 }); setCorrectionStep(4); setEditingCoefficient(null) }} />
+              </section>
+              <section className={sectionClass(darkMode)}>
+                <CoefficientSectionHeader
+                  darkMode={darkMode}
+                  language={language}
+                  title={<><InlineMath math="K_2" /> · {en ? 'Major discontinuity orientation' : '主要结构面产状'}</>}
+                  symbol="K2"
+                  score={result?.corrections.k2?.value ?? state.k2Value}
+                  editing={editingCoefficient === 'K2'}
+                  canEdit={Boolean(selectedOrientation && selectedOrientation.id !== 'none')}
+                  value={state.k2Value}
+                  validationMin={selectedOrientation?.range.min ?? 0}
+                  validationMax={selectedOrientation?.range.max ?? 1}
+                  onStartEdit={() => {
+                    if (state.k2Value == null && selectedOrientation) patch({ k2Value: selectedOrientation.range.max })
+                    setEditingCoefficient('K2')
+                  }}
+                  onChange={(value) => patch({ k2Value: value })}
+                  onEndEdit={() => setEditingCoefficient(null)}
+                />
+                <p className={`text-sm leading-relaxed ${mutedClass(darkMode)}`}>{en ? <>This table gives the major-discontinuity orientation coefficient <InlineMath math="K_2" />. Choose the combination of discontinuity orientation with the tunnel axis that matches the site condition.</> : <>本表为主要结构面产状影响修正系数 <InlineMath math="K_2" />。按结构面产状及其与洞轴线的组合关系，根据现场状态选择。</>}</p>
+                <BqOrientationTable darkMode={darkMode} language={language} rows={orientationRows} selectedId={state.undergroundOrientationId} onSelect={(id) => { const option = BQ_UNDERGROUND_ORIENTATION_OPTIONS.find((item) => item.id === id); patch({ undergroundOrientationId: id, k2Value: option ? option.range.max : 0, correctionStep: Math.max(correctionStep, 2) }); setCorrectionStep(Math.max(correctionStep, 2)); setEditingCoefficient(null) }} />
+              </section>
+              <section className={sectionClass(darkMode)}>
+                <CoefficientSectionHeader
+                  darkMode={darkMode}
+                  language={language}
+                  title={<><InlineMath math="K_3" /> · {en ? 'Initial stress condition' : '初始应力状态'}</>}
+                  symbol="K3"
+                  score={result?.corrections.k3?.value ?? state.k3Value}
+                  editing={editingCoefficient === 'K3'}
+                  canEdit={Boolean(selectedStress && selectedStress.id !== 'none_or_ratio_gt7')}
+                  value={state.k3Value}
+                  validationMin={selectedStressRange?.min ?? 0}
+                  validationMax={selectedStressRange?.max ?? 1.5}
+                  onStartEdit={() => {
+                    if (state.k3Value == null) patch({ k3Value: selectedStressRange?.min ?? result?.corrections.k3?.value ?? 0 })
+                    setEditingCoefficient('K3')
+                  }}
+                  onChange={(value) => patch({ k3Value: value })}
+                  onEndEdit={() => setEditingCoefficient(null)}
+                />
+                <p className={`text-sm leading-relaxed ${mutedClass(darkMode)}`}>{en ? <>This table gives the initial-stress coefficient <InlineMath math="K_3" /> by the rock strength-stress ratio and rock-mass basic quality class. The ratio <InlineMath math={String.raw`R_c/\sigma_{\max}`} /> may be entered.</> : <>本表为初始应力状态影响修正系数 <InlineMath math="K_3" />，按围岩强度应力比及岩体基本质量等级给出。可输入围岩强度应力比 <InlineMath math={String.raw`R_c/\sigma_{\max}`} />。</>}</p>
+                <div className="mt-3">
+                  <MeasuredNumberField darkMode={darkMode} language={language} name={en ? 'Rock strength-stress ratio' : '围岩强度应力比'} symbol={String.raw`R_c/\sigma_{\max}`} ariaLabel={en ? 'Rock strength-stress ratio Rc/σmax' : '围岩强度应力比 Rc/σmax'} value={state.undergroundStressRatio} min={0} onChange={updateStressRatio} />
+                </div>
+                <BqTable testId="bq-k3-table" rowHeader={en ? <>Rock strength-stress ratio <InlineMath math={String.raw`R_c/\sigma_{\max}`} /></> : <>围岩强度应力比 <InlineMath math={String.raw`R_c/\sigma_{\max}`} /></>} darkMode={darkMode} language={language} title={en ? <>Initial stress condition · <InlineMath math="K_3" /></> : <>初始应力状态与 <InlineMath math="K_3" /></>} rows={stressRows} activeGrade={baseGrade} selectedId={state.undergroundStressId} onSelect={(id) => { const option = BQ_UNDERGROUND_STRESS_OPTIONS.find((item) => item.id === id); const cell = option?.values.find((item) => item.grade === baseGrade)?.range; patch({ undergroundStressId: id, k3Value: cell ? cell.min : 0, undergroundStressRatio: null, correctionStep: Math.max(correctionStep, 3) }); setCorrectionStep(Math.max(correctionStep, 3)); setEditingCoefficient(null) }} />
+              </section>
               <BqCorrectedResult darkMode={darkMode} language={language} result={result} />
             </> : null}
             {state.mode === 'slope' ? <>
-              <section className={sectionClass(darkMode)}><StepHeader darkMode={darkMode} title={<><InlineMath math="\lambda" /> · {en ? 'Main discontinuity type and persistence' : '主要结构面类型及其延伸性'}</>} number={1} complete={state.slopeStructureTypeId !== 'none' || state.lambdaValue != null} /><p className={`text-sm leading-relaxed ${mutedClass(darkMode)}`}>{en ? 'Select the controlling discontinuity type and persistence. The selected cell adopts the upper bound of λ; you may then revise the value within that range. Empty input is treated as 0 when no controlling discontinuity is present.' : <>按主要结构面类型及其延伸性点击选择 <InlineMath math="\lambda" />；选定后取该档区间上限，并可在区间内修改。无控制性主要结构面时取 0。</>}</p>{selectedLambda ? <CoefficientInput darkMode={darkMode} language={language} symbol="lambda" min={0} max={1} validationMin={selectedLambda.range.min} validationMax={selectedLambda.range.max} value={state.lambdaValue} onChange={(value) => patch({ lambdaValue: value })} /> : null}<BqLambdaTable darkMode={darkMode} language={language} rows={lambdaRows} selectedId={state.slopeStructureTypeId} onSelect={(id) => { const option = BQ_SLOPE_LAMBDA_OPTIONS.find((item) => item.id === id); patch({ slopeStructureTypeId: id, lambdaValue: option ? option.range.max : 0, ...(id === 'none' ? { slopeF1Id: null, slopeF2Id: null, slopeF3Id: null } : {}), correctionStep: 4 }); setCorrectionStep(4) }} /></section>
-              <section className={sectionClass(darkMode)}><StepHeader darkMode={darkMode} title={<><InlineMath math="K_4" /> · {en ? 'Groundwater influence' : '地下水影响'}</>} number={2} complete={state.slopeWaterId !== 'none' || state.k4Value != null} /><p className={`text-sm leading-relaxed ${mutedClass(darkMode)}`}>{en ? <>Select the groundwater development degree or enter the slope water head <InlineMath math="p_w" /> and slope height <InlineMath math="H" />. A selected condition adopts the upper bound of its <InlineMath math="K_4" /> range for the current BQ class; <InlineMath math="p_w/H" /> input selects the applicable condition.</> : <>按地下水发育程度选择 <InlineMath math="K_4" />，或输入边坡地下水水头 <InlineMath math="p_w" /> 与边坡高度 <InlineMath math="H" /> 自动判定；选择状态取当前等级区间最大值，输入值按 <InlineMath math="p_w/H" /> 判定档位取区间最大值。</>}</p><div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2"><label className="block space-y-1"><span className={`text-sm font-medium ${mutedClass(darkMode)}`}>{en ? 'pw (phreatic or confined water head, m)' : 'pw（边坡地下水水头，m）'}</span><input aria-label={en ? 'pw (phreatic or confined water head, m)' : 'pw（边坡地下水水头，m）'} type="number" min="0" step="any" value={state.slopeWaterHeadPw ?? ''} onChange={(event) => updateSlopeWaterInput('slopeWaterHeadPw', event.target.value)} onWheel={preventNumberWheel} onKeyDown={preventNumberArrow} className={numberFieldClass(darkMode)} /></label><label className="block space-y-1"><span className={`text-sm font-medium ${mutedClass(darkMode)}`}>{en ? 'H (slope height, m)' : 'H（边坡高度，m）'}</span><input aria-label={en ? 'H (slope height, m)' : 'H（边坡高度，m）'} type="number" min="0" step="any" value={state.slopeHeightH ?? ''} onChange={(event) => updateSlopeWaterInput('slopeHeightH', event.target.value)} onWheel={preventNumberWheel} onKeyDown={preventNumberArrow} className={numberFieldClass(darkMode)} /></label></div>{slopeWaterAssessment ? <p data-testid="bq-k4-assessment" className={`mt-2 text-sm ${mutedClass(darkMode)}`}>{en ? `Assessed condition: ${BQ_SLOPE_WATER_OPTIONS.find((item) => item.id === slopeWaterAssessment.optionId)?.label.en ?? ''}; pw/H = ${slopeWaterAssessment.ratio.toFixed(3)}; default K4 = ${slopeWaterAssessment.value.toFixed(3)}` : <>判断结果：{BQ_SLOPE_WATER_OPTIONS.find((item) => item.id === slopeWaterAssessment.optionId)?.label.zh ?? ''}；<InlineMath math="p_w/H" /> = {slopeWaterAssessment.ratio.toFixed(3)}；默认 <InlineMath math="K_4" /> = {slopeWaterAssessment.value.toFixed(3)}</>}</p> : null}<BqTable testId="bq-k4-table" rowHeader={en ? 'Groundwater development degree' : '地下水发育程度'} darkMode={darkMode} language={language} title={en ? <>Groundwater development · <InlineMath math="K_4" /> · BQ grade ranges</> : <>地下水发育程度与 <InlineMath math="K_4" /> 修正系数（BQ等级）</>} rows={slopeWaterRows} activeGrade={baseGrade} selectedId={state.slopeWaterId} onSelect={(id) => { patch({ slopeWaterId: id, slopeWaterHeadPw: null, slopeHeightH: null, k4Value: midpointForSlopeWater(id), correctionStep: 4 }); setCorrectionStep(4) }} />{selectedSlopeWater ? <CoefficientInput darkMode={darkMode} language={language} symbol="K4" min={0} max={1} value={state.k4Value} onChange={(value) => patch({ k4Value: value })} /> : null}</section>
-              <section className={sectionClass(darkMode)}><StepHeader darkMode={darkMode} title={<><InlineMath math="K_5" /> · {en ? 'Main discontinuity orientation' : '主要结构面产状'}</>} number={3} complete={slopeK5Ready} /><p className={`text-sm leading-relaxed ${mutedClass(darkMode)}`}>{en ? <>Click the influence degree of each factor. The software computes <InlineMath math="K_5=F_1\times F_2\times F_3" />; <InlineMath math="K_5" /> is not entered by hand. When there is no controlling discontinuity, <InlineMath math="K_5=0" />.</> : <>按影响程度分别点选 <InlineMath math="F_1" />、<InlineMath math="F_2" />、<InlineMath math="F_3" />，由软件计算 <InlineMath math="K_5=F_1\times F_2\times F_3" />，<InlineMath math="K_5" /> 不需手工填写。无控制性主要结构面时 <InlineMath math="K_5=0" />。</>}</p><BqSlopeK5Table darkMode={darkMode} language={language} selectedF1Id={state.slopeF1Id} selectedF2Id={state.slopeF2Id} selectedF3Id={state.slopeF3Id} onSelectF1={(id) => patch({ slopeF1Id: id, correctionStep: 4 })} onSelectF2={(id) => patch({ slopeF2Id: id, correctionStep: 4 })} onSelectF3={(id) => patch({ slopeF3Id: id, correctionStep: 4 })} />{state.slopeStructureTypeId === 'none' ? <p data-testid="bq-k5-product" className={`mt-3 text-sm ${mutedClass(darkMode)}`}>{en ? <>No controlling main discontinuity; <InlineMath math="K_5=0" />.</> : <>无控制性主要结构面，<InlineMath math="K_5=0" />。</>}</p> : result?.corrections.slopeFactors && slopeK5Ready && result.corrections.slopeFactors.f1.id !== 'not_applicable' ? <p data-testid="bq-k5-product" className={`mt-3 text-sm ${mutedClass(darkMode)}`}><InlineMath math="K_5" /> = <InlineMath math="F_1" /> × <InlineMath math="F_2" /> × <InlineMath math="F_3" /> = {formatFactorValue(result.corrections.slopeFactors.f1.value)} × {formatFactorValue(result.corrections.slopeFactors.f2.value)} × {formatFactorValue(result.corrections.slopeFactors.f3.value)} = {Number(result.corrections.slopeFactors.k5.toFixed(3))}</p> : <p className={`mt-3 text-sm ${mutedClass(darkMode)}`}>{en ? 'Select F1, F2 and F3 to compute K5.' : '请点选 F1、F2、F3 后由软件计算 K5。'}</p>}</section>
+              <section className={sectionClass(darkMode)}>
+                <CoefficientSectionHeader
+                  darkMode={darkMode}
+                  language={language}
+                  title={<><InlineMath math="\lambda" /> · {en ? 'Main discontinuity type and persistence' : '主要结构面类型及其延伸性'}</>}
+                  symbol="lambda"
+                  score={result?.corrections.lambda?.value ?? state.lambdaValue}
+                  editing={editingCoefficient === 'lambda'}
+                  canEdit={Boolean(selectedLambda && selectedLambda.id !== 'none')}
+                  value={state.lambdaValue}
+                  validationMin={selectedLambda?.range.min ?? 0}
+                  validationMax={selectedLambda?.range.max ?? 1}
+                  onStartEdit={() => {
+                    if (state.lambdaValue == null && selectedLambda) patch({ lambdaValue: selectedLambda.range.max })
+                    setEditingCoefficient('lambda')
+                  }}
+                  onChange={(value) => patch({ lambdaValue: value })}
+                  onEndEdit={() => setEditingCoefficient(null)}
+                />
+                <p className={`text-sm leading-relaxed ${mutedClass(darkMode)}`}>{en ? <>This table gives the coefficient <InlineMath math="\lambda" /> for the type and persistence of the main discontinuity. Choose the condition that matches the site.</> : <>本表为主要结构面类型及其延伸性修正系数 <InlineMath math="\lambda" />。按主要结构面类型及其延伸性，根据现场状态选择。</>}</p>
+                <BqLambdaTable darkMode={darkMode} language={language} rows={lambdaRows} selectedId={state.slopeStructureTypeId} onSelect={(id) => { const option = BQ_SLOPE_LAMBDA_OPTIONS.find((item) => item.id === id); patch({ slopeStructureTypeId: id, lambdaValue: option ? option.range.max : 0, ...(id === 'none' ? { slopeF1Id: null, slopeF2Id: null, slopeF3Id: null } : {}), correctionStep: 4 }); setCorrectionStep(4); setEditingCoefficient(null) }} />
+              </section>
+              <section className={sectionClass(darkMode)}>
+                <CoefficientSectionHeader
+                  darkMode={darkMode}
+                  language={language}
+                  title={<><InlineMath math="K_4" /> · {en ? 'Groundwater influence' : '地下水影响'}</>}
+                  symbol="K4"
+                  score={result?.corrections.k4?.value ?? state.k4Value}
+                  editing={editingCoefficient === 'K4'}
+                  canEdit={Boolean(selectedSlopeWater && selectedSlopeWater.id !== 'none')}
+                  value={state.k4Value}
+                  validationMin={selectedSlopeWaterRange?.min ?? 0}
+                  validationMax={selectedSlopeWaterRange?.max ?? 1}
+                  onStartEdit={() => {
+                    if (state.k4Value == null) patch({ k4Value: selectedSlopeWaterRange?.max ?? result?.corrections.k4?.value ?? 0 })
+                    setEditingCoefficient('K4')
+                  }}
+                  onChange={(value) => patch({ k4Value: value })}
+                  onEndEdit={() => setEditingCoefficient(null)}
+                />
+                <p className={`text-sm leading-relaxed ${mutedClass(darkMode)}`}>{en ? <>This table gives the groundwater-influence coefficient <InlineMath math="K_4" /> by development degree and rock-mass basic quality class. Slope water head <InlineMath math="p_w" /> and slope height <InlineMath math="H" /> may be entered.</> : <>本表为地下水影响修正系数 <InlineMath math="K_4" />，按地下水发育程度及岩体基本质量等级给出。可输入边坡地下水水头 <InlineMath math="p_w" /> 与边坡高度 <InlineMath math="H" />。</>}</p>
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <MeasuredNumberField darkMode={darkMode} language={language} name={en ? 'Phreatic or confined water head' : '边坡地下水水头'} symbol="p_w" unit="m" ariaLabel={en ? 'Slope water head pw' : '边坡地下水水头 pw'} value={state.slopeWaterHeadPw} min={0} onChange={(raw) => updateSlopeWaterInput('slopeWaterHeadPw', raw)} />
+                  <MeasuredNumberField darkMode={darkMode} language={language} name={en ? 'Slope height' : '边坡高度'} symbol="H" unit="m" ariaLabel={en ? 'Slope height H' : '边坡高度 H'} value={state.slopeHeightH} min={0} onChange={(raw) => updateSlopeWaterInput('slopeHeightH', raw)} />
+                </div>
+                <BqTable testId="bq-k4-table" rowHeader={en ? 'Groundwater development degree' : '地下水发育程度'} darkMode={darkMode} language={language} title={en ? <>Groundwater development · <InlineMath math="K_4" /></> : <>地下水发育程度与 <InlineMath math="K_4" /></>} rows={slopeWaterRows} activeGrade={baseGrade} selectedId={state.slopeWaterId} onSelect={(id) => { patch({ slopeWaterId: id, slopeWaterHeadPw: null, slopeHeightH: null, k4Value: midpointForSlopeWater(id), correctionStep: 4 }); setCorrectionStep(4); setEditingCoefficient(null) }} />
+              </section>
+              <section className={sectionClass(darkMode)}>
+                <CoefficientSectionHeader
+                  darkMode={darkMode}
+                  language={language}
+                  title={<><InlineMath math="K_5" /> · {en ? 'Main discontinuity orientation' : '主要结构面产状'}</>}
+                  symbol="K5"
+                  score={state.slopeStructureTypeId === 'none' ? 0 : (slopeK5Ready ? result?.corrections.slopeFactors?.k5 : null)}
+                  editing={false}
+                  canEdit={false}
+                  value={null}
+                  validationMin={0}
+                  validationMax={1}
+                  onStartEdit={() => {}}
+                  onChange={() => {}}
+                  onEndEdit={() => {}}
+                />
+                <p className={`text-sm leading-relaxed ${mutedClass(darkMode)}`}>{en ? <>This table gives the orientation-influence coefficient <InlineMath math="K_5" />, composed of <InlineMath math="F_1" />, <InlineMath math="F_2" /> and <InlineMath math="F_3" />. Choose the combination of discontinuity orientation with the slope face that matches the site condition.</> : <>本表为主要结构面产状影响修正系数 <InlineMath math="K_5" />，由 <InlineMath math="F_1" />、<InlineMath math="F_2" />、<InlineMath math="F_3" /> 组成。按结构面产状及其与边坡临空面的空间组合关系，根据现场状态选择。</>}</p>
+                <BqSlopeK5Table darkMode={darkMode} language={language} selectedF1Id={state.slopeF1Id} selectedF2Id={state.slopeF2Id} selectedF3Id={state.slopeF3Id} onSelectF1={(id) => patch({ slopeF1Id: id, correctionStep: 4 })} onSelectF2={(id) => patch({ slopeF2Id: id, correctionStep: 4 })} onSelectF3={(id) => patch({ slopeF3Id: id, correctionStep: 4 })} />
+                {state.slopeStructureTypeId === 'none' ? <p data-testid="bq-k5-product" className={`mt-3 text-sm ${mutedClass(darkMode)}`}>{en ? <>No controlling main discontinuity; <InlineMath math="K_5=0" />.</> : <>无控制性主要结构面，<InlineMath math="K_5=0" />。</>}</p> : result?.corrections.slopeFactors && slopeK5Ready && result.corrections.slopeFactors.f1.id !== 'not_applicable' ? <p data-testid="bq-k5-product" className={`mt-3 text-sm ${mutedClass(darkMode)}`}><InlineMath math="K_5" /> = <InlineMath math="F_1" /> × <InlineMath math="F_2" /> × <InlineMath math="F_3" /> = {formatFactorValue(result.corrections.slopeFactors.f1.value)} × {formatFactorValue(result.corrections.slopeFactors.f2.value)} × {formatFactorValue(result.corrections.slopeFactors.f3.value)} = {Number(result.corrections.slopeFactors.k5.toFixed(3))}</p> : null}
+              </section>
               <BqCorrectedResult darkMode={darkMode} language={language} result={result} variant="slope" />
             </> : null}
             </> : null}
-           <footer className={sectionClass(darkMode)}><div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">{attempted ? <p className="text-sm text-red-600 dark:text-red-300 sm:mr-auto">{en ? 'Complete the required fields and correction steps.' : '请完成必填参数和修正步骤。'}</p> : <p className={`text-sm sm:mr-auto ${mutedClass(darkMode)}`}>{state.mode === 'basic' ? (baseReady ? (en ? 'Basic BQ is ready.' : '基本 BQ 已可完成。') : (en ? <>Enter <InlineMath math="R_c" /> and <InlineMath math="K_v" />.</> : <>请输入 <InlineMath math="R_c" /> 和 <InlineMath math="K_v" />。</>)) : (correctionReady ? (state.mode === 'foundation' ? (en ? 'Foundation classification is ready.' : '地基工程等级已确定。') : state.mode === 'slope' ? (en ? 'Slope correction is ready.' : '边坡工程修正已完成。') : (en ? 'Underground correction is ready.' : '地下工程修正已完成。')) : (state.mode === 'foundation' ? (en ? 'Select a class from the qualitative characteristics table.' : '请根据定性特征选择地基工程岩体级别。') : state.mode === 'slope' ? (en ? 'Select F1, F2 and F3 to compute K5, or choose no controlling discontinuity.' : '请点选 F1、F2、F3 计算 K5，或选择无控制性主要结构面。') : (en ? 'Complete the underground correction inputs.' : '请完成地下工程修正参数。')))}</p>}<div className="flex flex-wrap justify-end gap-2"><button type="button" onClick={onBackToPoints} className={`rounded-lg border px-4 py-2.5 text-sm font-medium ${darkMode ? 'border-gray-600 text-gray-200 hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}>{en ? 'Previous' : '上一步'}</button><button type="button" onClick={state.mode === 'basic' ? completeBasic : completeCorrection} className="rounded-lg border border-blue-600 bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700">{en ? 'Complete' : '完成'}</button><button type="button" onClick={() => { if (state.mode === 'basic' ? baseReady : correctionReady) onNext(); else setAttempted(true) }} className={`rounded-lg border px-4 py-2.5 text-sm font-medium ${darkMode ? 'border-gray-600 text-gray-200 hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}>{en ? 'Next point' : '下一个'}</button></div></div></footer>
+           <footer className={sectionClass(darkMode)}><div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">{attempted ? <p className="text-sm text-red-600 dark:text-red-300 sm:mr-auto">{en ? 'Complete the required fields and correction steps.' : '请完成必填参数和修正步骤。'}</p> : <p className={`text-sm sm:mr-auto ${mutedClass(darkMode)}`}>{state.mode === 'basic' ? (correctionOpen ? (en ? 'Select a correction engineering type.' : '请选择修正工程类型。') : (baseReady ? (en ? 'Basic BQ is ready.' : '基本 BQ 已可完成。') : (en ? <>Enter <InlineMath math="R_c" /> and <InlineMath math="K_v" />.</> : <>请输入 <InlineMath math="R_c" /> 和 <InlineMath math="K_v" />。</>))) : (correctionReady ? (state.mode === 'foundation' ? (en ? 'Foundation classification is ready.' : '地基工程等级已确定。') : state.mode === 'slope' ? (en ? 'Slope correction is ready.' : '边坡工程修正已完成。') : (en ? 'Underground correction is ready.' : '地下工程修正已完成。')) : (state.mode === 'foundation' ? (en ? 'Select a class from the qualitative BQ table.' : '请根据定性特征点选岩体等级。') : state.mode === 'slope' ? (en ? 'Select F1, F2 and F3 to compute K5, or choose no controlling discontinuity.' : '请点选 F1、F2、F3 计算 K5，或选择无控制性主要结构面。') : (en ? 'Complete the underground correction inputs.' : '请完成地下工程修正参数。')))}</p>}<div className="flex flex-wrap justify-end gap-2"><button type="button" onClick={onBackToPoints} className={`rounded-lg border px-4 py-2.5 text-sm font-medium ${darkMode ? 'border-gray-600 text-gray-200 hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}>{en ? 'Previous' : '上一步'}</button><button type="button" onClick={state.mode === 'basic' && !correctionOpen ? completeBasic : completeCorrection} className="rounded-lg border border-blue-600 bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700">{en ? 'Complete' : '完成'}</button><button type="button" onClick={() => { if (state.mode === 'basic' && !correctionOpen ? baseReady : correctionReady) onNext(); else setAttempted(true) }} className={`rounded-lg border px-4 py-2.5 text-sm font-medium ${darkMode ? 'border-gray-600 text-gray-200 hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}>{en ? 'Next point' : '下一个'}</button></div></div></footer>
           <div className="pb-24" />
         </main>
         <div className="hidden min-w-0 xl:block"><BqPreview darkMode={darkMode} language={language} state={state} correctionStep={correctionStep} result={result} /></div>

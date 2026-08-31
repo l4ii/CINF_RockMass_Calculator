@@ -5,6 +5,7 @@ import MainContent from './components/MainContent'
 import LicenseActivation from './components/LicenseActivation'
 import AssistantPanel from './components/AssistantPanel'
 import ElectronAppTitleBar from './components/shell/ElectronAppTitleBar'
+import ErrorBoundary from './components/ErrorBoundary'
 import { AssistantProvider } from './context/AssistantContext'
 import { getClassificationMethod, type SelectedMethod } from './types'
 import { buildMrmrHandoffFromRmr, type MrmrHandoff } from './methods/mrmr'
@@ -269,6 +270,7 @@ function App() {
               </button>
               <span className="min-w-0 truncate text-sm font-semibold">{mobileTitle}</span>
             </div>
+            <ErrorBoundary key={`${currentView}:${selectedMethod?.id ?? 'home'}`}>
             <MainContent
               selectedMethod={selectedMethod}
               darkMode={darkMode}
@@ -285,6 +287,7 @@ function App() {
               onMrmrPrefillConsumed={() => setMrmrPrefill(null)}
               onNavigateToMrmr={handleEnterMrmr}
             />
+            </ErrorBoundary>
           </div>
           <AssistantPanel darkMode={darkMode} language={language} onMethodSelect={handleMethodSelect} />
         </div>

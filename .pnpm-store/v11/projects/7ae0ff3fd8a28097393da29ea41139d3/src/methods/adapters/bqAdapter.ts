@@ -10,6 +10,7 @@ import {
   calculateBq,
   createInitialBqState,
   describeBq,
+  foundationGradeFromF0,
   normalizeBqState,
   validateBqState,
 } from '../bq'
@@ -23,7 +24,7 @@ function incompleteDescriptions(form: Record<string, unknown>): ParameterDescrip
       key: 'mode',
       label: '计算模式',
       labelEn: 'Calculation mode',
-      value: state.mode === 'basic' ? '基本 BQ' : state.mode === 'underground' ? '地下工程' : state.mode === 'foundation' ? '地基工程' : '边坡工程',
+      value: state.mode === 'basic' ? '基本 BQ' : state.mode === 'underground' ? '地下工程岩体' : state.mode === 'foundation' ? '地基工程岩体' : '边坡工程岩体',
       valueEn: state.mode === 'basic' ? 'Basic BQ' : state.mode === 'underground' ? 'Underground engineering' : state.mode === 'foundation' ? 'Foundation engineering' : 'Slope engineering',
     },
     {
@@ -69,13 +70,22 @@ function incompleteDescriptions(form: Record<string, unknown>): ParameterDescrip
   }
 
   if (state.mode === 'foundation') {
-    rows.push({
-      key: 'foundationGradeId',
-      label: '地基工程岩体级别',
-      labelEn: 'Foundation rock-mass class',
-      value: lookup(state.foundationGradeId ?? '', BQ_FOUNDATION_F0_GRADES)?.zh ?? '未选择',
-      valueEn: lookup(state.foundationGradeId ?? '', BQ_FOUNDATION_F0_GRADES)?.en ?? 'Not selected',
-    })
+    rows.push(
+      {
+        key: 'foundationGradeId',
+        label: '地基工程岩体级别',
+        labelEn: 'Foundation rock-mass class',
+        value: lookup(state.foundationGradeId ?? '', BQ_FOUNDATION_F0_GRADES)?.zh ?? (state.foundationF0 != null ? foundationGradeFromF0(state.foundationF0).label.zh : '未选择'),
+        valueEn: lookup(state.foundationGradeId ?? '', BQ_FOUNDATION_F0_GRADES)?.en ?? (state.foundationF0 != null ? foundationGradeFromF0(state.foundationF0).label.en : 'Not selected'),
+      },
+      {
+        key: 'foundationF0',
+        label: '基岩承载力基本值 f₀',
+        labelEn: 'Basic bedrock bearing capacity f₀',
+        value: state.foundationF0 == null ? '未填写' : `${state.foundationF0} MPa`,
+        valueEn: state.foundationF0 == null ? 'Not entered' : `${state.foundationF0} MPa`,
+      }
+    )
   }
 
   if (state.mode === 'slope') {
@@ -140,12 +150,12 @@ export const bqAdapter: AnyClassificationAdapter = {
       displayValue: isFoundation
         ? (result.foundationGrade
           ? `${result.foundationGrade.label.zh} · ${result.foundationGrade.displayRange} MPa`
-          : '请选择定性特征等级')
+          : '请点选等级')
         : `${symbol} = ${Number(result.engineeringBq.toFixed(1))}`,
       grade: isFoundation ? (result.foundationGrade?.label.zh ?? '—') : `${result.grade.label.zh} · ${result.grade.quality.zh}`,
       gradeEn: isFoundation ? (result.foundationGrade?.label.en ?? '—') : `${result.grade.label.en} · ${result.grade.quality.en}`,
-      summary: isFoundation ? '地基工程岩体按表 4.1.1 定性特征定级，并给出表 5.4.2 的基岩承载力基本值 f₀ 区间。' : result.formula.zh,
-      summaryEn: isFoundation ? 'Foundation rock-mass class is selected from Table 4.1.1 qualitative characteristics, with the Table 5.4.2 f₀ range.' : result.formula.en,
+      summary: isFoundation ? '地基工程岩体按岩体基本质量的定性特征判定等级，并给出基岩承载力基本值供参考。' : result.formula.zh,
+      summaryEn: isFoundation ? 'Foundation rock-mass class is judged from qualitative BQ characteristics; f₀ is given for reference.' : result.formula.en,
       metrics: [
         { key: 'rc', label: 'Rc', labelEn: 'Rc', value: `${Number(result.original.rc.toFixed(2))} MPa`, valueEn: `${Number(result.original.rc.toFixed(2))} MPa` },
         { key: 'kv', label: 'Kv', labelEn: 'Kv', value: Number(result.original.kv.toFixed(4)).toString(), valueEn: Number(result.original.kv.toFixed(4)).toString() },
@@ -169,7 +179,7 @@ export const bqAdapter: AnyClassificationAdapter = {
                 : 'Kv limited to 0.04Rc + 0.4',
         },
         { key: 'basic-bq', label: '基本 BQ', labelEn: 'Basic BQ', value: Number(result.basicBq.toFixed(1)).toString() },
-        { key: 'foundation-f0', label: '基岩承载力基本值 f₀', labelEn: 'Basic bedrock bearing capacity f₀', value: result.foundationGrade ? `${result.foundationGrade.displayRange} MPa` : '—' },
+        { key: 'foundation-f0', label: '基岩承载力基本值 f₀', labelEn: 'Basic bedrock bearing capacity f₀', value: state.foundationF0 != null ? `${state.foundationF0} MPa` : (result.foundationGrade ? `${result.foundationGrade.displayRange} MPa` : '—') },
         { key: 'k1', label: 'K1', labelEn: 'K1', value: result.corrections.k1 ? coefficientValue(result.corrections.k1) : '—', valueEn: result.corrections.k1 ? coefficientValueEn(result.corrections.k1) : '—' },
         { key: 'k2', label: 'K2', labelEn: 'K2', value: result.corrections.k2 ? coefficientValue(result.corrections.k2) : '—', valueEn: result.corrections.k2 ? coefficientValueEn(result.corrections.k2) : '—' },
         { key: 'k3', label: 'K3', labelEn: 'K3', value: result.corrections.k3 ? coefficientValue(result.corrections.k3) : '—', valueEn: result.corrections.k3 ? coefficientValueEn(result.corrections.k3) : '—' },
