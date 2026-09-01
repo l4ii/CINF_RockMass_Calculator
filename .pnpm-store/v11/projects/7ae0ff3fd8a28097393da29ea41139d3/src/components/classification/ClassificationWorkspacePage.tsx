@@ -20,7 +20,6 @@ interface ClassificationWorkspacePageProps {
   onImportFiles: (files: FileList | File[]) => void
   message: string | null
   onBack: () => void
-  terminology?: 'case' | 'project'
 }
 
 export default function ClassificationWorkspacePage({
@@ -36,7 +35,6 @@ export default function ClassificationWorkspacePage({
   onImportFiles,
   message,
   onBack,
-  terminology = 'case',
 }: ClassificationWorkspacePageProps) {
   const [page, setPage] = useState(0)
   const [dragActive, setDragActive] = useState(false)
@@ -46,39 +44,37 @@ export default function ClassificationWorkspacePage({
   const copy = isEn
     ? {
         back: 'Back',
-        title: `${methodName} workspace`,
-        intro: `One case represents one project and can contain any number of calculation points. Create or open a case to begin. Cases are stored locally; exported ${ROCKMASS_CASE_FILE_EXT} files can be opened by this application.`,
-        newCase: terminology === 'project' ? 'New project' : 'New case',
-        caseName: terminology === 'project' ? 'Project name' : 'Case name',
+        title: `${methodName} project workspace`,
+        intro: `One project represents one engineering job and can contain any number of calculation points. Create or open a project to begin. Projects are stored locally; exported ${ROCKMASS_CASE_FILE_EXT} files can be opened by this application.`,
+        newCase: 'New project',
+        caseName: 'Project name',
         casePlaceholder: 'e.g. Mine -450 m haulage drift',
-        createCase: terminology === 'project' ? 'Create project' : 'Create case',
-        importCase: terminology === 'project' ? 'Import project' : 'Import case',
-        dropFiles: `Drop ${ROCKMASS_CASE_FILE_EXT} ${terminology === 'project' ? 'project' : 'case'} files here to import.`,
-        history: terminology === 'project' ? 'Project history' : 'Case history',
+        createCase: 'Create project',
+        importCase: 'Import project',
+        dropFiles: `Drop ${ROCKMASS_CASE_FILE_EXT} project files here to import.`,
+        history: 'Project history',
         previousPage: 'Previous',
         nextPage: 'Next',
-        empty: `No ${terminology === 'project' ? 'projects' : 'cases'} yet. Enter a name and select “${terminology === 'project' ? 'Create project' : 'Create case'}”, or import an existing ${ROCKMASS_CASE_FILE_EXT} file.`,
-        headers: [terminology === 'project' ? 'Project name' : 'Case name', 'Points', 'Updated', 'Actions'],
+        empty: `No projects yet. Enter a name and select “Create project”, or import an existing ${ROCKMASS_CASE_FILE_EXT} file.`,
+        headers: ['Project name', 'Points', 'Updated', 'Actions'],
         open: 'Open',
         delete: 'Delete',
       }
     : {
         back: '返回',
         title: `${methodName}项目工作区`,
-        intro: terminology === 'project'
-          ? `一个项目对应一项工程，项目内可建立任意多个计算点位。请先新建或打开项目，再进入点位计算。项目保存在本机浏览数据中，导出的 ${ROCKMASS_CASE_FILE_EXT} 文件仅本软件可读取。`
-          : `一个案例对应一项工程，案例内可建立任意多个计算点位。请先新建或打开案例，再进入点位计算。案例保存在本机浏览数据中，导出的 ${ROCKMASS_CASE_FILE_EXT} 文件仅本软件可读取。`,
-        newCase: terminology === 'project' ? '新建项目' : '新建案例',
-        caseName: terminology === 'project' ? '项目名称' : '案例名称',
+        intro: `一个项目对应一项工程，项目内可建立任意多个计算点位。请先新建或打开项目，再进入点位计算。项目保存在本机浏览数据中，导出的 ${ROCKMASS_CASE_FILE_EXT} 文件仅本软件可读取。`,
+        newCase: '新建项目',
+        caseName: '项目名称',
         casePlaceholder: '如：某矿 -450 m 中段运输巷',
-        createCase: terminology === 'project' ? '新建项目' : '新建案例',
-        importCase: terminology === 'project' ? '导入项目' : '导入案例',
-        dropFiles: `把 ${ROCKMASS_CASE_FILE_EXT} ${terminology === 'project' ? '项目' : '案例'}文件拖到此处即可导入。`,
-        history: terminology === 'project' ? '历史项目' : '历史案例',
+        createCase: '新建项目',
+        importCase: '导入项目',
+        dropFiles: `把 ${ROCKMASS_CASE_FILE_EXT} 项目文件拖到此处即可导入。`,
+        history: '历史项目',
         previousPage: '上一页',
         nextPage: '下一页',
-        empty: `还没有${terminology === 'project' ? '项目' : '案例'}。在上方填写名称后点击「${terminology === 'project' ? '新建项目' : '新建案例'}」，或导入已有的 ${ROCKMASS_CASE_FILE_EXT} 文件。`,
-        headers: [terminology === 'project' ? '项目名称' : '案例名称', '点位数', '更新时间', '操作'],
+        empty: `还没有项目。在上方填写名称后点击「新建项目」，或导入已有的 ${ROCKMASS_CASE_FILE_EXT} 文件。`,
+        headers: ['项目名称', '点位数', '更新时间', '操作'],
         open: '打开',
         delete: '删除',
       }

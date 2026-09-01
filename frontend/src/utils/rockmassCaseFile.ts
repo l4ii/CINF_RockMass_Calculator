@@ -24,6 +24,7 @@ import {
   type ScoreOption,
 } from '../config/rmrTables'
 import { bqAdapter } from '../methods/adapters/bqAdapter'
+import { gsiAdapter } from '../methods/adapters/gsiAdapter'
 import { mrmrAdapter } from '../methods/adapters/mrmrAdapter'
 import { qAdapter } from '../methods/adapters/qAdapter'
 import { rqdAdapter } from '../methods/adapters/rqdAdapter'
@@ -51,6 +52,7 @@ const GENERIC_ADAPTERS = {
   bq: bqAdapter,
   q: qAdapter,
   mrmr: mrmrAdapter,
+  gsi: gsiAdapter,
 } satisfies Partial<Record<ClassificationMethodId, AnyClassificationAdapter>>
 
 type GenericMethodId = keyof typeof GENERIC_ADAPTERS
@@ -72,13 +74,14 @@ const METHOD_FILE_CONTRACTS: Record<ClassificationMethodId, MethodFileContract> 
     inputVersion: 1,
   },
   mrmr: { standardId: mrmrAdapter.standard.id, inputVersion: mrmrAdapter.inputVersion, adapter: mrmrAdapter },
+  gsi: { standardId: gsiAdapter.standard.id, inputVersion: gsiAdapter.inputVersion, adapter: gsiAdapter },
 }
 
 type ImportInspection =
   | { ok: true; candidate: Record<string, unknown>; methodId: ClassificationMethodId; legacyVersion: 1 | null }
   | { ok: false; error: string }
 
-export function sanitizeFileNamePart(value: string, fallback = '岩体分级案例') {
+export function sanitizeFileNamePart(value: string, fallback = '岩体分级项目') {
   const cleaned = value
     .trim()
     .replace(/[\\/:*?"<>|]+/g, '_')
@@ -99,7 +102,7 @@ function isPlainRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isMethodId(value: unknown): value is ClassificationMethodId {
-  return value === 'rqd' || value === 'bq' || value === 'q' || value === 'rmr' || value === 'mrmr'
+  return value === 'rqd' || value === 'bq' || value === 'q' || value === 'rmr' || value === 'mrmr' || value === 'gsi'
 }
 
 function isNonEmptyString(value: unknown): value is string {
@@ -199,7 +202,7 @@ function canonicalStandardId(methodId: ClassificationMethodId) {
 function validateV2Point(value: unknown, methodId: ClassificationMethodId, index: number): string | null {
   if (!isPlainRecord(value)) return `第 ${index + 1} 个点位不是有效对象。`
   if (isMethodId(value.methodId) && value.methodId !== methodId) {
-    return '案例内包含其他算法的点位，已拒绝导入。'
+    return '项目内包含其他算法的点位，已拒绝导入。'
   }
   if (value.methodId !== methodId) return `第 ${index + 1} 个点位缺少有效的算法标识。`
   if (!isNonEmptyString(value.id) || !isNonEmptyString(value.name)) {
@@ -211,7 +214,7 @@ function validateV2Point(value: unknown, methodId: ClassificationMethodId, index
 
   const contract = METHOD_FILE_CONTRACTS[methodId]
   if (methodId === 'mrmr' && value.inputVersion !== contract.inputVersion) {
-    return '该案例属于旧版 MRMR 计算口径，请重新建立 MRMR 案例。'
+    return '该项目属于旧版 MRMR 计算口径，请重新建立 MRMR 项目。'
   }
   if (!Number.isInteger(value.inputVersion) || value.inputVersion !== contract.inputVersion) {
     return `第 ${index + 1} 个点位的输入版本不受支持（应为 v${contract.inputVersion}）。`
@@ -248,28 +251,28 @@ function validateV2Point(value: unknown, methodId: ClassificationMethodId, index
 }
 
 function validateV2Case(candidate: unknown, methodId: ClassificationMethodId): string | null {
-  if (!isPlainRecord(candidate)) return '案例文件缺少有效的案例对象。'
+  if (!isPlainRecord(candidate)) return '项目文件缺少有效的项目对象。'
   if (isMethodId(candidate.methodId) && candidate.methodId !== methodId) {
     return `该文件属于 ${candidate.methodId.toUpperCase()}，不能导入当前算法。`
   }
-  if (candidate.methodId !== methodId) return '案例缺少有效的算法标识。'
-  if (candidate.schemaVersion !== ROCKMASS_CASE_FILE_VERSION) return '案例数据版本无效，应为 v2。'
+  if (candidate.methodId !== methodId) return '项目缺少有效的算法标识。'
+  if (candidate.schemaVersion !== ROCKMASS_CASE_FILE_VERSION) return '项目数据版本无效，应为 v2。'
   if (methodId === 'mrmr' && candidate.standardId !== METHOD_FILE_CONTRACTS.mrmr.standardId) {
-    return '该案例属于旧版 MRMR 计算口径，请重新建立 MRMR 案例。'
+    return '该项目属于旧版 MRMR 计算口径，请重新建立 MRMR 项目。'
   }
-  if (!acceptsStandardId(methodId, candidate.standardId)) return '案例采用的标准版本与当前算法不兼容。'
-  if (!isNonEmptyString(candidate.id) || !isNonEmptyString(candidate.name)) return '案例缺少编号或名称。'
+  if (!acceptsStandardId(methodId, candidate.standardId)) return '项目采用的标准版本与当前算法不兼容。'
+  if (!isNonEmptyString(candidate.id) || !isNonEmptyString(candidate.name)) return '项目缺少编号或名称。'
   if (!isNonEmptyString(candidate.createdAt) || !isNonEmptyString(candidate.updatedAt)) {
-    return '案例的创建或更新时间无效。'
+    return '项目的创建或更新时间无效。'
   }
   if (
     !isOptionalString(candidate.engineering) ||
     !isOptionalString(candidate.location) ||
     !isOptionalString(candidate.remark)
   ) {
-    return '案例工程信息结构无效。'
+    return '项目工程信息结构无效。'
   }
-  if (!Array.isArray(candidate.points)) return '案例点位列表无效。'
+  if (!Array.isArray(candidate.points)) return '项目点位列表无效。'
   for (let index = 0; index < candidate.points.length; index += 1) {
     const error = validateV2Point(candidate.points[index], methodId, index)
     if (error) return error
@@ -278,18 +281,18 @@ function validateV2Case(candidate: unknown, methodId: ClassificationMethodId): s
 }
 
 function validateLegacyRmrCase(candidate: unknown, methodId: ClassificationMethodId): string | null {
-  if (methodId !== 'rmr') return 'v1 案例仅支持迁移旧 RMR 数据。'
-  if (!isPlainRecord(candidate)) return '旧 RMR 案例缺少有效的案例对象。'
+  if (methodId !== 'rmr') return 'v1 项目仅支持迁移旧 RMR 数据。'
+  if (!isPlainRecord(candidate)) return '旧 RMR 项目缺少有效的项目对象。'
   if (isMethodId(candidate.methodId) && candidate.methodId !== methodId) {
     return `该文件属于 ${candidate.methodId.toUpperCase()}，不能导入当前算法。`
   }
   if (candidate.methodId !== 'rmr' || !isNonEmptyString(candidate.name) || !Array.isArray(candidate.points)) {
-    return '旧 RMR 案例内容无法识别。'
+    return '旧 RMR 项目内容无法识别。'
   }
   for (let index = 0; index < candidate.points.length; index += 1) {
     const point = candidate.points[index]
     if (!isPlainRecord(point) || !isNonEmptyString(point.name)) return `第 ${index + 1} 个旧 RMR 点位无效。`
-    if (point.methodId !== undefined && point.methodId !== 'rmr') return '案例内包含其他算法的点位，已拒绝导入。'
+    if (point.methodId !== undefined && point.methodId !== 'rmr') return '项目内包含其他算法的点位，已拒绝导入。'
     if (point.rmr !== undefined && !isLegacyRmrInput(point.rmr)) {
       return `第 ${index + 1} 个旧 RMR 点位的数据结构无效。`
     }
@@ -298,7 +301,7 @@ function validateLegacyRmrCase(candidate: unknown, methodId: ClassificationMetho
 }
 
 function inspectImportPayload(payload: unknown, methodId: ClassificationMethodId): ImportInspection {
-  if (!isPlainRecord(payload)) return { ok: false, error: '案例文件内容无法识别，可能已损坏。' }
+  if (!isPlainRecord(payload)) return { ok: false, error: '项目文件内容无法识别，可能已损坏。' }
 
   const looksWrapped = 'type' in payload || 'version' in payload || 'case' in payload
   if (!looksWrapped) {
@@ -306,14 +309,14 @@ function inspectImportPayload(payload: unknown, methodId: ClassificationMethodId
     return error ? { ok: false, error } : { ok: true, candidate: payload, methodId, legacyVersion: 1 }
   }
 
-  if (payload.type !== ROCKMASS_CASE_FILE_TYPE) return { ok: false, error: '案例文件类型标识无效。' }
+  if (payload.type !== ROCKMASS_CASE_FILE_TYPE) return { ok: false, error: '项目文件类型标识无效。' }
   if (!Number.isInteger(payload.version) || (payload.version as number) < 1) {
-    return { ok: false, error: '案例文件版本无效。' }
+    return { ok: false, error: '项目文件版本无效。' }
   }
   if ((payload.version as number) > ROCKMASS_CASE_FILE_VERSION) {
     return {
       ok: false,
-      error: `该案例由更高版本软件创建（v${payload.version}），当前版本无法读取。`,
+      error: `该项目由更高版本软件创建（v${payload.version}），当前版本无法读取。`,
     }
   }
 
@@ -324,8 +327,8 @@ function inspectImportPayload(payload: unknown, methodId: ClassificationMethodId
       : { ok: true, candidate: payload.case as Record<string, unknown>, methodId, legacyVersion: 1 }
   }
 
-  if (payload.version !== ROCKMASS_CASE_FILE_VERSION) return { ok: false, error: '案例文件版本无效。' }
-  if (!isNonEmptyString(payload.exportedAt)) return { ok: false, error: '案例文件缺少有效的导出时间。' }
+  if (payload.version !== ROCKMASS_CASE_FILE_VERSION) return { ok: false, error: '项目文件版本无效。' }
+  if (!isNonEmptyString(payload.exportedAt)) return { ok: false, error: '项目文件缺少有效的导出时间。' }
   const error = validateV2Case(payload.case, methodId)
   return error
     ? { ok: false, error }
@@ -377,7 +380,7 @@ function normalizeInspectedCase(inspection: Extract<ImportInspection, { ok: true
 
 export function buildCaseFilePayload(record: RockMassCaseRecord): RockMassCaseFilePayload {
   const error = validateV2Case(record, record.methodId)
-  if (error) throw new Error(`案例不符合 .rmcal v2 数据契约：${error}`)
+  if (error) throw new Error(`项目不符合 .rmcal v2 数据契约：${error}`)
   return {
     type: ROCKMASS_CASE_FILE_TYPE,
     version: ROCKMASS_CASE_FILE_VERSION,
@@ -389,9 +392,9 @@ export function buildCaseFilePayload(record: RockMassCaseRecord): RockMassCaseFi
 export async function exportCaseFile(record: RockMassCaseRecord): Promise<SaveFileResult> {
   const content = JSON.stringify(buildCaseFilePayload(record), null, 2)
   return saveFile(buildCaseFileName(record), content, {
-    title: '导出案例',
+    title: '导出项目',
     filters: [
-      { name: '岩体分级案例', extensions: ['rmcal'] },
+      { name: '岩体分级项目', extensions: ['rmcal'] },
       { name: '所有文件', extensions: ['*'] },
     ],
     mimeType: 'application/json;charset=utf-8',
@@ -410,7 +413,7 @@ export async function readCaseFromFile(
   file: File,
   methodId: ClassificationMethodId
 ): Promise<{ record: RockMassCaseRecord } | { error: string }> {
-  if (!isCaseFileName(file.name)) return { error: `仅支持 ${ROCKMASS_CASE_FILE_EXT} 案例文件。` }
+  if (!isCaseFileName(file.name)) return { error: `仅支持 ${ROCKMASS_CASE_FILE_EXT} 项目文件。` }
   try {
     const payload = JSON.parse(await file.text()) as unknown
     const inspection = inspectImportPayload(payload, methodId)

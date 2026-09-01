@@ -27,7 +27,7 @@ const OPTIONS: {
   },
   {
     id: 'case',
-    title: { zh: '.rmcal 案例文件', en: '.rmcal case file' },
+    title: { zh: '.rmcal 项目文件', en: '.rmcal project file' },
     description: {
       zh: '保留全部点位输入，可重新导入本软件继续编辑。',
       en: 'Preserves all point inputs for later import and editing in this application.',

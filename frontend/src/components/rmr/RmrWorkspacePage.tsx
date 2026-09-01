@@ -17,5 +17,5 @@ interface RmrWorkspacePageProps {
 }
 
 export default function RmrWorkspacePage(props: RmrWorkspacePageProps) {
-  return <ClassificationWorkspacePage {...props} terminology="project" />
+  return <ClassificationWorkspacePage {...props} />
 }

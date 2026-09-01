@@ -1,5 +1,5 @@
 /** 岩体质量与分级方法 ID */
-export type ClassificationMethodId = 'rqd' | 'bq' | 'q' | 'rmr' | 'mrmr'
+export type ClassificationMethodId = 'rqd' | 'bq' | 'q' | 'rmr' | 'mrmr' | 'gsi'
 
 /** 侧栏选中的分级方法 */
 export interface SelectedMethod {
@@ -15,6 +15,7 @@ export const CLASSIFICATION_METHODS: SelectedMethod[] = [
   { id: 'q', name: 'Q分级', nameEn: 'Q Classification', category: 'classification' },
   { id: 'rmr', name: 'RMR分级', nameEn: 'RMR Classification', category: 'classification' },
   { id: 'mrmr', name: 'MRMR分级', nameEn: 'MRMR Classification', category: 'classification' },
+  { id: 'gsi', name: 'GSI分级', nameEn: 'GSI Classification', category: 'classification' },
 ]
 
 export function getClassificationMethod(id: ClassificationMethodId): SelectedMethod {

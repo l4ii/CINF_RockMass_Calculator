@@ -161,7 +161,7 @@ export default function RmrModule({ darkMode, language, methodName, onBackToHome
     for (const file of list) {
       const result = await readCaseFromFile(file, METHOD_ID)
       if ('record' in result) imported.push(result.record)
-      else errors.push(isEn ? `${file.name}: The case file is invalid, incompatible, or from a newer version.` : `${file.name}：${result.error}`)
+      else errors.push(isEn ? `${file.name}: The project file is invalid, incompatible, or from a newer version.` : `${file.name}：${result.error}`)
     }
     if (imported.length > 0) {
       persistList(
@@ -188,7 +188,7 @@ export default function RmrModule({ darkMode, language, methodName, onBackToHome
         format === 'case'
           ? await exportCaseFile(record)
           : await import('../../utils/rockmassReportDocx').then((module) => module.exportCaseReport(record))
-      if (result.ok) setMessage(format === 'case' ? (isEn ? 'Case file exported.' : '案例文件已导出。') : (isEn ? 'Word report exported.' : 'Word 报告已导出。'))
+      if (result.ok) setMessage(format === 'case' ? (isEn ? 'Project file exported.' : '项目文件已导出。') : (isEn ? 'Word report exported.' : 'Word 报告已导出。'))
       else if (!result.cancelled) {
         const detail = result.error ?? '未知错误'
         setMessage(isEn ? englishErrorDetail(detail, 'Export failed') : `导出失败：${detail}`)
@@ -201,7 +201,7 @@ export default function RmrModule({ darkMode, language, methodName, onBackToHome
     }
   }
 
-  /* ---------------- 案例内 ---------------- */
+  /* ---------------- 项目内 ---------------- */
 
   const updateDraft = (patch: Partial<RockMassCaseRecord>) => {
     setDraft((current) => (current ? { ...current, ...patch } : current))

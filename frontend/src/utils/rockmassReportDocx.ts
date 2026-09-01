@@ -150,7 +150,7 @@ function buildPointSection(row: RmrPointSummary) {
       { label: '钢支架', value: info.steelArch },
     ]))
   } else {
-    blocks.push(paragraph(row.needsReview ? '该点位由旧版案例迁移，需重新打开并确认后才形成 RMR 结论。' : `该点位尚有 ${6 - row.scores.completedCount} 项参数未选择，未形成分级结论。`, { before: 160 }))
+    blocks.push(paragraph(row.needsReview ? '该点位由旧版项目迁移，需重新打开并确认后才形成 RMR 结论。' : `该点位尚有 ${6 - row.scores.completedCount} 项参数未选择，未形成分级结论。`, { before: 160 }))
   }
   return blocks
 }

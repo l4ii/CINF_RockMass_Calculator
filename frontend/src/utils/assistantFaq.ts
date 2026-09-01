@@ -12,7 +12,7 @@ export function buildAssistantWelcome(language: 'zh' | 'en'): string {
       `Welcome to ${APP_NAME_EN}.`,
       '',
       `I'm the in-app assistant. I can help with:`,
-      '• Choosing BQ / Q / RMR / MRMR classification from the left sidebar.',
+      '• Choosing BQ / Q / RMR / MRMR / GSI classification from the left sidebar.',
       '• Understanding formula pages, parameters, and grade results.',
       '• Privacy/license/update hints shown in Settings.',
       '',
@@ -23,7 +23,7 @@ export function buildAssistantWelcome(language: 'zh' | 'en'): string {
     `欢迎使用「${APP_NAME_ZH}」。`,
     '',
     '我是本软件的智能助手，可协助您：',
-    '• 在左侧选择 RQD、BQ、Q、RMR、MRMR 分级方法；',
+    '• 在左侧选择 RQD、BQ、Q、RMR、MRMR、GSI 分级方法；',
     '• 理解公式页参数含义与分级结果提示；',
     '• 说明设置页中的许可、隐私与更新提示。',
     '',
@@ -58,7 +58,7 @@ export function tryRuleBasedAssistantReply(
       : `${APP_NAME_EN} is developed under Changsha Nonferrous — see sidebar About Us for organization pages.`
   }
 
-  if (zh ? /侧栏|左边|导航|在哪|找不到|切换|BQ|RMR|MRMR|分级/.test(raw) : /\bsidebar\b|\bnavigation\b|\bwhere\b.*\b(find|open)|\bbq\b|\brmr\b|\bmrmr\b|\bq\b/i.test(q)) {
+  if (zh ? /侧栏|左边|导航|在哪|找不到|切换|BQ|RMR|MRMR|GSI|分级/.test(raw) : /\bsidebar\b|\bnavigation\b|\bwhere\b.*\b(find|open)|\bbq\b|\brmr\b|\bmrmr\b|\bgsi\b|\bq\b/i.test(q)) {
     const names = CLASSIFICATION_METHODS.map((m) => (zh ? m.name : m.nameEn)).join(zh ? '、' : ', ')
     return zh
       ? `请在左侧「岩体分级」中点选：${names}。进入后可查看公式、输入参数并点击「开始计算」；可用左上角返回清空当前方法。「设置」「了解我们」在侧栏底部。`

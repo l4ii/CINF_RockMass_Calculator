@@ -72,7 +72,7 @@ export default function ClassificationPointListPage({
         count: `${caseRecord.points.length} ${caseRecord.points.length === 1 ? 'point' : 'points'}`,
         projectInfo: 'Project information',
         fields: [
-          { label: 'Case name', placeholder: 'Case name' },
+          { label: 'Project name', placeholder: 'Project name' },
           { label: 'Project name', placeholder: 'e.g. Deep mine development' },
           { label: 'Project location', placeholder: 'e.g. -450 m level' },
           { label: 'Notes', placeholder: 'Data source or investigation stage' },
@@ -94,7 +94,7 @@ export default function ClassificationPointListPage({
         count: `共 ${caseRecord.points.length} 个点位`,
         projectInfo: '工程信息',
         fields: [
-          { label: '案例名称', placeholder: '案例名称' },
+          { label: '项目名称', placeholder: '项目名称' },
           { label: '工程名称', placeholder: '如：深部开拓工程' },
           { label: '工程部位', placeholder: '如：-450 m 中段' },
           { label: '备注', placeholder: '资料来源或勘察阶段' },

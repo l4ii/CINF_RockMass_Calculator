@@ -8,6 +8,7 @@
 
 import type { ClassificationMethodId } from '../types'
 import type { BqFormState } from '../methods/bq'
+import type { GsiFormState } from '../methods/gsi'
 import type { MrmrFormState } from '../methods/mrmr'
 import type { QFormState } from '../methods/q'
 import type { RqdFormState } from '../methods/rqd'
@@ -24,6 +25,7 @@ export interface RockMassInputByMethod {
   q: QFormState
   rmr: RmrFormState
   mrmr: MrmrFormState
+  gsi: GsiFormState
 }
 
 export interface RockMassPointRecord<Method extends ClassificationMethodId = ClassificationMethodId> {
@@ -60,7 +62,7 @@ export type RockMassPointRecordByMethod = {
 
 export interface RockMassCaseRecord {
   id: string
-  /** 案例名称（工作区名称） */
+  /** 项目名称（工作区名称） */
   name: string
   methodId: ClassificationMethodId
   schemaVersion?: 2

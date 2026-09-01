@@ -4,6 +4,8 @@ import ClassificationModule from './classification/ClassificationModule'
 import BqModule from './bq/BqModule'
 import RmrModule from './rmr/RmrModule'
 import MrmrModule from './mrmr/MrmrModule'
+import GsiModule from './gsi/GsiModule'
+import QModule from './q/QModule'
 import { useAssistantSnapshotOptional } from '../context/AssistantContext'
 import { CLASSIFICATION_MODULE_REGISTRY, isGenericClassificationMethod } from '../methods/registry'
 import type { MrmrHandoff } from '../methods/mrmr'
@@ -141,6 +143,29 @@ export default function MainContent({
     return (
       <BqModule
         key="bq"
+        darkMode={darkMode}
+        language={language}
+        onBackToHome={() => onBackToHome?.()}
+      />
+    )
+  }
+
+  if (selectedMethod.id === 'gsi') {
+    return (
+      <GsiModule
+        key="gsi"
+        darkMode={darkMode}
+        language={language}
+        methodName={language === 'en' ? selectedMethod.nameEn : selectedMethod.name}
+        onBackToHome={() => onBackToHome?.()}
+      />
+    )
+  }
+
+  if (selectedMethod.id === 'q') {
+    return (
+      <QModule
+        key="q"
         darkMode={darkMode}
         language={language}
         onBackToHome={() => onBackToHome?.()}

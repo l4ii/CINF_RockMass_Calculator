@@ -1,4 +1,4 @@
-import type { AnyClassificationAdapter, ParameterDescription } from '../types'
+import type { AnyClassificationAdapter, ParameterDescription, ResultMetric } from '../types'
 import {
   Q_JA_OPTIONS,
   Q_JN_OPTIONS,
@@ -9,8 +9,10 @@ import {
   calculateQ,
   createInitialQState,
   describeQ,
+  displayedFactorValue,
   normalizeQState,
   validateQState,
+  type QFactorOption,
 } from '../q'
 
 function formatQ(value: number) {
@@ -18,17 +20,25 @@ function formatQ(value: number) {
   return Number(value.toPrecision(5)).toString()
 }
 
+function factorText(id: string, value: number | null, options: readonly QFactorOption[]) {
+  const resolved = displayedFactorValue(id, value, options)
+  if (resolved != null) return { zh: String(resolved), en: String(resolved) }
+  return { zh: '未选择', en: 'Not selected' }
+}
+
 function incompleteDescriptions(form: Record<string, unknown>): ParameterDescription[] {
   const state = normalizeQState(form)
-  const lookup = (id: string, options: readonly { id: string; label: { zh: string; en: string } }[]) =>
-    options.find((item) => item.id === id)?.label
+  const factor = (id: string, value: number | null, options: readonly QFactorOption[]) => {
+    const text = factorText(id, value, options)
+    return { value: text.zh, valueEn: text.en }
+  }
   return [
     { key: 'RQD', label: '岩石质量指标 RQD', labelEn: 'RQD', value: state.rqd == null ? '未填写' : `${state.rqd}%`, valueEn: state.rqd == null ? 'Not entered' : `${state.rqd}%` },
-    { key: 'Jn', label: '节理组数 Jn', labelEn: 'Joint set Jn', value: lookup(state.jnId, Q_JN_OPTIONS)?.zh ?? '未选择', valueEn: lookup(state.jnId, Q_JN_OPTIONS)?.en ?? 'Not selected' },
-    { key: 'Jr', label: '节理粗糙度 Jr', labelEn: 'Joint roughness Jr', value: lookup(state.jrId, Q_JR_OPTIONS)?.zh ?? '未选择', valueEn: lookup(state.jrId, Q_JR_OPTIONS)?.en ?? 'Not selected' },
-    { key: 'Ja', label: '节理蚀变 Ja', labelEn: 'Joint alteration Ja', value: lookup(state.jaId, Q_JA_OPTIONS)?.zh ?? '未选择', valueEn: lookup(state.jaId, Q_JA_OPTIONS)?.en ?? 'Not selected' },
-    { key: 'Jw', label: '节理水 Jw', labelEn: 'Joint water Jw', value: lookup(state.jwId, Q_JW_OPTIONS)?.zh ?? '未选择', valueEn: lookup(state.jwId, Q_JW_OPTIONS)?.en ?? 'Not selected' },
-    { key: 'SRF', label: '应力折减 SRF', labelEn: 'SRF', value: lookup(state.srfId, Q_SRF_OPTIONS)?.zh ?? '未选择', valueEn: lookup(state.srfId, Q_SRF_OPTIONS)?.en ?? 'Not selected' },
+    { key: 'Jn', label: '节理组数 Jn', labelEn: 'Joint set Jn', ...factor(state.jnId, state.jnValue, Q_JN_OPTIONS) },
+    { key: 'Jr', label: '节理粗糙度 Jr', labelEn: 'Joint roughness Jr', ...factor(state.jrId, state.jrValue, Q_JR_OPTIONS) },
+    { key: 'Ja', label: '节理蚀变 Ja', labelEn: 'Joint alteration Ja', ...factor(state.jaId, state.jaValue, Q_JA_OPTIONS) },
+    { key: 'Jw', label: '节理水 Jw', labelEn: 'Joint water Jw', ...factor(state.jwId, state.jwValue, Q_JW_OPTIONS) },
+    { key: 'SRF', label: '应力折减 SRF', labelEn: 'SRF', ...factor(state.srfId, state.srfValue, Q_SRF_OPTIONS) },
   ]
 }
 
@@ -53,29 +63,32 @@ export const qAdapter: AnyClassificationAdapter = {
       .map((issue) => ({ field: String(issue.field), message: issue.message.zh, messageEn: issue.message.en })),
   calculate: (form) => {
     const result = calculateQ(form)
+    const metrics: ResultMetric[] = [
+      { key: 'block', label: 'RQD / Jn', labelEn: 'RQD / Jn', value: formatQ(result.breakdown.blockSize) },
+      { key: 'shear', label: 'Jr / Ja', labelEn: 'Jr / Ja', value: formatQ(result.breakdown.jointShearStrength) },
+      { key: 'stress', label: 'Jw / SRF', labelEn: 'Jw / SRF', value: formatQ(result.breakdown.activeStress) },
+    ]
+    if (result.equivalentDimension != null && result.support) {
+      metrics.push(
+        { key: 'de', label: '等效尺寸 De', labelEn: 'Equivalent dimension De', value: `${result.equivalentDimension} m` },
+        { key: 'support', label: '初步支护', labelEn: 'Preliminary support', value: `${result.support.category} 区`, valueEn: `Category ${result.support.category}` },
+      )
+    }
     return {
       value: result.q,
       displayValue: `Q = ${formatQ(result.q)}`,
       grade: result.grade.label.zh,
       gradeEn: result.grade.label.en,
-      summary: `${result.formula.zh}；初步支护 ${result.support.category} 区：${result.support.label.zh}`,
-      summaryEn: `${result.formula.en}; preliminary support category ${result.support.category}: ${result.support.label.en}`,
-      metrics: [
-        { key: 'block', label: 'RQD / Jn', labelEn: 'RQD / Jn', value: formatQ(result.breakdown.blockSize) },
-        { key: 'shear', label: 'Jr / Ja', labelEn: 'Jr / Ja', value: formatQ(result.breakdown.jointShearStrength) },
-        { key: 'stress', label: 'Jw / SRF', labelEn: 'Jw / SRF', value: formatQ(result.breakdown.activeStress) },
-        { key: 'de', label: '等效尺寸 De', labelEn: 'Equivalent dimension De', value: `${result.equivalentDimension} m` },
-        { key: 'support', label: '初步支护', labelEn: 'Preliminary support', value: `${result.support.category} 区`, valueEn: `Category ${result.support.category}` },
-      ],
+      summary: result.formula.zh,
+      summaryEn: result.formula.en,
+      metrics,
       warnings: [
         ...result.warnings.map((warning) => warning.message.zh),
-        result.support.sourceNote.zh,
-        result.support.recommendation.zh,
+        ...(result.support ? [result.support.sourceNote.zh, result.support.recommendation.zh] : []),
       ],
       warningsEn: [
         ...result.warnings.map((warning) => warning.message.en),
-        result.support.sourceNote.en,
-        result.support.recommendation.en,
+        ...(result.support ? [result.support.sourceNote.en, result.support.recommendation.en] : []),
       ],
     }
   },
@@ -90,7 +103,7 @@ export const qAdapter: AnyClassificationAdapter = {
       valueEn:
         row.key === 'grade'
           ? calculated.grade.label.en
-          : row.key === 'support'
+          : row.key === 'support' && calculated.support
             ? `Category ${calculated.support.category}: ${calculated.support.label.en}`
             : row.value
                 .replace('（保守取值）', ' (conservative)')

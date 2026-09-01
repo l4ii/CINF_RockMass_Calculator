@@ -198,7 +198,7 @@ export default function ClassificationModule({
   const createCase = () => {
     const caseName = newCaseName.trim() || suggestLocalizedCaseName(adapter, language)
     const record = buildBlankCase(adapter.id, caseName, adapter.standard.id)
-    persist(record, isEn ? `Case created: ${record.name}` : `已新建案例：${record.name}`)
+    persist(record, isEn ? `Project created: ${record.name}` : `已新建项目：${record.name}`)
     setDraft(record)
     setActivePointId(null)
     setStage('points')
@@ -213,7 +213,7 @@ export default function ClassificationModule({
       if ('error' in read) {
         errors.push(
           isEn
-            ? `${file.name}: The case file is invalid, incompatible, or from a newer version.`
+            ? `${file.name}: The project file is invalid, incompatible, or from a newer version.`
             : `${file.name}：${read.error}`
         )
         continue
@@ -239,8 +239,8 @@ export default function ClassificationModule({
         setCases(next)
         setMessage(
           isEn
-            ? `${imported.length} ${imported.length === 1 ? 'case' : 'cases'} imported.`
-            : `已导入 ${imported.length} 个案例。`
+            ? `${imported.length} ${imported.length === 1 ? 'project' : 'projects'} imported.`
+            : `已导入 ${imported.length} 个项目。`
         )
       } else {
         setMessage(isEn ? englishErrorDetail(write.error, 'Save failed') : `保存失败：${write.error}`)
@@ -391,7 +391,7 @@ export default function ClassificationModule({
             else {
               casesRef.current = next
               setCases(next)
-              setMessage(isEn ? `Case deleted: ${deleteRequest.name}` : `已删除案例：${deleteRequest.name}`)
+              setMessage(isEn ? `Project deleted: ${deleteRequest.name}` : `已删除项目：${deleteRequest.name}`)
             }
           } else if (draft) {
             updateDraft({ points: draft.points.filter((point) => point.id !== deleteRequest.id) })

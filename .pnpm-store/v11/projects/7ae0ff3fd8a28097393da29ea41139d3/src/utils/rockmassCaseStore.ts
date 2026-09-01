@@ -18,6 +18,7 @@ const METHOD_LABELS: Record<ClassificationMethodId, string> = {
   q: 'Q',
   rmr: 'RMR',
   mrmr: 'MRMR',
+  gsi: 'GSI',
 }
 
 function padDatePart(value: number) {
@@ -80,7 +81,7 @@ function isPointRecord(value: unknown): value is RockMassPointRecord {
 }
 
 function isMethodId(value: unknown): value is ClassificationMethodId {
-  return value === 'rqd' || value === 'bq' || value === 'q' || value === 'rmr' || value === 'mrmr'
+  return value === 'rqd' || value === 'bq' || value === 'q' || value === 'rmr' || value === 'mrmr' || value === 'gsi'
 }
 
 function normalizeCaseRecord(value: unknown, fromLegacyStorage: boolean): RockMassCaseRecord | null {

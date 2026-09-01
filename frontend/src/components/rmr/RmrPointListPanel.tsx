@@ -69,18 +69,18 @@ export default function RmrPointListPanel({
   const cellCls = `border-b ${border} px-1.5 py-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`
   const copy = isEn
     ? {
-        back: 'Back to workspace', workspace: 'Project workspace', title: 'Project points',
+        back: 'Back to project workspace', workspace: 'Project workspace', title: 'Project points',
         count: `${caseRecord.points.length} ${caseRecord.points.length === 1 ? 'point' : 'points'}`,
         caseInfo: 'Project information', caseName: 'Project name', projectName: 'Engineering name',
         projectNamePlaceholder: 'e.g. Deep mine development', projectLocation: 'Project location',
         projectLocationPlaceholder: 'e.g. -450 m haulage level', notes: 'Notes',
         notesPlaceholder: 'Investigation stage or data source', points: 'Points', newPoint: 'New point',
-        overview: 'Project overview', empty: 'This case has no points. Select “New point” to begin an RMR classification.',
+        overview: 'Project overview', empty: 'This project has no points. Select “New point” to begin an RMR classification.',
         headers: ['No.', 'Point name', 'Note', 'Ore type', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'RMR', 'Class', 'Actions'],
         edit: 'Edit', duplicate: 'Copy', delete: 'Delete',
       }
     : {
-        back: '返回工作区', workspace: '项目工作区', title: '项目点位', count: `共 ${caseRecord.points.length} 个点位`,
+        back: '返回项目工作区', workspace: '项目工作区', title: '项目点位', count: `共 ${caseRecord.points.length} 个点位`,
         caseInfo: '项目信息', caseName: '项目名称', projectName: '工程名称', projectNamePlaceholder: '如：某铜矿深部开拓工程',
         projectLocation: '工程部位', projectLocationPlaceholder: '如：-450 m 中段运输巷', notes: '备注',
         notesPlaceholder: '勘察阶段、资料来源等', points: '点位列表', newPoint: '新建点位', overview: '工程总览',

@@ -39,6 +39,7 @@ export default function Sidebar({
     'q',
     'rmr',
     'mrmr',
+    'gsi',
   ].map((id) => {
     const method = CLASSIFICATION_METHODS.find((item) => item.id === id) ?? null
     return {
@@ -48,12 +49,6 @@ export default function Sidebar({
       method,
       available: method != null,
     }
-  }).concat({
-    id: 'gsi',
-    name: 'GSI分级',
-    nameEn: 'GSI Classification',
-    method: null,
-    available: false,
   })
   const groups = [{
     id: 'classification' as const,

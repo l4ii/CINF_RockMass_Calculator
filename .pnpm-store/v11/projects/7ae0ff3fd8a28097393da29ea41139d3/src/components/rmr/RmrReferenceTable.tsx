@@ -1,3 +1,4 @@
+import type { KeyboardEvent, WheelEvent } from 'react'
 import {
   A6_ADJUSTMENT,
   FAVORABILITY_OPTIONS,
@@ -13,6 +14,14 @@ import {
 
 function tableShell(darkMode: boolean) {
   return darkMode ? 'border-gray-600' : 'border-gray-300'
+}
+
+function preventNumberWheel(event: WheelEvent<HTMLInputElement>) {
+  event.currentTarget.blur()
+}
+
+function preventNumberArrow(event: KeyboardEvent<HTMLInputElement>) {
+  if (event.key === 'ArrowUp' || event.key === 'ArrowDown') event.preventDefault()
 }
 
 function headCell(darkMode: boolean) {
@@ -294,6 +303,8 @@ function DetailSelectionControls({
                 step="0.01"
                 className={`${inputCls} pr-10`}
                 placeholder={isEn ? 'Enter value' : '请输入数值'}
+                onWheel={preventNumberWheel}
+                onKeyDown={preventNumberArrow}
                 onChange={(event) => {
                   const optionId = matchNumericOption(row, event.target.value)
                   if (optionId) onSelect?.(row.key, optionId)

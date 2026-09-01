@@ -148,10 +148,10 @@ export interface QResult {
   }
   q: number
   grade: QGradeInfo
-  span: number
-  esr: QResolvedEsr
-  equivalentDimension: number
-  support: QSupportRecommendation
+  span: number | null
+  esr: QResolvedEsr | null
+  equivalentDimension: number | null
+  support: QSupportRecommendation | null
   warnings: QValidationIssue[]
   formula: QLocalizedText
   sourceNote: QLocalizedText
@@ -389,20 +389,81 @@ export const Q_GRADES: readonly QGradeInfo[] = [
   { id: 'exceptionally_poor', label: text('极差', 'Exceptionally poor'), range: 'Q < 0.01' },
 ]
 
+export const Q_FACTOR_CONSERVATIVE_END: Record<QFactorSymbol, 'minimum' | 'maximum'> = {
+  Jn: 'maximum',
+  Jr: 'minimum',
+  Ja: 'maximum',
+  Jw: 'minimum',
+  SRF: 'maximum',
+}
+
+function boundsOf(options: readonly QFactorOption[]) {
+  return {
+    min: Math.min(...options.map((item) => item.range.min)),
+    max: Math.max(...options.map((item) => item.range.max)),
+  }
+}
+
+export const Q_FACTOR_BOUNDS = {
+  Jn: boundsOf(Q_JN_OPTIONS),
+  Jr: boundsOf(Q_JR_OPTIONS),
+  Ja: boundsOf(Q_JA_OPTIONS),
+  Jw: boundsOf(Q_JW_OPTIONS),
+  SRF: boundsOf(Q_SRF_OPTIONS),
+} as const
+
+export function factorOptionsFor(symbol: QFactorSymbol): readonly QFactorOption[] {
+  if (symbol === 'Jn') return Q_JN_OPTIONS
+  if (symbol === 'Jr') return Q_JR_OPTIONS
+  if (symbol === 'Ja') return Q_JA_OPTIONS
+  if (symbol === 'Jw') return Q_JW_OPTIONS
+  return Q_SRF_OPTIONS
+}
+
+export function groupFactorOptions(options: readonly QFactorOption[]) {
+  const groups: Array<{ label: QLocalizedText; options: QFactorOption[] }> = []
+  for (const option of options) {
+    const last = groups[groups.length - 1]
+    if (last && last.label.zh === option.group.zh) last.options.push(option)
+    else groups.push({ label: option.group, options: [option] })
+  }
+  return groups
+}
+
+export function conservativeAdoptedValue(option: QFactorOption, end: 'minimum' | 'maximum' = Q_FACTOR_CONSERVATIVE_END[option.symbol]) {
+  return end === 'minimum' ? option.range.min : option.range.max
+}
+
+export function displayedFactorValue(id: string, value: number | null, options: readonly QFactorOption[]): number | null {
+  if (value != null) return value
+  const option = findOption(options, id)
+  return option ? conservativeAdoptedValue(option) : null
+}
+
+export function matchFactorOption(options: readonly QFactorOption[], value: number, preferredId = '') {
+  const matches = options.filter((item) => value >= item.range.min && value <= item.range.max)
+  if (preferredId) {
+    const preferred = matches.find((item) => item.id === preferredId)
+    if (preferred) return preferred
+  }
+  const exact = matches.filter((item) => item.range.min === item.range.max)
+  return exact[0] ?? matches[0] ?? null
+}
+
 export const createInitialQState = (): QFormState => ({
   rqd: null,
-  jnId: 'two_sets',
+  jnId: '',
   jnValue: null,
-  jrId: 'rough_undulating',
+  jrId: '',
   jrValue: null,
-  jaId: 'unaltered_walls',
+  jaId: '',
   jaValue: null,
-  jwId: 'dry_minor',
+  jwId: '',
   jwValue: null,
-  srfId: 'medium_stress',
+  srfId: '',
   srfValue: null,
   span: null,
-  esrId: 'permanent_general',
+  esrId: '',
   esrValue: null,
 })
 
@@ -453,12 +514,12 @@ function issue(
   return { field, code, severity, message: text(zh, en) }
 }
 
-function selectedOption(options: readonly QFactorOption[], id: string): QFactorOption {
-  return options.find((item) => item.id === id) as QFactorOption
+function findOption(options: readonly QFactorOption[], id: string): QFactorOption | undefined {
+  return options.find((item) => item.id === id)
 }
 
-function selectedEsrOption(id: string): QEsrOption {
-  return Q_ESR_OPTIONS.find((item) => item.id === id) as QEsrOption
+function findEsrOption(id: string): QEsrOption | undefined {
+  return Q_ESR_OPTIONS.find((item) => item.id === id)
 }
 
 function validateRangeValue(
@@ -497,6 +558,47 @@ function validateRangeValue(
   }
 }
 
+function validateFactor(
+  issues: QValidationIssue[],
+  idField: keyof QFormState,
+  valueField: keyof QFormState,
+  id: string,
+  value: number | null,
+  options: readonly QFactorOption[],
+  symbol: QFactorSymbol
+) {
+  const bounds = Q_FACTOR_BOUNDS[symbol]
+  const option = findOption(options, id)
+  if (value == null && !option) {
+    issues.push(issue(valueField, 'required', 'error', `请输入或点选 ${symbol}。`, `Enter or select ${symbol}.`))
+    return
+  }
+  if (value != null && (value < bounds.min || value > bounds.max)) {
+    issues.push(
+      issue(
+        valueField,
+        'out_of_range',
+        'error',
+        `${symbol} 必须位于 ${bounds.min}～${bounds.max}。`,
+        `${symbol} must be between ${bounds.min} and ${bounds.max}.`
+      )
+    )
+    return
+  }
+  if (option) validateRangeValue(issues, valueField, value, option.range, symbol, Q_FACTOR_CONSERVATIVE_END[symbol])
+  else if (value != null && !matchFactorOption(options, value)) {
+    issues.push(
+      issue(
+        idField,
+        'unmatched_table',
+        'warning',
+        `${symbol} = ${value} 未落入标准表档，请核对后使用。`,
+        `${symbol} = ${value} does not match a standard table cell; confirm before use.`
+      )
+    )
+  }
+}
+
 export function validateQState(input: QFormState | unknown): QValidationIssue[] {
   const state = normalizeQState(input)
   const issues: QValidationIssue[] = []
@@ -505,27 +607,48 @@ export function validateQState(input: QFormState | unknown): QValidationIssue[] 
   else if (state.rqd < 10) {
     issues.push(issue('rqd', 'nominal_minimum', 'warning', '实测 RQD 小于 10%，Q 计算按名义值 10% 代入。', 'Measured RQD is below 10%; the nominal 10% is used in Q.'))
   }
-  if (state.span == null) issues.push(issue('span', 'required', 'error', '请输入开挖跨度、直径或高度。', 'Enter excavation span, diameter, or height.'))
-  else if (state.span <= 0) issues.push(issue('span', 'out_of_range', 'error', '开挖尺寸必须大于 0 m。', 'Excavation dimension must be greater than 0 m.'))
+  if (state.span != null && state.span <= 0) issues.push(issue('span', 'out_of_range', 'error', '开挖尺寸必须大于 0 m。', 'Excavation dimension must be greater than 0 m.'))
 
-  const jn = selectedOption(Q_JN_OPTIONS, state.jnId)
-  const jr = selectedOption(Q_JR_OPTIONS, state.jrId)
-  const ja = selectedOption(Q_JA_OPTIONS, state.jaId)
-  const jw = selectedOption(Q_JW_OPTIONS, state.jwId)
-  const srf = selectedOption(Q_SRF_OPTIONS, state.srfId)
-  const esr = selectedEsrOption(state.esrId)
-  validateRangeValue(issues, 'jnValue', state.jnValue, jn.range, 'Jn', 'maximum')
-  validateRangeValue(issues, 'jrValue', state.jrValue, jr.range, 'Jr', 'minimum')
-  validateRangeValue(issues, 'jaValue', state.jaValue, ja.range, 'Ja', 'maximum')
-  validateRangeValue(issues, 'jwValue', state.jwValue, jw.range, 'Jw', 'minimum')
-  validateRangeValue(issues, 'srfValue', state.srfValue, srf.range, 'SRF', 'maximum')
-  validateRangeValue(issues, 'esrValue', state.esrValue, esr.range, 'ESR', 'minimum')
+  validateFactor(issues, 'jnId', 'jnValue', state.jnId, state.jnValue, Q_JN_OPTIONS, 'Jn')
+  validateFactor(issues, 'jrId', 'jrValue', state.jrId, state.jrValue, Q_JR_OPTIONS, 'Jr')
+  validateFactor(issues, 'jaId', 'jaValue', state.jaId, state.jaValue, Q_JA_OPTIONS, 'Ja')
+  validateFactor(issues, 'jwId', 'jwValue', state.jwId, state.jwValue, Q_JW_OPTIONS, 'Jw')
+  validateFactor(issues, 'srfId', 'srfValue', state.srfId, state.srfValue, Q_SRF_OPTIONS, 'SRF')
+
+  const esr = findEsrOption(state.esrId)
+  if (esr) validateRangeValue(issues, 'esrValue', state.esrValue, esr.range, 'ESR', 'minimum')
   return issues
 }
 
 function round(value: number, digits = 4): number {
   const factor = 10 ** digits
   return Math.round((value + Number.EPSILON) * factor) / factor
+}
+
+function typedFactor(symbol: QFactorSymbol, value: number): QResolvedFactor {
+  return {
+    symbol,
+    optionId: '',
+    group: text('手填取值', 'Typed value'),
+    label: text(`手填 ${symbol} = ${value}`, `Typed ${symbol} = ${value}`),
+    range: { min: value, max: value },
+    value,
+    conservativeEnd: Q_FACTOR_CONSERVATIVE_END[symbol],
+    usedConservativeDefault: false,
+    sourceRef: 'typed-value',
+  }
+}
+
+function resolveFactorInput(
+  options: readonly QFactorOption[],
+  id: string,
+  value: number | null,
+  symbol: QFactorSymbol
+): QResolvedFactor {
+  const end = Q_FACTOR_CONSERVATIVE_END[symbol]
+  const option = findOption(options, id) ?? (value != null ? matchFactorOption(options, value, id) : null)
+  if (option) return resolveFactor(option, value, end)
+  return typedFactor(symbol, value as number)
 }
 
 function resolveFactor(
@@ -657,17 +780,18 @@ export function calculateQ(input: QFormState | unknown): QResult {
   if (errors.length > 0) throw new QValidationError(errors)
 
   const effectiveRqd = Math.max(10, state.rqd as number)
-  const jn = resolveFactor(selectedOption(Q_JN_OPTIONS, state.jnId), state.jnValue, 'maximum')
-  const jr = resolveFactor(selectedOption(Q_JR_OPTIONS, state.jrId), state.jrValue, 'minimum')
-  const ja = resolveFactor(selectedOption(Q_JA_OPTIONS, state.jaId), state.jaValue, 'maximum')
-  const jw = resolveFactor(selectedOption(Q_JW_OPTIONS, state.jwId), state.jwValue, 'minimum')
-  const srf = resolveFactor(selectedOption(Q_SRF_OPTIONS, state.srfId), state.srfValue, 'maximum')
-  const esr = resolveEsr(selectedEsrOption(state.esrId), state.esrValue)
+  const jn = resolveFactorInput(Q_JN_OPTIONS, state.jnId, state.jnValue, 'Jn')
+  const jr = resolveFactorInput(Q_JR_OPTIONS, state.jrId, state.jrValue, 'Jr')
+  const ja = resolveFactorInput(Q_JA_OPTIONS, state.jaId, state.jaValue, 'Ja')
+  const jw = resolveFactorInput(Q_JW_OPTIONS, state.jwId, state.jwValue, 'Jw')
+  const srf = resolveFactorInput(Q_SRF_OPTIONS, state.srfId, state.srfValue, 'SRF')
+  const esrOption = findEsrOption(state.esrId)
+  const esr = esrOption ? resolveEsr(esrOption, state.esrValue) : null
   const blockSize = effectiveRqd / jn.value
   const jointShearStrength = jr.value / ja.value
   const activeStress = jw.value / srf.value
   const q = blockSize * jointShearStrength * activeStress
-  const equivalentDimension = (state.span as number) / esr.value
+  const equivalentDimension = state.span != null && esr ? state.span / esr.value : null
 
   return {
     standard: Q_STANDARD,
@@ -681,13 +805,21 @@ export function calculateQ(input: QFormState | unknown): QResult {
     },
     q: round(q, 6),
     grade: gradeFromQ(q),
-    span: state.span as number,
+    span: state.span,
     esr,
-    equivalentDimension: round(equivalentDimension),
-    support: supportFromQ(q, equivalentDimension),
+    equivalentDimension: equivalentDimension == null ? null : round(equivalentDimension),
+    support: equivalentDimension == null ? null : supportFromQ(q, equivalentDimension),
     warnings: issues.filter((item) => item.severity === 'warning'),
     formula: text('Q = (RQD / Jn) × (Jr / Ja) × (Jw / SRF)', 'Q = (RQD / Jn) × (Jr / Ja) × (Jw / SRF)'),
     sourceNote: Q_STANDARD.sourceNote,
+  }
+}
+
+export function tryCalculateQ(input: QFormState | unknown): QResult | null {
+  try {
+    return calculateQ(input)
+  } catch {
+    return null
   }
 }
 
@@ -728,32 +860,36 @@ export function describeQ(input: QFormState | unknown, suppliedResult?: QResult)
       label: text('岩体质量等级', 'Rock-mass quality class'),
       value: result.grade.label.zh,
       basis: text(result.grade.range, result.grade.range),
-    },
-    {
-      key: 'span',
-      label: text('开挖跨度、直径或高度', 'Excavation span, diameter, or height'),
-      value: `${result.span} m`,
-      basis: text('工程输入', 'Project input'),
-    },
-    {
-      key: 'ESR',
-      label: text('开挖支护比 ESR', 'Excavation support ratio ESR'),
-      value: `${result.esr.value}${result.esr.usedConservativeDefault ? '（保守取区间下限）' : ''}`,
-      basis: result.esr.label,
-    },
-    {
-      key: 'De',
-      label: text('等效尺寸 De', 'Equivalent dimension De'),
-      value: `${result.equivalentDimension} m`,
-      basis: text('De = 开挖尺寸 / ESR', 'De = excavation dimension / ESR'),
-    },
-    {
-      key: 'support',
-      label: text('初步支护分区', 'Preliminary support zone'),
-      value: `${result.support.category} 区：${result.support.label.zh}`,
-      basis: result.support.sourceNote,
     }
   )
+  if (result.span != null && result.esr && result.equivalentDimension != null && result.support) {
+    rows.push(
+      {
+        key: 'span',
+        label: text('开挖跨度、直径或高度', 'Excavation span, diameter, or height'),
+        value: `${result.span} m`,
+        basis: text('工程输入', 'Project input'),
+      },
+      {
+        key: 'ESR',
+        label: text('开挖支护比 ESR', 'Excavation support ratio ESR'),
+        value: `${result.esr.value}${result.esr.usedConservativeDefault ? '（保守取区间下限）' : ''}`,
+        basis: result.esr.label,
+      },
+      {
+        key: 'De',
+        label: text('等效尺寸 De', 'Equivalent dimension De'),
+        value: `${result.equivalentDimension} m`,
+        basis: text('De = 开挖尺寸 / ESR', 'De = excavation dimension / ESR'),
+      },
+      {
+        key: 'support',
+        label: text('初步支护分区', 'Preliminary support zone'),
+        value: `${result.support.category} 区：${result.support.label.zh}`,
+        basis: result.support.sourceNote,
+      }
+    )
+  }
   return rows
 }
 
