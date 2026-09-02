@@ -16,6 +16,7 @@ function renderPage(onComplete = vi.fn(), initialForm: Record<string, unknown> =
         pointName="P1"
         pointNote=""
         pointOreType=""
+        oreTypeOptions={['花岗岩']}
         pointOrdinal={1}
         pointTotal={1}
         form={form}
@@ -82,6 +83,15 @@ describe('BQ dedicated page', () => {
     expect(screen.getByTestId('bq-basic-quality-title').parentElement?.querySelector('span')).toBeNull()
     expect(screen.getByLabelText('Rc 输入值（MPa）')).toHaveAttribute('placeholder', '请输入数值')
     expect(screen.getByLabelText('Kv 输入值')).toHaveAttribute('placeholder', '请输入数值')
+  })
+
+  it('labels the reusable rock-mass group field as 岩矿类型', () => {
+    renderPage()
+    const input = screen.getByLabelText('岩矿类型')
+    expect(screen.queryByText('矿岩类型组')).not.toBeInTheDocument()
+    expect(input.className).toMatch(/text-center/)
+    fireEvent.click(screen.getByRole('button', { name: '打开岩矿类型列表' }))
+    expect(screen.getByRole('option', { name: '花岗岩' })).toBeInTheDocument()
   })
 
   it('uses engineering-language guidance for basic quality and auxiliary methods', () => {

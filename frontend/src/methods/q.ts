@@ -11,17 +11,14 @@
 
 export type QIssueSeverity = 'error' | 'warning'
 export type QFactorSymbol = 'Jn' | 'Jr' | 'Ja' | 'Jw' | 'SRF'
-export type QGradeId =
-  | 'exceptionally_good'
-  | 'extremely_good'
-  | 'very_good'
-  | 'good'
-  | 'fair'
-  | 'poor'
-  | 'very_poor'
-  | 'extremely_poor'
-  | 'exceptionally_poor'
+export type QGradeId = 'I' | 'II' | 'III' | 'IV' | 'V'
+export type QJnSite = '' | 'normal' | 'intersection' | 'portal'
 export type QSupportCategory = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+export interface QFactorModifiers {
+  jnSite: QJnSite
+  jrWideSpacing: boolean
+}
 
 export interface QLocalizedText {
   zh: string
@@ -41,15 +38,6 @@ export interface QValueRange {
   max: number
 }
 
-export interface QRqdRule {
-  id: string
-  label: QLocalizedText
-  measuredRange: QValueRange
-  effectiveValue: number | 'measured'
-  sourceRef: string
-  note: QLocalizedText
-}
-
 export interface QFactorOption {
   id: string
   symbol: QFactorSymbol
@@ -57,6 +45,12 @@ export interface QFactorOption {
   label: QLocalizedText
   range: QValueRange
   sourceRef: string
+  letter?: string
+  /** Book-order rating text when it differs from min～max. */
+  displayRange?: string
+  waterPressure?: QLocalizedText
+  /** Residual friction angle shown in the Ja table, e.g. 25～35°. */
+  phiR?: QLocalizedText
   note?: QLocalizedText
 }
 
@@ -73,8 +67,12 @@ export interface QFormState {
   rqd: number | null
   jnId: string
   jnValue: number | null
+  /** Site modifier applied to the table Jn before it enters Q. */
+  jnSite: QJnSite
   jrId: string
   jrValue: number | null
+  /** When true, the relevant joint-set spacing is > 3 m and Jr is increased by 1. */
+  jrWideSpacing: boolean
   jaId: string
   jaValue: number | null
   jwId: string
@@ -192,142 +190,190 @@ export const Q_STANDARD: QSourceMetadata = {
   ),
 }
 
-/** RQD is measured numerically; this table captures the Q-system minimum rule. */
-export const Q_RQD_TABLE: readonly QRqdRule[] = [
-  {
-    id: 'nominal_minimum',
-    label: text('实测 RQD 为 0%–10%', 'Measured RQD from 0% to 10%'),
-    measuredRange: range(0, 10),
-    effectiveValue: 10,
-    sourceRef: 'Q-system RQD note',
-    note: text('计算时采用名义值 10%，实测值仍在结果中保留。', 'Use a nominal 10% in the calculation while retaining the measured value.'),
-  },
-  {
-    id: 'measured_value',
-    label: text('实测 RQD 大于 10% 且不超过 100%', 'Measured RQD above 10% and at most 100%'),
-    measuredRange: range(10, 100),
-    effectiveValue: 'measured',
-    sourceRef: 'Q-system RQD definition',
-    note: text('计算时采用实测值。', 'Use the measured value in the calculation.'),
-  },
-]
-
 const jointSetGroup = text('节理组数', 'Joint-set number')
 
 export const Q_JN_OPTIONS: readonly QFactorOption[] = [
-  { id: 'massive', symbol: 'Jn', group: jointSetGroup, label: text('整体岩体，无节理或仅少量节理', 'Massive rock, no or few joints'), range: range(0.5, 1), sourceRef: 'Q-system Jn table' },
-  { id: 'one_set', symbol: 'Jn', group: jointSetGroup, label: text('一组节理', 'One joint set'), range: range(2), sourceRef: 'Q-system Jn table' },
-  { id: 'one_set_random', symbol: 'Jn', group: jointSetGroup, label: text('一组节理加零星节理', 'One joint set plus random joints'), range: range(3), sourceRef: 'Q-system Jn table' },
-  { id: 'two_sets', symbol: 'Jn', group: jointSetGroup, label: text('两组节理', 'Two joint sets'), range: range(4), sourceRef: 'Q-system Jn table' },
-  { id: 'two_sets_random', symbol: 'Jn', group: jointSetGroup, label: text('两组节理加零星节理', 'Two joint sets plus random joints'), range: range(6), sourceRef: 'Q-system Jn table' },
-  { id: 'three_sets', symbol: 'Jn', group: jointSetGroup, label: text('三组节理', 'Three joint sets'), range: range(9), sourceRef: 'Q-system Jn table' },
-  { id: 'three_sets_random', symbol: 'Jn', group: jointSetGroup, label: text('三组节理加零星节理', 'Three joint sets plus random joints'), range: range(12), sourceRef: 'Q-system Jn table' },
+  { id: 'massive', symbol: 'Jn', letter: 'A', group: jointSetGroup, label: text('块状岩体，无节理或只有少量节理', 'Massive rock, no or few joints'), range: range(0.5, 1), sourceRef: 'Q-system Jn table' },
+  { id: 'one_set', symbol: 'Jn', letter: 'B', group: jointSetGroup, label: text('一组节理', 'One joint set'), range: range(2), sourceRef: 'Q-system Jn table' },
+  { id: 'one_set_random', symbol: 'Jn', letter: 'C', group: jointSetGroup, label: text('一组节理与任一节理', 'One joint set plus a random joint'), range: range(3), sourceRef: 'Q-system Jn table' },
+  { id: 'two_sets', symbol: 'Jn', letter: 'D', group: jointSetGroup, label: text('两组节理', 'Two joint sets'), range: range(4), sourceRef: 'Q-system Jn table' },
+  { id: 'two_sets_random', symbol: 'Jn', letter: 'E', group: jointSetGroup, label: text('两组节理与任一节理', 'Two joint sets plus a random joint'), range: range(6), sourceRef: 'Q-system Jn table' },
+  { id: 'three_sets', symbol: 'Jn', letter: 'F', group: jointSetGroup, label: text('三组节理', 'Three joint sets'), range: range(9), sourceRef: 'Q-system Jn table' },
+  { id: 'three_sets_random', symbol: 'Jn', letter: 'G', group: jointSetGroup, label: text('三组节理与任一节理', 'Three joint sets plus a random joint'), range: range(12), sourceRef: 'Q-system Jn table' },
   {
     id: 'four_or_more',
     symbol: 'Jn',
+    letter: 'H',
     group: jointSetGroup,
-    label: text('四组或更多节理，呈碎块状', 'Four or more joint sets, heavily jointed or sugar-cube rock'),
+    label: text('四组或四组以上的节理、随机分布节理、严重节理化、岩体被切割成方糖块状等', 'Four or more joint sets, random, heavily jointed or sugar-cube rock'),
     range: range(15),
     sourceRef: 'Q-system Jn table',
   },
-  { id: 'crushed', symbol: 'Jn', group: jointSetGroup, label: text('压碎、土状岩体', 'Crushed, earth-like rock'), range: range(20), sourceRef: 'Q-system Jn table' },
+  { id: 'crushed', symbol: 'Jn', letter: 'J', group: jointSetGroup, label: text('粉碎状岩石、类土状物', 'Crushed, earth-like rock'), range: range(20), sourceRef: 'Q-system Jn table' },
 ]
 
 const wallContactGroup = text(
-  '两侧岩壁接触，或剪切位移小于 10 cm 时接触',
-  'Rock-wall contact, or contact before 10 cm shear'
+  '（a）节理面完全接触；（b）剪切错动 10 cm 前属于接触',
+  '(a) Walls in contact; (b) contact before 10 cm shear'
 )
-const noContactGroup = text('剪切时两侧岩壁不接触', 'No rock-wall contact when sheared')
+const noContactGroup = text('（c）剪切过程中节理面不接触', '(c) No wall contact during shear')
 
 export const Q_JR_OPTIONS: readonly QFactorOption[] = [
-  { id: 'discontinuous', symbol: 'Jr', group: wallContactGroup, label: text('不连续节理', 'Discontinuous joints'), range: range(4), sourceRef: 'Q-system Jr table' },
-  { id: 'rough_undulating', symbol: 'Jr', group: wallContactGroup, label: text('粗糙或不规则、起伏面', 'Rough or irregular, undulating'), range: range(3), sourceRef: 'Q-system Jr table' },
-  { id: 'smooth_undulating', symbol: 'Jr', group: wallContactGroup, label: text('平滑、起伏面', 'Smooth, undulating'), range: range(2), sourceRef: 'Q-system Jr table' },
-  { id: 'slickensided_undulating', symbol: 'Jr', group: wallContactGroup, label: text('镜面、起伏面', 'Slickensided, undulating'), range: range(1.5), sourceRef: 'Q-system Jr table' },
-  { id: 'rough_planar', symbol: 'Jr', group: wallContactGroup, label: text('粗糙或不规则、平直面', 'Rough or irregular, planar'), range: range(1.5), sourceRef: 'Q-system Jr table' },
-  { id: 'smooth_planar', symbol: 'Jr', group: wallContactGroup, label: text('平滑、平直面', 'Smooth, planar'), range: range(1), sourceRef: 'Q-system Jr table' },
-  { id: 'slickensided_planar', symbol: 'Jr', group: wallContactGroup, label: text('镜面、平直面', 'Slickensided, planar'), range: range(0.5), sourceRef: 'Q-system Jr table' },
+  { id: 'discontinuous', symbol: 'Jr', letter: 'A', group: wallContactGroup, label: text('非连续节理', 'Discontinuous joints'), range: range(4), sourceRef: 'Q-system Jr table' },
+  { id: 'rough_undulating', symbol: 'Jr', letter: 'B', group: wallContactGroup, label: text('粗糙或不规则的波状节理', 'Rough or irregular, undulating'), range: range(3), sourceRef: 'Q-system Jr table' },
+  { id: 'smooth_undulating', symbol: 'Jr', letter: 'C', group: wallContactGroup, label: text('光滑的波状节理', 'Smooth, undulating'), range: range(2), sourceRef: 'Q-system Jr table' },
+  { id: 'slickensided_undulating', symbol: 'Jr', letter: 'D', group: wallContactGroup, label: text('带擦痕的波状节理', 'Slickensided, undulating'), range: range(1.5), sourceRef: 'Q-system Jr table' },
+  { id: 'rough_planar', symbol: 'Jr', letter: 'E', group: wallContactGroup, label: text('粗糙或不规则的平面状节理', 'Rough or irregular, planar'), range: range(1.5), sourceRef: 'Q-system Jr table' },
+  { id: 'smooth_planar', symbol: 'Jr', letter: 'F', group: wallContactGroup, label: text('光滑的平面状节理', 'Smooth, planar'), range: range(1), sourceRef: 'Q-system Jr table' },
+  {
+    id: 'slickensided_planar',
+    symbol: 'Jr',
+    letter: 'G',
+    group: wallContactGroup,
+    label: text('带擦痕的平面状节理', 'Slickensided, planar'),
+    range: range(0.5),
+    sourceRef: 'Q-system Jr table',
+    note: text('若该平面状节理与最弱方位一致，仍取 0.5。', 'If the planar joint coincides with the weakest direction, keep Jr = 0.5.'),
+  },
   {
     id: 'clay_zone_no_contact',
     symbol: 'Jr',
+    letter: 'H',
     group: noContactGroup,
-    label: text('含黏土矿物带，厚度足以阻止岩壁接触', 'Clay-mineral zone thick enough to prevent wall contact'),
+    label: text('节理中含有足够厚的黏土矿物，能够阻止节理面接触', 'Clay-mineral zone thick enough to prevent wall contact'),
     range: range(1),
     sourceRef: 'Q-system Jr table',
   },
   {
     id: 'crushed_zone_no_contact',
     symbol: 'Jr',
+    letter: 'J',
     group: noContactGroup,
-    label: text('砂质、砾质或压碎带，厚度足以阻止岩壁接触', 'Sandy, gravelly or crushed zone thick enough to prevent wall contact'),
+    label: text('节理中含有足够厚的砂、砾岩、岩石压碎区，能够阻止节理面接触', 'Sandy, gravelly or crushed zone thick enough to prevent wall contact'),
     range: range(1),
     sourceRef: 'Q-system Jr table',
   },
 ]
 
-const unalteredContactGroup = text('岩壁接触，节理面基本未蚀变', 'Rock-wall contact, essentially unaltered walls')
-const alteredContactGroup = text('岩壁接触，节理面有蚀变或涂层', 'Rock-wall contact, altered walls or coatings')
-const thinFillingGroup = text('剪切位移小于 10 cm 时岩壁接触，填充厚度小于 5 mm', 'Wall contact before 10 cm shear, filling under 5 mm')
-const crushedClayZoneGroup = text('压碎岩与黏土带，剪切时岩壁不接触', 'Crushed-rock and clay zones, no wall contact')
-const thickClayZoneGroup = text('厚而连续的黏土带，剪切时岩壁不接触', 'Thick continuous clay zones, no wall contact')
+const jaWallContactGroup = text('（1）节理面闭合（无矿物填充物，只有覆盖层）', '(1) Rock-wall contact (no mineral filling, coatings only)')
+const jaThinFillingGroup = text('（2）剪切错动 10 cm 前是接触的（含薄层矿物填充物）', '(2) Contact before 10 cm shear (thin mineral filling)')
+const jaNoContactGroup = text('（3）剪切错动时节理面不接触（含厚层矿物填充物）', '(3) No wall contact when sheared (thick mineral filling)')
 
 export const Q_JA_OPTIONS: readonly QFactorOption[] = [
   {
     id: 'healed_hard_filling',
     symbol: 'Ja',
-    group: unalteredContactGroup,
-    label: text('紧密愈合，硬质、不软化且不透水的填充物', 'Tightly healed with hard, non-softening, impermeable filling'),
+    letter: 'A',
+    group: jaWallContactGroup,
+    label: text('节理紧密接触，坚硬、无软化、不渗透性填充物，如石英或绿帘石', 'Tightly healed, hard, non-softening, impermeable filling, e.g. quartz or epidote'),
     range: range(0.75),
+    phiR: text('—', '—'),
     sourceRef: 'Q-system Ja table',
   },
-  { id: 'unaltered_walls', symbol: 'Ja', group: unalteredContactGroup, label: text('节理壁未蚀变，仅有表面染色', 'Unaltered joint walls, surface staining only'), range: range(1), sourceRef: 'Q-system Ja table' },
+  { id: 'unaltered_walls', symbol: 'Ja', letter: 'B', group: jaWallContactGroup, label: text('节理面未蚀变，仅表面褪色', 'Unaltered joint walls, surface staining only'), range: range(1), phiR: text('25～35', '25–35'), sourceRef: 'Q-system Ja table' },
   {
     id: 'slightly_altered',
     symbol: 'Ja',
-    group: alteredContactGroup,
-    label: text('轻微蚀变，非软化矿物涂层、砂粒或无黏土的崩解岩屑', 'Slightly altered, non-softening coatings, sandy particles or clay-free disintegrated rock'),
+    letter: 'C',
+    group: jaWallContactGroup,
+    label: text('节理面轻度蚀变，不含软化的矿物覆盖层、砂粒、无黏土分解岩石等', 'Slightly altered joint walls, non-softening mineral coatings, sandy particles, clay-free disintegrated rock'),
     range: range(2),
+    phiR: text('25～30', '25–30'),
     sourceRef: 'Q-system Ja table',
   },
-  { id: 'silty_sandy_clay_coating', symbol: 'Ja', group: alteredContactGroup, label: text('粉质或砂质黏土涂层，黏土含量少且不软化', 'Silty or sandy clay coating, small non-softening clay fraction'), range: range(3), sourceRef: 'Q-system Ja table' },
+  { id: 'silty_sandy_clay_coating', symbol: 'Ja', letter: 'D', group: jaWallContactGroup, label: text('粉砂质或砂质黏土覆盖层，含少量黏土颗粒（非软化）', 'Silty or sandy clay coating, small non-softening clay fraction'), range: range(3), phiR: text('20～25', '20–25'), sourceRef: 'Q-system Ja table' },
   {
     id: 'softening_clay_coating',
     symbol: 'Ja',
-    group: alteredContactGroup,
-    label: text('软化或低摩擦黏土矿物涂层，少量膨胀性黏土', 'Softening or low-friction clay-mineral coating, small amount of swelling clay'),
+    letter: 'E',
+    group: jaWallContactGroup,
+    label: text('软化或低摩擦黏土矿物覆盖层，即高岭土或云母。也可是绿泥石、滑石、石膏、石墨等，以及少量膨胀性黏土（非连续覆盖层，厚度 ≤2 mm）', 'Softening or low-friction clay-mineral coatings, i.e. kaolinite or mica; also chlorite, talc, gypsum, graphite etc., and small quantities of swelling clay (discontinuous coating, ≤2 mm)'),
     range: range(4),
+    phiR: text('8～16', '8–16'),
     sourceRef: 'Q-system Ja table',
   },
-  { id: 'sandy_particles', symbol: 'Ja', group: thinFillingGroup, label: text('砂粒或无黏土的崩解岩屑', 'Sandy particles or clay-free disintegrated rock'), range: range(4), sourceRef: 'Q-system Ja table' },
-  { id: 'thin_strong_clay', symbol: 'Ja', group: thinFillingGroup, label: text('强超固结、非软化黏土填充', 'Strongly over-consolidated, non-softening clay filling'), range: range(6), sourceRef: 'Q-system Ja table' },
-  { id: 'thin_soft_clay', symbol: 'Ja', group: thinFillingGroup, label: text('中低超固结、软化黏土填充', 'Medium/low over-consolidated, softening clay filling'), range: range(8), sourceRef: 'Q-system Ja table' },
+  { id: 'sandy_particles', symbol: 'Ja', letter: 'F', group: jaThinFillingGroup, label: text('含砂粒、无黏土分解岩石等', 'Sandy particles, clay-free disintegrated rock etc.'), range: range(4), phiR: text('25～30', '25–30'), sourceRef: 'Q-system Ja table' },
+  { id: 'thin_strong_clay', symbol: 'Ja', letter: 'G', group: jaThinFillingGroup, label: text('含强超固结、非软化的黏土矿物填充物（连续，厚度 <5 mm）', 'Strongly over-consolidated, non-softening clay mineral filling (continuous, <5 mm)'), range: range(6), phiR: text('16～24', '16–24'), sourceRef: 'Q-system Ja table' },
+  { id: 'thin_soft_clay', symbol: 'Ja', letter: 'H', group: jaThinFillingGroup, label: text('中等或低超固结、软化的黏土矿物填充物（连续，厚度 <5 mm）', 'Medium or low over-consolidated, softening clay mineral filling (continuous, <5 mm)'), range: range(8), phiR: text('12～16', '12–16'), sourceRef: 'Q-system Ja table' },
   {
     id: 'thin_swelling_clay',
     symbol: 'Ja',
-    group: thinFillingGroup,
-    label: text('膨胀性黏土填充', 'Swelling-clay filling'),
+    letter: 'J',
+    group: jaThinFillingGroup,
+    label: text('膨胀性黏土填充物，即蒙脱石（连续，厚度 <5 mm）', 'Swelling-clay filling, i.e. montmorillonite (continuous, <5 mm)'),
     range: range(8, 12),
+    phiR: text('6～12', '6–12'),
     sourceRef: 'Q-system Ja table',
-    note: text('取值取决于膨胀性黏土含量及膨胀压力。', 'Value depends on the swelling-clay fraction and swelling pressure.'),
+    note: text('取值取决于膨胀性黏土颗粒所占百分数、含水量等。', 'Value depends on the percentage of swelling-clay particles, water content etc.'),
   },
-  { id: 'crushed_strong_clay', symbol: 'Ja', group: crushedClayZoneGroup, label: text('强超固结、非软化黏土', 'Strongly over-consolidated, non-softening clay'), range: range(6), sourceRef: 'Q-system Ja table' },
-  { id: 'crushed_soft_clay', symbol: 'Ja', group: crushedClayZoneGroup, label: text('中低超固结、软化黏土', 'Medium/low over-consolidated, softening clay'), range: range(8), sourceRef: 'Q-system Ja table' },
+  {
+    id: 'crushed_strong_clay',
+    symbol: 'Ja',
+    letter: 'K',
+    group: jaNoContactGroup,
+    label: text('按 G 档黏土状况（强超固结、非软化）', 'G clay condition (strongly over-consolidated, non-softening)'),
+    range: range(6),
+    phiR: text('6～24', '6–24'),
+    sourceRef: 'Q-system Ja table',
+  },
+  {
+    id: 'crushed_soft_clay',
+    symbol: 'Ja',
+    letter: 'K',
+    group: jaNoContactGroup,
+    label: text('按 H 档黏土状况（中等或低超固结、软化）', 'H clay condition (medium or low over-consolidated, softening)'),
+    range: range(8),
+    phiR: text('6～24', '6–24'),
+    sourceRef: 'Q-system Ja table',
+  },
   {
     id: 'crushed_swelling_clay',
     symbol: 'Ja',
-    group: crushedClayZoneGroup,
-    label: text('膨胀性黏土', 'Swelling clay'),
+    letter: 'K',
+    group: jaNoContactGroup,
+    label: text('按 J 档黏土状况（膨胀性黏土）', 'J clay condition (swelling clay)'),
     range: range(8, 12),
+    phiR: text('6～24', '6–24'),
     sourceRef: 'Q-system Ja table',
   },
-  { id: 'thick_strong_clay', symbol: 'Ja', group: thickClayZoneGroup, label: text('强超固结、非软化厚黏土带', 'Thick, strongly over-consolidated non-softening clay zone'), range: range(10), sourceRef: 'Q-system Ja table' },
-  { id: 'thick_soft_clay', symbol: 'Ja', group: thickClayZoneGroup, label: text('中低超固结、软化厚黏土带', 'Thick, medium/low over-consolidated softening clay zone'), range: range(13), sourceRef: 'Q-system Ja table' },
+  {
+    id: 'banded_silty_sandy_clay',
+    symbol: 'Ja',
+    letter: 'L',
+    group: jaNoContactGroup,
+    label: text('含区域或带状粉砂质或砂质黏土、少量黏土颗粒（非软化）', 'Zones or bands of silty or sandy clay, small clay fraction (non-softening)'),
+    range: range(5),
+    phiR: text('—', '—'),
+    sourceRef: 'Q-system Ja table',
+  },
+  {
+    id: 'thick_strong_clay',
+    symbol: 'Ja',
+    letter: 'M',
+    group: jaNoContactGroup,
+    label: text('按 G 档黏土状况（强超固结、非软化）', 'G clay condition (strongly over-consolidated, non-softening)'),
+    range: range(10),
+    phiR: text('6～24', '6–24'),
+    sourceRef: 'Q-system Ja table',
+  },
+  {
+    id: 'thick_soft_clay',
+    symbol: 'Ja',
+    letter: 'M',
+    group: jaNoContactGroup,
+    label: text('按 H 档黏土状况（中等或低超固结、软化）', 'H clay condition (medium or low over-consolidated, softening)'),
+    range: range(13),
+    phiR: text('6～24', '6–24'),
+    sourceRef: 'Q-system Ja table',
+  },
   {
     id: 'thick_swelling_clay',
     symbol: 'Ja',
-    group: thickClayZoneGroup,
-    label: text('厚而连续的膨胀性黏土带', 'Thick continuous swelling-clay zone'),
+    letter: 'M',
+    group: jaNoContactGroup,
+    label: text('按 J 档黏土状况（膨胀性黏土）', 'J clay condition (swelling clay)'),
     range: range(13, 20),
+    phiR: text('6～24', '6–24'),
     sourceRef: 'Q-system Ja table',
   },
 ]
@@ -335,36 +381,92 @@ export const Q_JA_OPTIONS: readonly QFactorOption[] = [
 const waterGroup = text('节理水折减', 'Joint-water reduction')
 
 export const Q_JW_OPTIONS: readonly QFactorOption[] = [
-  { id: 'dry_minor', symbol: 'Jw', group: waterGroup, label: text('干燥或少量局部渗水（约 <5 L/min）', 'Dry or minor local inflow (about <5 L/min)'), range: range(1), sourceRef: 'Q-system Jw table' },
-  { id: 'medium_inflow', symbol: 'Jw', group: waterGroup, label: text('中等涌水或水压，偶有节理填充物冲蚀', 'Medium inflow or pressure, occasional washout of joint filling'), range: range(0.66), sourceRef: 'Q-system Jw table' },
-  { id: 'large_inflow_unfilled', symbol: 'Jw', group: waterGroup, label: text('坚硬岩体未填充节理中的大量涌水或高水压', 'Large inflow or high pressure in competent rock with unfilled joints'), range: range(0.5), sourceRef: 'Q-system Jw table' },
-  { id: 'large_inflow_washout', symbol: 'Jw', group: waterGroup, label: text('大量涌水或高水压并显著冲蚀填充物', 'Large inflow or high pressure with considerable filling washout'), range: range(0.33), sourceRef: 'Q-system Jw table' },
-  { id: 'exceptional_decaying', symbol: 'Jw', group: waterGroup, label: text('爆破后异常高涌水或水压，随时间衰减', 'Exceptionally high inflow or pressure after blasting, decaying with time'), range: range(0.1, 0.2), sourceRef: 'Q-system Jw table' },
-  { id: 'exceptional_sustained', symbol: 'Jw', group: waterGroup, label: text('持续异常高涌水或水压，无明显衰减', 'Exceptionally high sustained inflow or pressure without noticeable decay'), range: range(0.05, 0.1), sourceRef: 'Q-system Jw table' },
+  {
+    id: 'dry_minor',
+    symbol: 'Jw',
+    letter: 'A',
+    group: waterGroup,
+    label: text('干燥开挖或较小渗流的水，即局部渗流量小于 5 L/min', 'Dry excavations or minor inflow, i.e. local inflow <5 L/min'),
+    range: range(1),
+    waterPressure: text('<1', '<1'),
+    sourceRef: 'Q-system Jw table',
+  },
+  {
+    id: 'medium_inflow',
+    symbol: 'Jw',
+    letter: 'B',
+    group: waterGroup,
+    label: text('中等流量或中等压力，偶尔发生节理填充物被冲刷现象', 'Medium inflow or pressure, occasional outwash of joint fillings'),
+    range: range(0.66),
+    waterPressure: text('1～2.5', '1–2.5'),
+    sourceRef: 'Q-system Jw table',
+  },
+  {
+    id: 'large_inflow_unfilled',
+    symbol: 'Jw',
+    letter: 'C',
+    group: waterGroup,
+    label: text('流量大或水压高，节理无充填物，岩石坚固', 'Large inflow or high pressure in competent rock with unfilled joints'),
+    range: range(0.5),
+    waterPressure: text('2.5～10', '2.5–10'),
+    sourceRef: 'Q-system Jw table',
+  },
+  {
+    id: 'large_inflow_washout',
+    symbol: 'Jw',
+    letter: 'D',
+    group: waterGroup,
+    label: text('流量大或水压高，大量填充物均被冲出', 'Large inflow or high pressure with considerable outwash of joint fillings'),
+    range: range(0.33),
+    waterPressure: text('2.5～10', '2.5–10'),
+    sourceRef: 'Q-system Jw table',
+  },
+  {
+    id: 'exceptional_decaying',
+    symbol: 'Jw',
+    letter: 'E',
+    group: waterGroup,
+    label: text('爆破时，流量特别大或压力特别高，但随时间增长而减弱', 'Exceptionally high inflow or pressure at blasting, decaying with time'),
+    range: range(0.1, 0.2),
+    displayRange: '0.2～0.1',
+    waterPressure: text('>10', '>10'),
+    sourceRef: 'Q-system Jw table',
+  },
+  {
+    id: 'exceptional_sustained',
+    symbol: 'Jw',
+    letter: 'F',
+    group: waterGroup,
+    label: text('持续不衰减的特大涌水或特高水压', 'Exceptionally high sustained inflow or pressure without noticeable decay'),
+    range: range(0.05, 0.1),
+    displayRange: '0.1～0.05',
+    waterPressure: text('>10', '>10'),
+    sourceRef: 'Q-system Jw table',
+  },
 ]
 
-const weaknessZoneGroup = text('穿过开挖的软弱带或剪切带', 'Weakness or shear zones intersecting the excavation')
-const competentStressGroup = text('坚硬完整岩体中的应力状态', 'Stress state in competent rock')
-const squeezingGroup = text('塑性岩体挤压变形', 'Squeezing ground')
-const swellingGroup = text('膨胀岩化学膨胀', 'Swelling ground')
+const weaknessZoneGroup = text('（1）软弱区穿切开挖体，引起岩体松散冒落', '(1) Weakness zones intersecting the excavation, which may cause loosening of the rock mass')
+const competentStressGroup = text('（2）坚硬完整岩体中的应力状态', '(2) Competent rock, rock-stress problems')
+const squeezingGroup = text('（3）塑性岩体挤压变形', '(3) Squeezing rock')
+const swellingGroup = text('（4）膨胀岩化学膨胀', '(4) Swelling rock')
 
 export const Q_SRF_OPTIONS: readonly QFactorOption[] = [
-  { id: 'multiple_clay_weakness', symbol: 'SRF', group: weaknessZoneGroup, label: text('多条含黏土或化学分解岩的软弱带，围岩很松散', 'Multiple clay-bearing or chemically disintegrated weakness zones, very loose surrounding rock'), range: range(10), sourceRef: 'Q-system SRF table' },
-  { id: 'single_clay_shallow', symbol: 'SRF', group: weaknessZoneGroup, label: text('单条含黏土或化学分解岩的软弱带，埋深 ≤50 m', 'Single clay-bearing or chemically disintegrated weakness zone, depth ≤50 m'), range: range(5), sourceRef: 'Q-system SRF table' },
-  { id: 'single_clay_deep', symbol: 'SRF', group: weaknessZoneGroup, label: text('单条含黏土或化学分解岩的软弱带，埋深 >50 m', 'Single clay-bearing or chemically disintegrated weakness zone, depth >50 m'), range: range(2.5), sourceRef: 'Q-system SRF table' },
-  { id: 'multiple_clay_free_shear', symbol: 'SRF', group: weaknessZoneGroup, label: text('坚硬岩体中多条无黏土剪切带，围岩松散', 'Multiple clay-free shear zones in competent rock, loose surrounding rock'), range: range(7.5), sourceRef: 'Q-system SRF table' },
-  { id: 'single_clay_free_shallow', symbol: 'SRF', group: weaknessZoneGroup, label: text('坚硬岩体中单条无黏土剪切带，埋深 ≤50 m', 'Single clay-free shear zone in competent rock, depth ≤50 m'), range: range(5), sourceRef: 'Q-system SRF table' },
-  { id: 'single_clay_free_deep', symbol: 'SRF', group: weaknessZoneGroup, label: text('坚硬岩体中单条无黏土剪切带，埋深 >50 m', 'Single clay-free shear zone in competent rock, depth >50 m'), range: range(2.5), sourceRef: 'Q-system SRF table' },
-  { id: 'loose_open_joints', symbol: 'SRF', group: weaknessZoneGroup, label: text('松弛张开节理，强烈节理化或碎块状岩体', 'Loose open joints, heavily jointed or sugar-cube rock'), range: range(5), sourceRef: 'Q-system SRF table' },
-  { id: 'low_stress', symbol: 'SRF', group: competentStressGroup, label: text('低应力、近地表、节理张开', 'Low stress, near surface, open joints'), range: range(2.5), sourceRef: 'Q-system SRF table' },
-  { id: 'medium_stress', symbol: 'SRF', group: competentStressGroup, label: text('中等应力，有利应力状态', 'Medium stress, favourable stress condition'), range: range(1), sourceRef: 'Q-system SRF table' },
-  { id: 'high_stress_stable', symbol: 'SRF', group: competentStressGroup, label: text('高应力、结构很紧密，通常有利于稳定', 'High stress, very tight structure, generally favourable to stability'), range: range(0.5, 2), sourceRef: 'Q-system SRF table' },
-  { id: 'mild_rock_burst', symbol: 'SRF', group: competentStressGroup, label: text('完整坚硬岩体，轻度片帮或岩爆', 'Massive competent rock, mild slabbing or rock burst'), range: range(5, 50), sourceRef: 'Q-system SRF table' },
-  { id: 'heavy_rock_burst', symbol: 'SRF', group: competentStressGroup, label: text('完整坚硬岩体，强烈岩爆', 'Massive competent rock, heavy rock burst'), range: range(50, 200), sourceRef: 'Q-system SRF table' },
-  { id: 'mild_squeezing', symbol: 'SRF', group: squeezingGroup, label: text('轻度挤压变形', 'Mild squeezing pressure'), range: range(5, 10), sourceRef: 'Q-system SRF table' },
-  { id: 'heavy_squeezing', symbol: 'SRF', group: squeezingGroup, label: text('强烈挤压变形', 'Heavy squeezing pressure'), range: range(10, 20), sourceRef: 'Q-system SRF table' },
-  { id: 'mild_swelling', symbol: 'SRF', group: swellingGroup, label: text('轻度膨胀压力', 'Mild swelling pressure'), range: range(5, 10), sourceRef: 'Q-system SRF table' },
-  { id: 'heavy_swelling', symbol: 'SRF', group: swellingGroup, label: text('强烈膨胀压力', 'Heavy swelling pressure'), range: range(10, 15), sourceRef: 'Q-system SRF table' },
+  { id: 'multiple_clay_weakness', symbol: 'SRF', letter: 'A', group: weaknessZoneGroup, label: text('多处出现含黏土或化学分解的岩石软弱区，围岩十分松散（深度不限），或长掘进断面穿过不同弱层', 'Multiple occurrences of weakness zones containing clay or chemically disintegrated rock, very loose surrounding rock (any depth), or long headings crossing different weak layers'), range: range(10), sourceRef: 'Q-system SRF table' },
+  { id: 'single_clay_shallow', symbol: 'SRF', letter: 'B', group: weaknessZoneGroup, label: text('单一弱区含或不含黏土或化学分解的岩石（开挖深度 ≤50 m）', 'Single weakness zone containing clay or chemically disintegrated rock (excavation depth ≤50 m)'), range: range(5), sourceRef: 'Q-system SRF table' },
+  { id: 'single_clay_deep', symbol: 'SRF', letter: 'C', group: weaknessZoneGroup, label: text('单一弱区含或不含黏土或化学分解的岩石（开挖深度 >50 m）', 'Single weakness zone containing clay or chemically disintegrated rock (excavation depth >50 m)'), range: range(2.5), sourceRef: 'Q-system SRF table' },
+  { id: 'multiple_clay_free_shear', symbol: 'SRF', letter: 'D', group: weaknessZoneGroup, label: text('在短段多处出现剪切带、围岩出现非黏土松散冒落（深度不限）', 'Multiple shear zones in competent rock over a short section, clay-free loosening of the surrounding rock (any depth)'), range: range(7.5), sourceRef: 'Q-system SRF table' },
+  { id: 'single_clay_free_shallow', symbol: 'SRF', letter: 'E', group: weaknessZoneGroup, label: text('岩石坚固（不含黏土），含单一剪切带（开挖深度 ≤50 m）', 'Competent rock (clay-free) with a single shear zone (excavation depth ≤50 m)'), range: range(5), sourceRef: 'Q-system SRF table' },
+  { id: 'single_clay_free_deep', symbol: 'SRF', letter: 'F', group: weaknessZoneGroup, label: text('岩石坚固（不含黏土），含单一剪切带（开挖深度 >50 m）', 'Competent rock (clay-free) with a single shear zone (excavation depth >50 m)'), range: range(2.5), sourceRef: 'Q-system SRF table' },
+  { id: 'loose_open_joints', symbol: 'SRF', letter: 'G', group: weaknessZoneGroup, label: text('松散、张节理、严重节理化或呈“方糖块”状等（深度不限）', 'Loose, open joints, heavily jointed or “sugar cube” rock etc. (any depth)'), range: range(5), sourceRef: 'Q-system SRF table' },
+  { id: 'low_stress', symbol: 'SRF', letter: 'H', group: competentStressGroup, label: text('低应力、近地表、节理张开', 'Low stress, near surface, open joints'), range: range(2.5), sourceRef: 'Q-system SRF table' },
+  { id: 'medium_stress', symbol: 'SRF', letter: 'J', group: competentStressGroup, label: text('中等应力，有利应力状态', 'Medium stress, favourable stress condition'), range: range(1), sourceRef: 'Q-system SRF table' },
+  { id: 'high_stress_stable', symbol: 'SRF', letter: 'K', group: competentStressGroup, label: text('高应力、结构很紧密，通常有利于稳定', 'High stress, very tight structure, generally favourable to stability'), range: range(0.5, 2), sourceRef: 'Q-system SRF table' },
+  { id: 'mild_rock_burst', symbol: 'SRF', letter: 'L', group: competentStressGroup, label: text('完整坚硬岩体，轻度片帮或岩爆', 'Massive competent rock, mild slabbing or rock burst'), range: range(5, 50), sourceRef: 'Q-system SRF table' },
+  { id: 'heavy_rock_burst', symbol: 'SRF', letter: 'M', group: competentStressGroup, label: text('完整坚硬岩体，强烈岩爆', 'Massive competent rock, heavy rock burst'), range: range(50, 200), sourceRef: 'Q-system SRF table' },
+  { id: 'mild_squeezing', symbol: 'SRF', letter: 'O', group: squeezingGroup, label: text('轻度挤压变形', 'Mild squeezing pressure'), range: range(5, 10), sourceRef: 'Q-system SRF table' },
+  { id: 'heavy_squeezing', symbol: 'SRF', letter: 'P', group: squeezingGroup, label: text('强烈挤压变形', 'Heavy squeezing pressure'), range: range(10, 20), sourceRef: 'Q-system SRF table' },
+  { id: 'mild_swelling', symbol: 'SRF', letter: 'Q', group: swellingGroup, label: text('轻度膨胀压力', 'Mild swelling pressure'), range: range(5, 10), sourceRef: 'Q-system SRF table' },
+  { id: 'heavy_swelling', symbol: 'SRF', letter: 'R', group: swellingGroup, label: text('强烈膨胀压力', 'Heavy swelling pressure'), range: range(10, 15), sourceRef: 'Q-system SRF table' },
 ]
 
 export const Q_ESR_OPTIONS: readonly QEsrOption[] = [
@@ -378,15 +480,11 @@ export const Q_ESR_OPTIONS: readonly QEsrOption[] = [
 ]
 
 export const Q_GRADES: readonly QGradeInfo[] = [
-  { id: 'exceptionally_good', label: text('极好', 'Exceptionally good'), range: 'Q ≥ 400' },
-  { id: 'extremely_good', label: text('特好', 'Extremely good'), range: '100 ≤ Q < 400' },
-  { id: 'very_good', label: text('很好', 'Very good'), range: '40 ≤ Q < 100' },
-  { id: 'good', label: text('好', 'Good'), range: '10 ≤ Q < 40' },
-  { id: 'fair', label: text('一般', 'Fair'), range: '4 ≤ Q < 10' },
-  { id: 'poor', label: text('差', 'Poor'), range: '1 ≤ Q < 4' },
-  { id: 'very_poor', label: text('很差', 'Very poor'), range: '0.1 ≤ Q < 1' },
-  { id: 'extremely_poor', label: text('特差', 'Extremely poor'), range: '0.01 ≤ Q < 0.1' },
-  { id: 'exceptionally_poor', label: text('极差', 'Exceptionally poor'), range: 'Q < 0.01' },
+  { id: 'I', label: text('I 级', 'Class I'), range: 'Q ＞ 40' },
+  { id: 'II', label: text('II 级', 'Class II'), range: '10 ＜ Q ≤ 40' },
+  { id: 'III', label: text('III 级', 'Class III'), range: '1 ＜ Q ≤ 10' },
+  { id: 'IV', label: text('IV 级', 'Class IV'), range: '0.1 ≤ Q ≤ 1' },
+  { id: 'V', label: text('V 级', 'Class V'), range: 'Q ＜ 0.1' },
 ]
 
 export const Q_FACTOR_CONSERVATIVE_END: Record<QFactorSymbol, 'minimum' | 'maximum'> = {
@@ -405,12 +503,43 @@ function boundsOf(options: readonly QFactorOption[]) {
 }
 
 export const Q_FACTOR_BOUNDS = {
-  Jn: boundsOf(Q_JN_OPTIONS),
-  Jr: boundsOf(Q_JR_OPTIONS),
+  Jn: { min: 0.5, max: 60 },
+  Jr: { min: 0.5, max: 5 },
   Ja: boundsOf(Q_JA_OPTIONS),
   Jw: boundsOf(Q_JW_OPTIONS),
   SRF: boundsOf(Q_SRF_OPTIONS),
 } as const
+
+export function jnSiteMultiplier(site: QJnSite): number {
+  if (site === 'intersection') return 3
+  if (site === 'portal') return 2
+  return 1
+}
+
+export function emptyFactorModifiers(): QFactorModifiers {
+  return { jnSite: '', jrWideSpacing: false }
+}
+
+export function tableValueFor(symbol: QFactorSymbol, formulaValue: number, modifiers: QFactorModifiers): number {
+  if (symbol === 'Jn') return formulaValue / jnSiteMultiplier(modifiers.jnSite)
+  if (symbol === 'Jr' && modifiers.jrWideSpacing) return formulaValue - 1
+  return formulaValue
+}
+
+export function formulaValueFor(symbol: QFactorSymbol, tableValue: number, modifiers: QFactorModifiers): number {
+  if (symbol === 'Jn') return tableValue * jnSiteMultiplier(modifiers.jnSite)
+  if (symbol === 'Jr' && modifiers.jrWideSpacing) return tableValue + 1
+  return tableValue
+}
+
+export function formatFactorRating(option: QFactorOption) {
+  if (option.displayRange) return option.displayRange
+  return option.range.min === option.range.max ? String(option.range.min) : `${option.range.min}～${option.range.max}`
+}
+
+export function optionsForLetter(options: readonly QFactorOption[], letter: string) {
+  return options.filter((item) => item.letter === letter)
+}
 
 export function factorOptionsFor(symbol: QFactorSymbol): readonly QFactorOption[] {
   if (symbol === 'Jn') return Q_JN_OPTIONS
@@ -428,6 +557,16 @@ export function groupFactorOptions(options: readonly QFactorOption[]) {
     else groups.push({ label: option.group, options: [option] })
   }
   return groups
+}
+
+export function groupFactorOptionsByLetter(options: readonly QFactorOption[]) {
+  const rows: Array<{ letter?: string; options: QFactorOption[] }> = []
+  for (const option of options) {
+    const last = rows[rows.length - 1]
+    if (option.letter && last?.letter === option.letter) last.options.push(option)
+    else rows.push({ letter: option.letter, options: [option] })
+  }
+  return rows
 }
 
 export function conservativeAdoptedValue(option: QFactorOption, end: 'minimum' | 'maximum' = Q_FACTOR_CONSERVATIVE_END[option.symbol]) {
@@ -454,8 +593,10 @@ export const createInitialQState = (): QFormState => ({
   rqd: null,
   jnId: '',
   jnValue: null,
+  jnSite: '',
   jrId: '',
   jrValue: null,
+  jrWideSpacing: false,
   jaId: '',
   jaValue: null,
   jwId: '',
@@ -466,8 +607,6 @@ export const createInitialQState = (): QFormState => ({
   esrId: '',
   esrValue: null,
 })
-
-export const initialQFormState = createInitialQState
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' ? (value as Record<string, unknown>) : {}
@@ -483,6 +622,10 @@ function knownId<T extends { id: string }>(value: unknown, options: readonly T[]
   return typeof value === 'string' && options.some((item) => item.id === value) ? value : fallback
 }
 
+function knownJnSite(value: unknown): QJnSite {
+  return value === 'normal' || value === 'intersection' || value === 'portal' ? value : ''
+}
+
 export function normalizeQState(value: unknown): QFormState {
   const raw = asRecord(value)
   const initial = createInitialQState()
@@ -490,8 +633,10 @@ export function normalizeQState(value: unknown): QFormState {
     rqd: finiteNumber(raw.rqd ?? raw.RQD),
     jnId: knownId(raw.jnId, Q_JN_OPTIONS, initial.jnId),
     jnValue: finiteNumber(raw.jnValue ?? raw.Jn),
+    jnSite: knownJnSite(raw.jnSite),
     jrId: knownId(raw.jrId, Q_JR_OPTIONS, initial.jrId),
     jrValue: finiteNumber(raw.jrValue ?? raw.Jr),
+    jrWideSpacing: raw.jrWideSpacing === true,
     jaId: knownId(raw.jaId, Q_JA_OPTIONS, initial.jaId),
     jaValue: finiteNumber(raw.jaValue ?? raw.Ja),
     jwId: knownId(raw.jwId, Q_JW_OPTIONS, initial.jwId),
@@ -558,6 +703,10 @@ function validateRangeValue(
   }
 }
 
+function factorHasModifier(symbol: QFactorSymbol, modifiers: QFactorModifiers) {
+  return (symbol === 'Jn' && jnSiteMultiplier(modifiers.jnSite) !== 1) || (symbol === 'Jr' && modifiers.jrWideSpacing)
+}
+
 function validateFactor(
   issues: QValidationIssue[],
   idField: keyof QFormState,
@@ -565,7 +714,8 @@ function validateFactor(
   id: string,
   value: number | null,
   options: readonly QFactorOption[],
-  symbol: QFactorSymbol
+  symbol: QFactorSymbol,
+  modifiers: QFactorModifiers
 ) {
   const bounds = Q_FACTOR_BOUNDS[symbol]
   const option = findOption(options, id)
@@ -585,8 +735,24 @@ function validateFactor(
     )
     return
   }
-  if (option) validateRangeValue(issues, valueField, value, option.range, symbol, Q_FACTOR_CONSERVATIVE_END[symbol])
-  else if (value != null && !matchFactorOption(options, value)) {
+  const tableValue = value == null ? null : tableValueFor(symbol, value, modifiers)
+  if (option) {
+    if (factorHasModifier(symbol, modifiers) && tableValue != null) {
+      if (tableValue < option.range.min || tableValue > option.range.max) {
+        issues.push(
+          issue(
+            valueField,
+            'outside_table_range',
+            'error',
+            `${symbol} 修正后与所选表档不一致，请重新点选或核对修正项。`,
+            `The modified ${symbol} does not match the selected table cell; reselect or check the modifier.`
+          )
+        )
+      }
+    } else {
+      validateRangeValue(issues, valueField, tableValue, option.range, symbol, Q_FACTOR_CONSERVATIVE_END[symbol])
+    }
+  } else if (tableValue != null && !matchFactorOption(options, tableValue)) {
     issues.push(
       issue(
         idField,
@@ -602,6 +768,7 @@ function validateFactor(
 export function validateQState(input: QFormState | unknown): QValidationIssue[] {
   const state = normalizeQState(input)
   const issues: QValidationIssue[] = []
+  const modifiers: QFactorModifiers = { jnSite: state.jnSite, jrWideSpacing: state.jrWideSpacing }
   if (state.rqd == null) issues.push(issue('rqd', 'required', 'error', '请输入岩石质量指标 RQD。', 'Enter rock quality designation RQD.'))
   else if (state.rqd < 0 || state.rqd > 100) issues.push(issue('rqd', 'out_of_range', 'error', 'RQD 必须位于 0%–100%。', 'RQD must be between 0% and 100%.'))
   else if (state.rqd < 10) {
@@ -609,11 +776,11 @@ export function validateQState(input: QFormState | unknown): QValidationIssue[] 
   }
   if (state.span != null && state.span <= 0) issues.push(issue('span', 'out_of_range', 'error', '开挖尺寸必须大于 0 m。', 'Excavation dimension must be greater than 0 m.'))
 
-  validateFactor(issues, 'jnId', 'jnValue', state.jnId, state.jnValue, Q_JN_OPTIONS, 'Jn')
-  validateFactor(issues, 'jrId', 'jrValue', state.jrId, state.jrValue, Q_JR_OPTIONS, 'Jr')
-  validateFactor(issues, 'jaId', 'jaValue', state.jaId, state.jaValue, Q_JA_OPTIONS, 'Ja')
-  validateFactor(issues, 'jwId', 'jwValue', state.jwId, state.jwValue, Q_JW_OPTIONS, 'Jw')
-  validateFactor(issues, 'srfId', 'srfValue', state.srfId, state.srfValue, Q_SRF_OPTIONS, 'SRF')
+  validateFactor(issues, 'jnId', 'jnValue', state.jnId, state.jnValue, Q_JN_OPTIONS, 'Jn', modifiers)
+  validateFactor(issues, 'jrId', 'jrValue', state.jrId, state.jrValue, Q_JR_OPTIONS, 'Jr', modifiers)
+  validateFactor(issues, 'jaId', 'jaValue', state.jaId, state.jaValue, Q_JA_OPTIONS, 'Ja', modifiers)
+  validateFactor(issues, 'jwId', 'jwValue', state.jwId, state.jwValue, Q_JW_OPTIONS, 'Jw', modifiers)
+  validateFactor(issues, 'srfId', 'srfValue', state.srfId, state.srfValue, Q_SRF_OPTIONS, 'SRF', modifiers)
 
   const esr = findEsrOption(state.esrId)
   if (esr) validateRangeValue(issues, 'esrValue', state.esrValue, esr.range, 'ESR', 'minimum')
@@ -643,11 +810,16 @@ function resolveFactorInput(
   options: readonly QFactorOption[],
   id: string,
   value: number | null,
-  symbol: QFactorSymbol
+  symbol: QFactorSymbol,
+  modifiers: QFactorModifiers = emptyFactorModifiers()
 ): QResolvedFactor {
   const end = Q_FACTOR_CONSERVATIVE_END[symbol]
-  const option = findOption(options, id) ?? (value != null ? matchFactorOption(options, value, id) : null)
-  if (option) return resolveFactor(option, value, end)
+  const tableValue = value == null ? null : tableValueFor(symbol, value, modifiers)
+  const option = findOption(options, id) ?? (tableValue != null ? matchFactorOption(options, tableValue, id) : null)
+  if (option) {
+    const resolved = resolveFactor(option, tableValue, end)
+    return { ...resolved, value: value ?? formulaValueFor(symbol, resolved.value, modifiers) }
+  }
   return typedFactor(symbol, value as number)
 }
 
@@ -682,15 +854,11 @@ function resolveEsr(option: QEsrOption, selected: number | null): QResolvedEsr {
 }
 
 function gradeFromQ(q: number): QGradeInfo {
-  if (q >= 400) return Q_GRADES[0]
-  if (q >= 100) return Q_GRADES[1]
-  if (q >= 40) return Q_GRADES[2]
-  if (q >= 10) return Q_GRADES[3]
-  if (q >= 4) return Q_GRADES[4]
-  if (q >= 1) return Q_GRADES[5]
-  if (q >= 0.1) return Q_GRADES[6]
-  if (q >= 0.01) return Q_GRADES[7]
-  return Q_GRADES[8]
+  if (q > 40) return Q_GRADES[0]
+  if (q > 10) return Q_GRADES[1]
+  if (q > 1) return Q_GRADES[2]
+  if (q >= 0.1) return Q_GRADES[3]
+  return Q_GRADES[4]
 }
 
 interface QSupportTemplate {
@@ -779,12 +947,13 @@ export function calculateQ(input: QFormState | unknown): QResult {
   const errors = issues.filter((item) => item.severity === 'error')
   if (errors.length > 0) throw new QValidationError(errors)
 
+  const modifiers: QFactorModifiers = { jnSite: state.jnSite, jrWideSpacing: state.jrWideSpacing }
   const effectiveRqd = Math.max(10, state.rqd as number)
-  const jn = resolveFactorInput(Q_JN_OPTIONS, state.jnId, state.jnValue, 'Jn')
-  const jr = resolveFactorInput(Q_JR_OPTIONS, state.jrId, state.jrValue, 'Jr')
-  const ja = resolveFactorInput(Q_JA_OPTIONS, state.jaId, state.jaValue, 'Ja')
-  const jw = resolveFactorInput(Q_JW_OPTIONS, state.jwId, state.jwValue, 'Jw')
-  const srf = resolveFactorInput(Q_SRF_OPTIONS, state.srfId, state.srfValue, 'SRF')
+  const jn = resolveFactorInput(Q_JN_OPTIONS, state.jnId, state.jnValue, 'Jn', modifiers)
+  const jr = resolveFactorInput(Q_JR_OPTIONS, state.jrId, state.jrValue, 'Jr', modifiers)
+  const ja = resolveFactorInput(Q_JA_OPTIONS, state.jaId, state.jaValue, 'Ja', modifiers)
+  const jw = resolveFactorInput(Q_JW_OPTIONS, state.jwId, state.jwValue, 'Jw', modifiers)
+  const srf = resolveFactorInput(Q_SRF_OPTIONS, state.srfId, state.srfValue, 'SRF', modifiers)
   const esrOption = findEsrOption(state.esrId)
   const esr = esrOption ? resolveEsr(esrOption, state.esrValue) : null
   const blockSize = effectiveRqd / jn.value
@@ -827,7 +996,21 @@ function factorValue(factor: QResolvedFactor): string {
   return `${factor.value}${factor.usedConservativeDefault ? '（保守取值）' : ''}`
 }
 
+function factorBasis(factor: QResolvedFactor, state: QFormState): QLocalizedText {
+  if (factor.symbol === 'Jn' && state.jnSite === 'intersection') {
+    return text(`${factor.label.zh}；巷道交叉点按 3.0×Jn。`, `${factor.label.en}; tunnel intersection uses 3.0×Jn.`)
+  }
+  if (factor.symbol === 'Jn' && state.jnSite === 'portal') {
+    return text(`${factor.label.zh}；穿脉按 2.0×Jn。`, `${factor.label.en}; cross-cut uses 2.0×Jn.`)
+  }
+  if (factor.symbol === 'Jr' && state.jrWideSpacing) {
+    return text(`${factor.label.zh}；相关节理组平均间距 > 3 m，Jr + 1.0。`, `${factor.label.en}; relevant joint-set spacing > 3 m, Jr + 1.0.`)
+  }
+  return factor.label
+}
+
 export function describeQ(input: QFormState | unknown, suppliedResult?: QResult): QDescriptionRow[] {
+  const state = normalizeQState(input)
   const result = suppliedResult ?? calculateQ(input)
   const rows: QDescriptionRow[] = [
     {
@@ -845,7 +1028,7 @@ export function describeQ(input: QFormState | unknown, suppliedResult?: QResult)
       key: factor.symbol,
       label: text(`${factor.symbol} 参数`, `${factor.symbol} factor`),
       value: factorValue(factor),
-      basis: factor.label,
+      basis: factorBasis(factor, state),
     })
   }
   rows.push(

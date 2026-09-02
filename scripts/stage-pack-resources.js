@@ -31,7 +31,7 @@ if (!fs.existsSync(src)) {
     '[stage-pack-resources] 未找到 GGUF，无法打入 AI 安装包。\n' +
       `  放置到: ${path.join(root, 'backend', 'models', 'assistant.gguf')}\n` +
       '  或设置 CINF_ASSISTANT_GGUF 指向 .gguf 文件。\n' +
-      '  不需要 AI 时请使用 npm run dist:win:noai（CINF_PACK_LOCAL_AI=0）。'
+      '  不需要 AI 时请使用 npm run dist:win（CINF_PACK_LOCAL_AI=0）。'
   )
   process.exit(1)
 }

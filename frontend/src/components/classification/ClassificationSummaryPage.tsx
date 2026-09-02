@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { Download } from 'lucide-react'
 import BackIconButton from '../BackIconButton'
 import type { ClassificationResult, ParameterDescription, StandardDescriptor } from '../../methods/types'
 import type { RockMassCaseRecord, RockMassPointRecord } from '../../types/rockmassCase'
@@ -109,7 +110,10 @@ export default function ClassificationSummaryPage({
                   <h1 className={`text-2xl font-bold sm:text-3xl ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{copy.overview}</h1>
                   <p className={`mt-1 text-sm ${muted}`}>{methodName} · {standard.edition}</p>
                 </div>
-                <button type="button" onClick={onOpenExport} className={`text-sm font-medium underline-offset-4 hover:underline ${link}`}>{copy.export}</button>
+                <button type="button" onClick={onOpenExport} className={`inline-flex items-center gap-1.5 text-sm font-medium ${link}`}>
+                  <Download className="h-4 w-4" aria-hidden />
+                  {copy.export}
+                </button>
               </div>
             </div>
           </header>
@@ -153,8 +157,8 @@ export default function ClassificationSummaryPage({
                     {rows.map((row) => (
                       <tr key={row.point.id} className={darkMode ? 'hover:bg-gray-800/50' : 'hover:bg-white'}>
                         <td className="px-3 py-2.5 text-center">
-                          <button type="button" onClick={() => onOpenPoint(row.point.id)} className={`font-medium ${link}`}>{row.point.name}</button>
-                          {row.point.note ? <div className={`mt-0.5 max-w-[180px] truncate ${muted}`}>{row.point.note}</div> : null}
+                          <button type="button" onClick={() => onOpenPoint(row.point.id)} className={`font-medium ${link}`} title={row.point.name}>{row.point.name}</button>
+                          {row.point.note ? <div className={`mt-0.5 max-w-[180px] truncate ${muted}`} title={row.point.note}>{row.point.note}</div> : null}
                         </td>
                         {parameterHeaders.map((header) => {
                           const description = row.descriptions.find((item) => item.key === header.key)

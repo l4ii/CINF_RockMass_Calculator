@@ -1,7 +1,7 @@
 import { Check } from 'lucide-react'
 import type { ReactNode } from 'react'
-// @ts-ignore - react-katex types
-import { InlineMath } from 'react-katex'
+import { Km } from '../math/Katex'
+import { SYM } from '../math/symbols'
 import {
   displayedFactorValue,
   Q_FACTOR_BOUNDS,
@@ -68,20 +68,20 @@ export default function QScorePreview({ darkMode, language, state, result }: QSc
       <h3 className={`mb-1 text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Rating preview' : '分值预览'}</h3>
       <p className={`mb-3 text-xs ${muted}`}>{en ? `${completedItems} / 6 selected` : `已选 ${completedItems} / 6 项`}</p>
       <ul className="space-y-2">
-        {row(<InlineMath math="\mathrm{RQD}" />, rqdReady ? `${state.rqd}%` : '—', rqdReady)}
-        {row(<InlineMath math="J_n" />, jnReady ? jn : '—', jnReady)}
-        {row(<InlineMath math="J_r" />, jrReady ? jr : '—', jrReady)}
-        {row(<InlineMath math="J_a" />, jaReady ? ja : '—', jaReady)}
-        {row(<InlineMath math="J_w" />, jwReady ? jw : '—', jwReady)}
-        {row(<InlineMath math="\mathrm{SRF}" />, srfReady ? srf : '—', srfReady)}
-        {row(<InlineMath math="\mathrm{RQD}/J_n" />, blockSize == null ? '—' : formatPreview(blockSize), blockSize != null)}
-        {row(<InlineMath math="J_r/J_a" />, shear == null ? '—' : formatPreview(shear), shear != null)}
-        {row(<InlineMath math="J_w/\mathrm{SRF}" />, stress == null ? '—' : formatPreview(stress), stress != null)}
+        {row(<Km math={SYM.RQD} />, rqdReady ? `${state.rqd}%` : '—', rqdReady)}
+        {row(<Km math={SYM.Jn} />, jnReady ? jn : '—', jnReady)}
+        {row(<Km math={SYM.Jr} />, jrReady ? jr : '—', jrReady)}
+        {row(<Km math={SYM.Ja} />, jaReady ? ja : '—', jaReady)}
+        {row(<Km math={SYM.Jw} />, jwReady ? jw : '—', jwReady)}
+        {row(<Km math={SYM.SRF} />, srfReady ? srf : '—', srfReady)}
+        {row(<Km math={SYM.RQD_over_Jn} />, blockSize == null ? '—' : formatPreview(blockSize), blockSize != null)}
+        {row(<Km math={SYM.Jr_over_Ja} />, shear == null ? '—' : formatPreview(shear), shear != null)}
+        {row(<Km math={SYM.Jw_over_SRF} />, stress == null ? '—' : formatPreview(stress), stress != null)}
       </ul>
       <div className={`mt-4 border-t pt-3 ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
         <div data-testid="q-preview-result">
           <div className="flex items-baseline justify-between">
-            <span className={`text-sm ${muted}`}><InlineMath math="Q" />{en ? ' evaluation result' : '评价结果'}</span>
+            <span className={`text-sm ${muted}`}><Km math={SYM.Q} />{en ? ' evaluation result' : '评价结果'}</span>
             <span className={`text-2xl font-bold tabular-nums ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>{result ? formatPreview(result.q) : '—'}</span>
           </div>
           {gradeLine ? (

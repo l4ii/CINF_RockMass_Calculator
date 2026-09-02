@@ -73,6 +73,36 @@ type InputWithTrailingUnitProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'c
   unit?: string | null
 }
 
+export function QuickCalcLink({
+  darkMode,
+  language,
+  onClick,
+  testId,
+  label,
+}: {
+  darkMode: boolean
+  language: 'zh' | 'en'
+  onClick: () => void
+  testId?: string
+  label?: string
+}) {
+  const en = language === 'en'
+  return (
+    <div className="mt-1 flex justify-end">
+      <button
+        type="button"
+        data-testid={testId}
+        onClick={onClick}
+        className={`text-sm font-medium underline underline-offset-2 ${
+          darkMode ? 'text-blue-300 hover:text-blue-200' : 'text-blue-700 hover:text-blue-800'
+        }`}
+      >
+        ({label ?? (en ? 'Quick calculation' : '快速计算')})
+      </button>
+    </div>
+  )
+}
+
 export function InputWithTrailingUnit({
   darkMode,
   className = '',

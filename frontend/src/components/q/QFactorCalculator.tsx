@@ -1,13 +1,19 @@
-import { Fragment, useState, type ReactNode } from 'react'
-// @ts-ignore - react-katex types
-import { InlineMath } from 'react-katex'
+import { useState, type ReactNode } from 'react'
+import { Km } from '../math/Katex'
+import { SYM } from '../math/symbols'
 import {
   conservativeAdoptedValue,
-  groupFactorOptions,
+  formatFactorRating,
+  formulaValueFor,
+  optionsForLetter,
   Q_FACTOR_CONSERVATIVE_END,
+  tableValueFor,
+  type QFactorModifiers,
   type QFactorOption,
   type QFactorSymbol,
+  type QJnSite,
 } from '../../methods/q'
+import QFactorQuickTable from './QFactorQuickTable'
 
 interface QFactorCalculatorProps {
   darkMode: boolean
@@ -18,28 +24,33 @@ interface QFactorCalculatorProps {
   options: readonly QFactorOption[]
   selectedId: string
   selectedValue: number | null
+  jnSite?: QJnSite
+  jrWideSpacing?: boolean
   onClose: () => void
-  onComplete: (next: { id: string; value: number }) => void
+  onComplete: (next: { id: string; value: number; jnSite?: QJnSite; jrWideSpacing?: boolean }) => void
 }
 
-function formatRange(option: QFactorOption) {
-  return option.range.min === option.range.max ? String(option.range.min) : `${option.range.min}～${option.range.max}`
+function inferJnSite(option: QFactorOption | undefined, value: number | null, given: QJnSite | undefined): QJnSite {
+  if (given === 'normal' || given === 'intersection' || given === 'portal') return given
+  if (!option || value == null) return 'normal'
+  const min = option.range.min
+  const max = option.range.max
+  if (Math.abs(value - min * 3) < 1e-6 || Math.abs(value - max * 3) < 1e-6) return 'intersection'
+  if (Math.abs(value - min * 2) < 1e-6 || Math.abs(value - max * 2) < 1e-6) return 'portal'
+  return 'normal'
 }
 
-function tableShell(darkMode: boolean) {
-  return darkMode ? 'border-gray-600' : 'border-gray-300'
+function initialTableValue(symbol: QFactorSymbol, option: QFactorOption | undefined, selectedValue: number | null, modifiers: QFactorModifiers) {
+  if (selectedValue != null && option) {
+    const table = tableValueFor(symbol, selectedValue, modifiers)
+    if (table >= option.range.min && table <= option.range.max) return table
+  }
+  if (selectedValue != null && option == null) return selectedValue
+  return option ? conservativeAdoptedValue(option) : null
 }
 
-function headCell(darkMode: boolean) {
-  return darkMode ? 'bg-gray-700/60 text-gray-200' : 'bg-gray-100 text-gray-700'
-}
-
-function selectedCell(darkMode: boolean) {
-  return darkMode ? 'bg-blue-900/50 text-blue-100' : 'bg-blue-100 text-blue-900'
-}
-
-function bodyCell(darkMode: boolean) {
-  return darkMode ? 'text-gray-300' : 'text-gray-700'
+function mathSymbol(symbol: QFactorSymbol) {
+  return symbol === 'SRF' ? SYM.SRF : SYM[symbol]
 }
 
 export default function QFactorCalculator({
@@ -51,35 +62,50 @@ export default function QFactorCalculator({
   options,
   selectedId,
   selectedValue,
+  jnSite: jnSiteProp,
+  jrWideSpacing: jrWideSpacingProp,
   onClose,
   onComplete,
 }: QFactorCalculatorProps) {
   const en = language === 'en'
-  const groups = groupFactorOptions(options)
   const [optionId, setOptionId] = useState(selectedId)
   const selected = options.find((item) => item.id === optionId)
-  const [adopted, setAdopted] = useState<number | null>(() => {
-    if (selectedValue != null) return selectedValue
-    const current = options.find((item) => item.id === selectedId)
-    return current ? conservativeAdoptedValue(current) : null
-  })
+  const [jnSite, setJnSite] = useState<QJnSite>(() => inferJnSite(selected, selectedValue, jnSiteProp))
+  const [jrWideSpacing, setJrWideSpacing] = useState(Boolean(jrWideSpacingProp))
+  const modifiers: QFactorModifiers = { jnSite, jrWideSpacing }
+  const [adopted, setAdopted] = useState<number | null>(() =>
+    initialTableValue(symbol, selected, selectedValue, { jnSite: inferJnSite(selected, selectedValue, jnSiteProp), jrWideSpacing: Boolean(jrWideSpacingProp) })
+  )
   const muted = darkMode ? 'text-gray-400' : 'text-gray-600'
   const panel = darkMode ? 'border-gray-600 bg-gray-800' : 'border-gray-200 bg-white'
-  const border = tableShell(darkMode)
   const rangeOpen = selected != null && selected.range.min !== selected.range.max
   const adoptedValid = selected != null && adopted != null && adopted >= selected.range.min && adopted <= selected.range.max
   const canConfirm = selected != null && (rangeOpen ? adoptedValid : true)
+  const letterGroup = selected?.letter ? optionsForLetter(options, selected.letter) : []
+  const formulaPreview = selected != null ? formulaValueFor(symbol, adopted ?? conservativeAdoptedValue(selected), modifiers) : null
 
   const selectOption = (option: QFactorOption) => {
     setOptionId(option.id)
     setAdopted(conservativeAdoptedValue(option))
   }
 
+  const selectLetter = (letter: string) => {
+    const matches = optionsForLetter(options, letter)
+    if (matches.length === 0) return
+    const current = matches.find((item) => item.id === optionId)
+    selectOption(current ?? matches[matches.length - 1])
+  }
+
   const confirm = () => {
     if (!selected) return
-    const value = adopted ?? conservativeAdoptedValue(selected)
-    if (value < selected.range.min || value > selected.range.max) return
-    onComplete({ id: selected.id, value })
+    const table = adopted ?? conservativeAdoptedValue(selected)
+    if (table < selected.range.min || table > selected.range.max) return
+    onComplete({
+      id: selected.id,
+      value: formulaValueFor(symbol, table, modifiers),
+      ...(symbol === 'Jn' ? { jnSite } : {}),
+      ...(symbol === 'Jr' ? { jrWideSpacing } : {}),
+    })
   }
 
   return (
@@ -89,11 +115,11 @@ export default function QFactorCalculator({
         aria-modal="true"
         aria-labelledby="q-factor-quick-title"
         data-testid="q-factor-calculator"
-        className={`max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-xl border p-5 shadow-xl ${panel}`}
+        className={`max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-xl border p-5 shadow-xl ${panel}`}
         onMouseDown={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3">
-          <h2 id="q-factor-quick-title" className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+          <h2 id="q-factor-quick-title" className={`min-w-0 text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
             {title}
           </h2>
           <button
@@ -109,55 +135,104 @@ export default function QFactorCalculator({
 
         <p className={`mt-3 text-sm leading-relaxed ${muted}`}>{intro}</p>
 
-        <div className="mt-4 overflow-x-auto">
-          <table className={`w-full min-w-[520px] border-collapse border text-sm ${border}`}>
-            <thead>
-              <tr>
-                <th className={`border ${border} ${headCell(darkMode)} px-2 py-1.5 text-left font-medium`}>{en ? 'Description' : '描述'}</th>
-                <th className={`w-28 border ${border} ${headCell(darkMode)} px-2 py-1.5 text-center font-medium`}>{en ? 'Rating' : '取值'}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {groups.map((group) => (
-                <Fragment key={group.label.zh}>
-                  <tr>
-                    <th colSpan={2} className={`border ${border} ${headCell(darkMode)} px-2 py-1.5 text-left font-medium`}>
-                      {en ? group.label.en : group.label.zh}
-                    </th>
-                  </tr>
-                  {group.options.map((option) => {
-                    const isSelected = optionId === option.id
-                    return (
-                      <tr key={option.id}>
-                        <td
-                          data-testid={`q-factor-row-${option.id}`}
-                          aria-pressed={isSelected}
-                          onClick={() => selectOption(option)}
-                          className={`border ${border} cursor-pointer px-2 py-1.5 leading-snug hover:underline ${isSelected ? selectedCell(darkMode) : bodyCell(darkMode)}`}
-                        >
-                          {en ? option.label.en : option.label.zh}
-                          {option.note ? <div className={`mt-0.5 text-xs ${isSelected ? '' : muted}`}>{en ? option.note.en : option.note.zh}</div> : null}
-                        </td>
-                        <td
-                          aria-pressed={isSelected}
-                          onClick={() => selectOption(option)}
-                          className={`border ${border} cursor-pointer px-2 py-1.5 text-center font-semibold tabular-nums hover:underline ${isSelected ? selectedCell(darkMode) : bodyCell(darkMode)}`}
-                        >
-                          {formatRange(option)}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </Fragment>
-              ))}
-            </tbody>
-          </table>
+        <div className="mt-4">
+          {symbol === 'Jn' ? (
+            <div className="mb-2 flex justify-end">
+              <label className={`flex items-center gap-2 whitespace-nowrap text-sm ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                <span>{en ? 'Site factor' : '部位修正'}</span>
+                <select
+                  aria-label={en ? 'Jn site multiplier' : '部位修正'}
+                  data-testid="q-jn-site"
+                  value={jnSite === '' ? 'normal' : jnSite}
+                  onChange={(event) => setJnSite(event.target.value as QJnSite)}
+                  className={`rounded-lg border px-2.5 py-1.5 text-sm ${
+                    darkMode ? 'border-gray-500 bg-gray-700 text-gray-100' : 'border-gray-300 bg-white text-gray-900'
+                  }`}
+                >
+                  <option value="normal">{en ? '×1 general' : '1倍（一般部位）'}</option>
+                  <option value="portal">{en ? '×2 cross-cut' : '2倍（穿脉）'}</option>
+                  <option value="intersection">{en ? '×3 intersection' : '3倍（巷道交叉点）'}</option>
+                </select>
+              </label>
+            </div>
+          ) : null}
+          {symbol === 'Jr' ? (
+            <div className="mb-2 flex justify-end">
+              <label className={`flex items-center gap-2 whitespace-nowrap text-sm ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                <span>{en ? 'Extra modifier' : '附加修正'}</span>
+                <select
+                  aria-label={en ? 'Jr extra modifier' : '附加修正'}
+                  data-testid="q-jr-note"
+                  value={jrWideSpacing ? 'wide_spacing' : 'none'}
+                  onChange={(event) => setJrWideSpacing(event.target.value === 'wide_spacing')}
+                  className={`rounded-lg border px-2.5 py-1.5 text-sm ${
+                    darkMode ? 'border-gray-500 bg-gray-700 text-gray-100' : 'border-gray-300 bg-white text-gray-900'
+                  }`}
+                >
+                  <option value="none">{en ? 'None (table value)' : '无附加修正（按表取值）'}</option>
+                  <option value="wide_spacing">
+                    {en ? 'Note 1: joint-set spacing > 3 m, Jr + 1.0' : '注 1：节理组平均间距 > 3 m，Jr + 1.0'}
+                  </option>
+                  <option value="min_strength" disabled>
+                    {en
+                      ? 'Note 2: slickensided planar joints oriented for minimum strength use row G, 0.5'
+                      : '注 2：带擦痕的平面状节理与最弱方位一致时按 G 档 0.5'}
+                  </option>
+                </select>
+              </label>
+            </div>
+          ) : null}
+          {letterGroup.length > 1 ? (
+            <div className="mb-2 flex justify-end">
+              <label className={`flex items-center gap-2 whitespace-nowrap text-sm ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                <span>{en ? `Clay condition for ${selected?.letter}` : `${selected?.letter} 档黏土状况`}</span>
+                <select
+                  aria-label={en ? 'Clay condition' : '黏土状况'}
+                  data-testid="q-ja-clay"
+                  value={optionId}
+                  onChange={(event) => {
+                    const next = letterGroup.find((item) => item.id === event.target.value)
+                    if (next) selectOption(next)
+                  }}
+                  className={`rounded-lg border px-2.5 py-1.5 text-sm ${
+                    darkMode ? 'border-gray-500 bg-gray-700 text-gray-100' : 'border-gray-300 bg-white text-gray-900'
+                  }`}
+                >
+                  {letterGroup.map((option) => (
+                    <option key={option.id} value={option.id} data-testid={`q-factor-row-${option.id}`}>
+                      {`${en ? option.label.en : option.label.zh} · ${symbol} = ${formatFactorRating(option)}`}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          ) : null}
+          <div className="flex justify-center overflow-x-auto">
+            <QFactorQuickTable
+              darkMode={darkMode}
+              language={language}
+              symbol={symbol}
+              options={options}
+              selectedId={optionId}
+              selectedLetter={selected?.letter}
+              onSelectOption={selectOption}
+              onSelectLetter={selectLetter}
+            />
+          </div>
         </div>
 
         {rangeOpen && selected ? (
           <label className="mt-4 block space-y-1">
             <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              {en ? <>Adopted <InlineMath math={symbol === 'SRF' ? String.raw`\mathrm{SRF}` : `J_${symbol.slice(1)}`} /> within {selected.range.min}–{selected.range.max}</> : <>区间内采用的 <InlineMath math={symbol === 'SRF' ? String.raw`\mathrm{SRF}` : `J_${symbol.slice(1)}`} />（{selected.range.min}～{selected.range.max}）</>}
+              {en ? (
+                <>
+                  Adopted <Km math={mathSymbol(symbol)} /> within {selected.range.min}–{selected.range.max}
+                </>
+              ) : (
+                <>
+                  区间内采用的 <Km math={mathSymbol(symbol)} />（{selected.range.min}～{selected.range.max}）
+                </>
+              )}
             </span>
             <input
               aria-label={en ? `Adopted ${symbol}` : `${symbol} 采用值`}
@@ -183,7 +258,13 @@ export default function QFactorCalculator({
           </label>
         ) : null}
 
-        <div className="mt-5 flex justify-end">
+        <div className="mt-5 flex items-center justify-end gap-3">
+          <p
+            data-testid={`q-${symbol.toLowerCase()}-result`}
+            className={`text-sm tabular-nums ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}
+          >
+            <Km math={mathSymbol(symbol)} /> = {formulaPreview ?? '—'}
+          </p>
           <button
             type="button"
             disabled={!canConfirm}

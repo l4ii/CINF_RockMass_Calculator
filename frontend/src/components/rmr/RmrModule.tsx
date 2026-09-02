@@ -16,8 +16,8 @@ import {
   formatTimestamp,
   upsertCase,
   writeCaseRecords,
-  normalizeRockMassGroup,
   rockMassGroups,
+  withRockMassOreType,
 } from '../../utils/rockmassCaseStore'
 import RmrCaseSummaryPage from './RmrCaseSummaryPage'
 import RmrClassificationPage from './RmrClassificationPage'
@@ -213,7 +213,7 @@ export default function RmrModule({ darkMode, language, methodName, onBackToHome
         ? {
             ...current,
             points: current.points.map((point) =>
-              point.id === pointId ? { ...point, ...patch, updatedAt: new Date().toISOString() } : point
+              point.id === pointId ? { ...point, ...withRockMassOreType(patch), updatedAt: new Date().toISOString() } : point
             ),
           }
         : current
@@ -297,7 +297,7 @@ export default function RmrModule({ darkMode, language, methodName, onBackToHome
   const handlePointOreTypeChange = useCallback(
     (oreType: string) => {
       if (!activePointId) return
-      updatePoint(activePointId, { oreType: normalizeRockMassGroup(oreType), groupId: normalizeRockMassGroup(oreType) })
+      updatePoint(activePointId, { oreType })
     },
     [activePointId]
   )

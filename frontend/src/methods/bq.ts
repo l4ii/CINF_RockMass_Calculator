@@ -563,8 +563,6 @@ export const createInitialBqState = (): BqFormState => ({
   slopeF3Id: null,
 })
 
-export const initialBqFormState = createInitialBqState
-
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' ? (value as Record<string, unknown>) : {}
 }
@@ -905,7 +903,6 @@ function coefficientValue(coefficient: BqResolvedCoefficient | null): string {
 }
 
 export function describeBq(input: BqFormState | unknown, suppliedResult?: BqResult): BqDescriptionRow[] {
-  const state = normalizeBqState(input)
   const result = suppliedResult ?? calculateBq(input)
   const rows: BqDescriptionRow[] = [
     {

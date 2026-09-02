@@ -20,7 +20,6 @@ import {
   A4_ROUGHNESS,
   A4_SIMPLE,
   A4_WEATHERING,
-  type ReferenceTableSpec,
   type ScoreOption,
 } from '../config/rmrTables'
 import type { ParameterDescription, ValidationIssue } from './types'
@@ -318,29 +317,12 @@ export const GSI_JCOND89_SIMPLE: ScoreOption[] = relabelScoreOptions(A4_SIMPLE, 
   { label: '软质填充物 > 5 mm，或连续节理张开度 > 5 mm', labelEn: 'Soft infill > 5 mm, or continuous aperture > 5 mm' },
 ])
 
-export const GSI_JCOND89_SIMPLE_TABLE: ReferenceTableSpec = {
-  caption: '结构面状态 JCond₈₉ 取值',
-  captionEn: 'Discontinuity condition JCond₈₉ ratings',
-  rows: [
-    {
-      label: '节理状态判断',
-      labelEn: 'Joint-condition judgement',
-      cells: GSI_JCOND89_SIMPLE.map((item) => ({ text: item.label, textEn: item.labelEn, optionId: item.id })),
-    },
-  ],
-  scores: GSI_JCOND89_SIMPLE.map((item) => item.score),
-  optionIds: GSI_JCOND89_SIMPLE.map((item) => item.id),
-}
-
-export const GSI_JCOND89_DETAIL_KEY_MAP = {
-  a4PersistenceId: 'jcond89PersistenceId',
-  a4ApertureId: 'jcond89ApertureId',
-  a4RoughnessId: 'jcond89RoughnessId',
-  a4InfillId: 'jcond89InfillId',
-  a4WeatheringId: 'jcond89WeatheringId',
-} as const
-
-export type GsiJcond89DetailTableKey = keyof typeof GSI_JCOND89_DETAIL_KEY_MAP
+export type GsiJcond89DetailTableKey =
+  | 'a4PersistenceId'
+  | 'a4ApertureId'
+  | 'a4RoughnessId'
+  | 'a4InfillId'
+  | 'a4WeatheringId'
 
 export const GSI_JCOND89_DETAIL_ROWS: { key: GsiJcond89DetailTableKey; label: string; labelEn: string; options: ScoreOption[] }[] = [
   {

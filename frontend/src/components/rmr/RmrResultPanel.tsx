@@ -1,6 +1,9 @@
+import { ArrowRight } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { Km } from '../math/Katex'
+import { SYM } from '../math/symbols'
 import { RMR_CLASSES } from '../../config/rmrTables'
 import type { RmrScoreBreakdown } from '../../utils/rmrCalc'
-import { ArrowRight } from 'lucide-react'
 
 interface RmrResultPanelProps {
   darkMode: boolean
@@ -23,9 +26,11 @@ export default function RmrResultPanel({ darkMode, language, scores, onEnterMrmr
       <div className={panel}>
         <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{isEn ? 'Classification result' : '评价结果'}</h3>
         <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-          {isEn
-            ? `Complete A1-A6 to view the class, rock-mass description, stand-up span and time, mechanical-property ranges, and support guidance. ${scores.completedCount}/6 ratings are complete.`
-            : `请完成 A1–A6 后查看完整评价（等级、岩体描述、自稳跨度与时间、力学参数区间与支护设计参考）。当前已完成 ${scores.completedCount}/6 项。`}
+          {isEn ? (
+            <>Complete <Km math={SYM.A1} />–<Km math={SYM.A6} /> to view the class, rock-mass description, stand-up span and time, mechanical-property ranges, and support guidance. {scores.completedCount}/6 ratings are complete.</>
+          ) : (
+            <>请完成 <Km math={SYM.A1} />–<Km math={SYM.A6} /> 后查看完整评价（等级、岩体描述、自稳跨度与时间、力学参数区间与支护设计参考）。当前已完成 {scores.completedCount}/6 项。</>
+          )}
         </p>
       </div>
     )
@@ -38,13 +43,13 @@ export default function RmrResultPanel({ darkMode, language, scores, onEnterMrmr
   const headCell = darkMode ? 'bg-gray-700/60 text-gray-200' : 'bg-gray-100 text-gray-700'
   const bodyText = darkMode ? 'text-gray-300' : 'text-gray-700'
 
-  const summaryRows: { label: string; value: string }[] = [
-    { label: isEn ? 'RMR range' : 'RMR 区间', value: info.rmrRange },
-    { label: isEn ? 'Rock-mass class' : '岩体质量等级', value: isEn ? `${info.labelEn} (${info.qualityEn})` : `${info.label}（${info.quality}）` },
-    { label: isEn ? 'Rock-mass description' : '岩体描述', value: isEn ? info.descriptionEn : info.description },
-    { label: isEn ? 'Mean stand-up span / time' : '平均自稳跨度 / 自稳时间', value: isEn ? `${info.spanEn} / ${info.standUpTimeEn}` : `${info.span} / ${info.standUpTime}` },
-    { label: isEn ? 'Rock-mass cohesion' : '岩体的粘聚力', value: info.cohesion },
-    { label: isEn ? 'Friction angle' : '内摩擦角', value: info.friction },
+  const summaryRows: { key: string; label: ReactNode; value: string }[] = [
+    { key: 'range', label: isEn ? <><Km math={SYM.RMR} /> range</> : <><Km math={SYM.RMR} /> 区间</>, value: info.rmrRange },
+    { key: 'class', label: isEn ? 'Rock-mass class' : '岩体质量等级', value: isEn ? `${info.labelEn} (${info.qualityEn})` : `${info.label}（${info.quality}）` },
+    { key: 'desc', label: isEn ? 'Rock-mass description' : '岩体描述', value: isEn ? info.descriptionEn : info.description },
+    { key: 'span', label: isEn ? 'Mean stand-up span / time' : '平均自稳跨度 / 自稳时间', value: isEn ? `${info.spanEn} / ${info.standUpTimeEn}` : `${info.span} / ${info.standUpTime}` },
+    { key: 'cohesion', label: isEn ? 'Rock-mass cohesion' : '岩体的粘聚力', value: info.cohesion },
+    { key: 'friction', label: isEn ? 'Friction angle' : '内摩擦角', value: info.friction },
   ]
 
   const supportRows: { label: string; value: string }[] = [
@@ -64,11 +69,11 @@ export default function RmrResultPanel({ darkMode, language, scores, onEnterMrmr
         }`}
       >
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <div className={`text-sm ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>{isEn ? 'Bieniawski RMR total' : 'Bieniawski RMR 总分'}</div>
+          <div className={`text-sm ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>{isEn ? <>Bieniawski <Km math={SYM.RMR} /> total</> : <>Bieniawski <Km math={SYM.RMR} /> 总分</>}</div>
           <div className={`text-3xl font-bold tabular-nums ${darkMode ? 'text-blue-100' : 'text-blue-900'}`}>{rmr}</div>
         </div>
         <p className={`mt-1 text-xs ${darkMode ? 'text-blue-200/80' : 'text-blue-700'}`}>
-          A1 {scores.A1} + A2 {scores.A2} + A3 {scores.A3} + A4 {scores.A4} + A5 {scores.A5} + A6 {scores.A6} = {rmr}
+          <Km math={SYM.A1} /> {scores.A1} + <Km math={SYM.A2} /> {scores.A2} + <Km math={SYM.A3} /> {scores.A3} + <Km math={SYM.A4} /> {scores.A4} + <Km math={SYM.A5} /> {scores.A5} + <Km math={SYM.A6} /> {scores.A6} = {rmr}
         </p>
         <p className={`mt-2 text-sm font-medium ${darkMode ? 'text-blue-100' : 'text-blue-900'}`}>
           {isEn
@@ -78,7 +83,7 @@ export default function RmrResultPanel({ darkMode, language, scores, onEnterMrmr
       </div>
 
       <div className="mb-4">
-        <div className={`mb-1.5 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{isEn ? 'Class scale (RMR 0-100)' : '等级刻度（RMR 0 – 100）'}</div>
+        <div className={`mb-1.5 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{isEn ? <>Class scale (<Km math={SYM.RMR} /> 0-100)</> : <>等级刻度（<Km math={SYM.RMR} /> 0 – 100）</>}</div>
         <div className={`flex overflow-hidden rounded-md border ${border}`}>
           {SCALE_SEGMENTS.map((segment) => {
             const isCurrent = segment.id === info.id
@@ -121,7 +126,7 @@ export default function RmrResultPanel({ darkMode, language, scores, onEnterMrmr
           <table className={`w-full border-collapse border text-sm ${border}`}>
             <tbody>
               {summaryRows.map((row) => (
-                <tr key={row.label}>
+                <tr key={row.key}>
                   <th
                     scope="row"
                     className={`border ${border} ${headCell} w-[42%] px-2 py-1.5 text-left font-medium`}

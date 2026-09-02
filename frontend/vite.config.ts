@@ -19,9 +19,6 @@ export default defineConfig({
           if (id.includes('node_modules/katex') || id.includes('node_modules/react-katex')) {
             return 'katex-vendor'
           }
-          if (id.includes('/components/modules/CopperWorkflow') || id.includes('/utils/copper')) {
-            return 'copper-workflow'
-          }
         },
       },
     },

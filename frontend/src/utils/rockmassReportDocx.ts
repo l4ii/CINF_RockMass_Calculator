@@ -131,7 +131,7 @@ function buildResultTable(rows: RmrPointSummary[]) {
 function buildPointSection(row: RmrPointSummary) {
   const info = row.needsReview ? null : row.scores.classInfo
   const blocks: (Paragraph | Table)[] = [heading(`${row.ordinal}. ${row.point.name}`, HeadingLevel.HEADING_2)]
-  if (row.point.note || row.point.oreType) blocks.push(paragraph([row.point.note ? `点位说明：${row.point.note}` : '', row.point.oreType ? `矿岩类型：${row.point.oreType}` : ''].filter(Boolean).join('；')))
+  if (row.point.note || row.point.oreType) blocks.push(paragraph([row.point.note ? `点位说明：${row.point.note}` : '', row.point.oreType ? `岩矿类型：${row.point.oreType}` : ''].filter(Boolean).join('；')))
   blocks.push(table([
     headerRow(['参数', '实际输入 / 选择', '评分']),
     ...row.descriptions.map((description) => new TableRow({ children: [cell(description.title, { widthPercent: 24 }), cell(description.inputValue ?? description.choice, { widthPercent: 64 }), cell(description.score != null ? String(description.score) : '—', { widthPercent: 12, align: AlignmentType.CENTER })] })),

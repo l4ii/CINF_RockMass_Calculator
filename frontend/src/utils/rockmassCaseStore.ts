@@ -64,6 +64,13 @@ export function normalizeRockMassGroup(value: string | null | undefined) {
   return normalized || undefined
 }
 
+/** Persist the typed rock-mass group on both display (`oreType`) and reuse (`groupId`) fields. */
+export function withRockMassOreType<T extends Partial<RockMassPointRecord>>(patch: T): T {
+  if (patch.oreType === undefined) return patch
+  const group = normalizeRockMassGroup(patch.oreType)
+  return { ...patch, oreType: group, groupId: group }
+}
+
 export function rockMassGroups(points: RockMassPointRecord[]) {
   const groups = new Map<string, string>()
   points.forEach((point) => {
@@ -214,31 +221,4 @@ export function upsertCase(records: RockMassCaseRecord[], next: RockMassCaseReco
 
 export function removeCase(records: RockMassCaseRecord[], caseId: string) {
   return records.filter((record) => record.id !== caseId)
-}
-
-/** 用于导航守卫的脏检测：忽略 updatedAt 这类与内容无关的字段 */
-function buildComparableCase(record: RockMassCaseRecord) {
-  return JSON.stringify({
-    name: record.name,
-    engineering: record.engineering ?? '',
-    location: record.location ?? '',
-    remark: record.remark ?? '',
-    points: record.points.map((point) => ({
-      id: point.id,
-      name: point.name,
-      note: point.note ?? '',
-      oreType: point.oreType ?? '',
-      groupId: point.groupId ?? point.oreType ?? '',
-      standardId: point.standardId ?? '',
-      inputVersion: point.inputVersion ?? 1,
-      input: point.input ?? null,
-      migration: point.migration ?? null,
-      rmr: point.rmr ?? null,
-    })),
-  })
-}
-
-export function isCaseDirty(draft: RockMassCaseRecord, saved: RockMassCaseRecord | null | undefined) {
-  if (!saved) return true
-  return buildComparableCase(draft) !== buildComparableCase(saved)
 }

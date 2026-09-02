@@ -9,11 +9,11 @@ export interface CollapsiblePanel {
 interface RmrParamSectionProps {
   darkMode: boolean
   language: 'zh' | 'en'
-  title: string
+  title: ReactNode
   score: number | null
   children: ReactNode
   /** 参数说明 */
-  description?: string
+  description?: ReactNode
   /** 操作提示：告诉用户这一步该怎么选 */
   hint?: ReactNode
   sectionRef?: Ref<HTMLElement>

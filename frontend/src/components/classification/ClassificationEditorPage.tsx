@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import BackIconButton from '../BackIconButton'
 import type { ClassificationResult, StandardDescriptor, ValidationIssue } from '../../methods/types'
+import PointInformationFields from './PointInformationFields'
 
 interface ClassificationEditorPageProps {
   darkMode: boolean
@@ -97,26 +98,20 @@ export default function ClassificationEditorPage({
           </header>
 
           <section className={card}>
-            <h2 className={`mb-3 text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{isEn ? 'Point information' : '点位信息'}</h2>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <label className="block space-y-1">
-                <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{isEn ? 'Point number' : '点位序号'}</span>
-                <input className={`${input} text-center`} value={pointOrdinal} readOnly aria-readonly="true" aria-label={isEn ? 'Point number' : '点位序号'} />
-              </label>
-              <label className="block space-y-1">
-                <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{isEn ? 'Point name' : '点位名称'}</span>
-                <input className={`${input} text-center`} value={pointName} onChange={(event) => onPointNameChange(event.target.value)} placeholder={isEn ? 'e.g. K12+350 crown' : '如：K12+350 拱顶'} />
-              </label>
-              <label className="block space-y-1">
-                <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{isEn ? 'Ore / rock type' : '矿岩类型'}</span>
-                <input list="rock-mass-groups" className={`${input} text-center`} value={pointOreType} onChange={(event) => onPointOreTypeChange(event.target.value)} placeholder={isEn ? 'e.g. Granite' : '如：花岗岩'} />
-                <datalist id="rock-mass-groups">{oreTypeOptions.map((option) => <option key={option} value={option} />)}</datalist>
-              </label>
-              <label className="block space-y-1">
-                <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{isEn ? 'Point note (chainage / borehole, optional)' : '点位说明（桩号 / 钻孔号，可选）'}</span>
-                <input className={`${input} text-center`} value={pointNote} onChange={(event) => onPointNoteChange(event.target.value)} placeholder={isEn ? 'e.g. BH-07, depth 45-52 m' : '如：ZK-07，深度 45 ~ 52 m'} />
-              </label>
-            </div>
+            <PointInformationFields
+              darkMode={darkMode}
+              language={language}
+              pointOrdinal={pointOrdinal}
+              pointName={pointName}
+              pointNote={pointNote}
+              pointOreType={pointOreType}
+              oreTypeOptions={oreTypeOptions}
+              listId="rock-mass-groups"
+              inputClassName={input}
+              onPointNameChange={onPointNameChange}
+              onPointNoteChange={onPointNoteChange}
+              onPointOreTypeChange={onPointOreTypeChange}
+            />
           </section>
 
           <div className="min-w-0 space-y-4">{renderForm()}</div>

@@ -128,24 +128,6 @@ async function collectMachineIdRawAsync() {
   return machineId
 }
 
-/** @deprecated 同步接口保留给脚本；主进程请用 collectMachineIdRawAsync */
-function collectMachineIdRaw() {
-  const cached = readMachineIdFromCache()
-  if (cached) return cached
-  return collectMachineIdRawSyncFallback()
-}
-
-function collectMachineIdRawSyncFallback() {
-  const parts = []
-  if (process.platform === 'win32') {
-    parts.push('win-fallback', os.hostname())
-  } else {
-    parts.push(process.platform, os.hostname(), (os.userInfo() && os.userInfo().username) || '')
-  }
-  const raw = parts.join('\n|')
-  return crypto.createHash('sha256').update(raw, 'utf8').digest('hex')
-}
-
 function buildPayloadObject(v, m, exp) {
   return { v, m, exp }
 }
@@ -210,17 +192,6 @@ function saveLicenseToken(token) {
   fs.writeFileSync(p, token, 'utf8')
 }
 
-function clearLicense() {
-  try {
-    const p = getLicenseFilePath()
-    if (fs.existsSync(p)) fs.unlinkSync(p)
-  } catch (e) {
-    /* ignore */
-  }
-  licenseStatusCache = null
-  licenseStatusPromise = null
-}
-
 /**
  * isDev: 开发不校验
  * 无公钥文件：生产环境阻断激活，避免发布包缺少验签材料仍继续使用。
@@ -272,12 +243,6 @@ function getCachedLicenseStatus() {
   return licenseStatusCache
 }
 
-/** 同步包装：优先返回缓存，否则走异步并阻塞（仅供遗留调用） */
-function getLicenseStatus(isDev) {
-  if (licenseStatusCache) return licenseStatusCache
-  return prewarmLicenseStatus(isDev)
-}
-
 async function activateWithToken(isDev, token) {
   const machineId = await collectMachineIdRawAsync()
   if (isDev) {
@@ -323,14 +288,9 @@ async function activateWithToken(isDev, token) {
 
 module.exports = {
   setElectronApp,
-  getLicenseStatus,
-  getLicenseStatusAsync,
   prewarmLicenseStatus,
   getCachedLicenseStatus,
   activateWithToken,
-  clearLicense,
-  collectMachineIdRaw,
   collectMachineIdRawAsync,
   LICENSE_BASENAME,
-  TOKEN_PREFIX,
 }

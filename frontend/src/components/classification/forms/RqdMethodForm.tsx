@@ -1,8 +1,6 @@
 import type { KeyboardEvent, WheelEvent } from 'react'
 import type { MethodFormProps } from '../ClassificationModule'
-// @ts-ignore - react-katex types
-import { BlockMath } from 'react-katex'
-import 'katex/dist/katex.min.css'
+import { Kblock } from '../../math/Katex'
 import { FormulaFrame } from '../../calculationUiPrimitives'
 import { RQD_CLASSES, normalizeRqdState, type RqdFormState } from '../../../methods/rqd'
 import { MethodSection, NumberField } from '../MethodFormControls'
@@ -44,7 +42,7 @@ export default function RqdMethodForm({ form, onChange, darkMode, language }: Me
           <div className={`mt-4 mb-2 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{en ? 'General equation' : '计算公式'}</div>
           <div data-testid="rqd-formula">
             <FormulaFrame darkMode={darkMode} compact>
-              <BlockMath math={en
+              <Kblock math={en
                 ? String.raw`\mathrm{RQD\ index}(\%)=100\times\frac{\sum(\text{length of core pieces}\ge0.10\,\mathrm{m})}{\text{total length of core run}}`
                 : String.raw`\mathrm{RQD}=\frac{\text{长度}\ge10\,\mathrm{cm}\text{的岩芯累计长度}}{\text{钻孔总长}}\times100\%`} />
             </FormulaFrame>

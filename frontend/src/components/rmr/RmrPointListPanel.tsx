@@ -85,7 +85,7 @@ export default function RmrPointListPanel({
         projectLocation: '工程部位', projectLocationPlaceholder: '如：-450 m 中段运输巷', notes: '备注',
         notesPlaceholder: '勘察阶段、资料来源等', points: '点位列表', newPoint: '新建点位', overview: '工程总览',
         empty: '该项目还没有点位。点击「新建点位」为第一个计算点位命名后开始 RMR 分级。',
-        headers: ['#', '点位名称', '说明', '矿岩类型', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'RMR', '等级', '操作'],
+        headers: ['#', '点位名称', '说明', '岩矿类型', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'RMR', '等级', '操作'],
         edit: '编辑', duplicate: '复制', delete: '删除',
       }
   const messageIsError = message ? /失败|failed|invalid|incompatible/i.test(message) : false
@@ -219,12 +219,13 @@ export default function RmrPointListPanel({
                               type="button"
                               onClick={() => onOpenPoint(point.id)}
                               className={`font-medium ${linkCls}`}
+                              title={point.name}
                             >
                               {point.name}
                             </button>
                           </td>
-                          <td className={`${cellCls} truncate text-center`}>{point.note || '—'}</td>
-                          <td className={`${cellCls} truncate text-center`}>{point.oreType || '—'}</td>
+                          <td className={`${cellCls} truncate text-center`} title={point.note || undefined}>{point.note || '—'}</td>
+                          <td className={`${cellCls} truncate text-center`} title={point.oreType || undefined}>{point.oreType || '—'}</td>
                           {summary.scores.map((score, scoreIndex) => (
                             <td key={`score-${point.id}-${scoreIndex}`} className={`${cellCls} text-center tabular-nums font-semibold`}>{score ?? '—'}</td>
                           ))}

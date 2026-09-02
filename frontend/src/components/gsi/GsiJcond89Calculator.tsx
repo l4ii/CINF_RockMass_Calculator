@@ -1,6 +1,6 @@
 import { useState } from 'react'
-// @ts-ignore - react-katex types
-import { InlineMath } from 'react-katex'
+import { Km } from '../math/Katex'
+import { SYM } from '../math/symbols'
 import {
   GSI_JCOND89_DETAIL_ROWS,
   GSI_JCOND89_SIMPLE,
@@ -123,7 +123,7 @@ export default function GsiJcond89Calculator({ darkMode, language, state, onClos
       >
         <div className="flex items-start justify-between gap-3">
           <h2 id="gsi-jcond89-quick-title" className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-            {en ? <>Discontinuity condition <InlineMath math="\mathrm{JCond}_{89}" /> ratings</> : <>结构面状态 <InlineMath math="\mathrm{JCond}_{89}" /> 取值</>}
+            {en ? <>Discontinuity condition <Km math={SYM.JCond89} /> ratings</> : <>结构面状态 <Km math={SYM.JCond89} /> 取值</>}
           </h2>
           <button
             type="button"
@@ -139,11 +139,11 @@ export default function GsiJcond89Calculator({ darkMode, language, state, onClos
         <p className={`mt-3 text-sm leading-relaxed ${muted}`}>
           {en ? (
             <>
-              <InlineMath math="\mathrm{JCond}_{89}" /> is Bieniawski’s (1989) discontinuity-condition rating (0–30). It accounts for joint persistence, aperture, roughness, infilling and wall-rock weathering. If the observed joint set matches one of the five summary descriptions, select that class under joint-condition judgement. If the discontinuities cannot be captured by a single description, score the five items below; their sum is <InlineMath math="\mathrm{JCond}_{89}" />.
+              <Km math={SYM.JCond89} /> is Bieniawski’s (1989) discontinuity-condition rating (0–30). It accounts for joint persistence, aperture, roughness, infilling and wall-rock weathering. If the observed joint set matches one of the five summary descriptions, select that class under joint-condition judgement. If the discontinuities cannot be captured by a single description, score the five items below; their sum is <Km math={SYM.JCond89} />.
             </>
           ) : (
             <>
-              <InlineMath math="\mathrm{JCond}_{89}" /> 为 Bieniawski（1989）结构面条件评分，取值 0～30，主要考虑节理迹长（延续性）、张开度、粗糙度、充填物以及结构面壁风化程度。当现场结构面可与五档综合描述对应时，直接按节理状态判断点选即可；若为不连续节理面、各要素难以用单一描述概括，则按下方五项分别点选，五项评分之和即为 <InlineMath math="\mathrm{JCond}_{89}" />。
+              <Km math={SYM.JCond89} /> 为 Bieniawski（1989）结构面条件评分，取值 0～30，主要考虑节理迹长（延续性）、张开度、粗糙度、充填物以及结构面壁风化程度。当现场结构面可与五档综合描述对应时，直接按节理状态判断点选即可；若为不连续节理面、各要素难以用单一描述概括，则按下方五项分别点选，五项评分之和即为 <Km math={SYM.JCond89} />。
             </>
           )}
         </p>

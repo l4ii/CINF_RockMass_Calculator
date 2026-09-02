@@ -34,7 +34,7 @@ export interface RockMassPointRecord<Method extends ClassificationMethodId = Cla
   name: string
   /** 桩号、钻孔号等补充说明 */
   note?: string
-  /** 矿岩类型，供 RMR 点位识别与列表展示 */
+  /** 岩矿类型组，计算页标签为「岩矿类型」，项目内可复用 */
   oreType?: string
   groupId?: string
   createdAt: string

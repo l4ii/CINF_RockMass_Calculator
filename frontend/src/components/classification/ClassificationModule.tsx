@@ -15,12 +15,13 @@ import {
   formatTimestamp,
   upsertCase,
   writeCaseRecords,
-  normalizeRockMassGroup,
   rockMassGroups,
+  withRockMassOreType,
 } from '../../utils/rockmassCaseStore'
 import ConfirmDialog from '../ConfirmDialog'
 import ClassificationEditorPage from './ClassificationEditorPage'
 import ClassificationExportDialog, { type ClassificationExportFormat } from './ClassificationExportDialog'
+import { exportFailureMessage, exportSuccessMessage } from './exportMessages'
 import ClassificationPointListPage from './ClassificationPointListPage'
 import ClassificationSummaryPage, { type ClassificationSummaryRow } from './ClassificationSummaryPage'
 import ClassificationWorkspacePage from './ClassificationWorkspacePage'
@@ -157,7 +158,7 @@ export default function ClassificationModule({
     if (!prefill || adapter.id !== 'mrmr' || prefillConsumed.current) return
     prefillConsumed.current = true
     const seededCase = buildBlankCase(adapter.id, prefill.source.caseName, adapter.standard.id)
-    const seededPoint = {
+    const seededPoint = withRockMassOreType({
       ...buildBlankPoint(
         adapter.id,
         prefill.source.pointName,
@@ -167,7 +168,7 @@ export default function ClassificationModule({
       ),
       oreType: prefill.source.oreType,
       note: prefill.source.note,
-    }
+    })
     const record = { ...seededCase, points: [seededPoint] }
     const stored = persist(record, isEn ? `MRMR point created from RMR: ${seededPoint.name}` : `已从 RMR 带入 MRMR 点位：${seededPoint.name}`)
     setDraft(stored)
@@ -265,7 +266,7 @@ export default function ClassificationModule({
         ? {
             ...current,
             points: current.points.map((point) =>
-              point.id === pointId ? { ...point, ...patch, ...(patch.oreType !== undefined ? { oreType: normalizeRockMassGroup(patch.oreType), groupId: normalizeRockMassGroup(patch.oreType) } : {}), updatedAt: new Date().toISOString() } : point
+              point.id === pointId ? { ...point, ...withRockMassOreType(patch), updatedAt: new Date().toISOString() } : point
             ),
           }
         : current
@@ -331,6 +332,7 @@ export default function ClassificationModule({
     setExportBusy(true)
     const saved = persist(draft)
     const failures: string[] = []
+    const successes: ClassificationExportFormat[] = []
     try {
       for (const format of formats) {
         const result =
@@ -339,21 +341,17 @@ export default function ClassificationModule({
             : await import('../../utils/classificationReportDocx').then((module) =>
                 module.exportClassificationReport(saved, adapter)
               )
-        if (!result.ok && !result.cancelled) {
+        if (result.ok) successes.push(format)
+        else if (!result.cancelled) {
           const detail = result.error ?? '未知错误'
           failures.push(isEn ? englishErrorDetail(detail, 'Could not save the selected file') : detail)
         }
       }
-      setMessage(
-        failures.length > 0
-          ? isEn
-            ? `Export failed: ${failures.join('; ')}`
-            : `导出失败：${failures.join('；')}`
-          : isEn
-            ? 'Selected content exported.'
-            : '所选内容已导出。'
-      )
-      if (failures.length === 0) setExportOpen(false)
+      if (failures.length > 0) setMessage(exportFailureMessage(language, failures))
+      else if (successes.length > 0) {
+        setMessage(exportSuccessMessage(language, successes))
+        setExportOpen(false)
+      }
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error)
       setMessage(isEn ? englishErrorDetail(detail, 'Export failed') : `导出失败：${detail}`)

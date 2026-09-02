@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
-// @ts-ignore - react-katex types
-import { BlockMath, InlineMath } from 'react-katex'
-import 'katex/dist/katex.min.css'
+import { Km, Kblock } from '../math/Katex'
+import { SYM } from '../math/symbols'
 import BackIconButton from '../BackIconButton'
 import { FormulaFrame } from '../calculationUiPrimitives'
+import PointInformationFields from '../classification/PointInformationFields'
 import GsiChartPanel from './GsiChartPanel'
 import GsiQuantitativePanel from './GsiQuantitativePanel'
 import GsiScorePreview from './GsiScorePreview'
@@ -22,6 +22,7 @@ interface GsiClassificationPageProps {
   pointName: string
   pointNote: string
   pointOreType: string
+  oreTypeOptions?: string[]
   pointOrdinal: number
   pointTotal: number
   value: GsiFormState
@@ -42,6 +43,7 @@ export default function GsiClassificationPage({
   pointName,
   pointNote,
   pointOreType,
+  oreTypeOptions = [],
   pointOrdinal,
   pointTotal,
   value,
@@ -104,25 +106,20 @@ export default function GsiClassificationPage({
           </header>
 
           <section className={card}>
-            <h2 className={`mb-3 text-center text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Point information' : '点位信息'}</h2>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <label className="block space-y-1 text-center">
-                <span className="text-sm font-medium">{en ? 'Point number' : '点位序号'}</span>
-                <input className={centered} value={pointOrdinal} readOnly />
-              </label>
-              <label className="block space-y-1 text-center">
-                <span className="text-sm font-medium">{en ? 'Point name' : '点位名称'}</span>
-                <input className={centered} value={pointName} onChange={(event) => onPointNameChange(event.target.value)} />
-              </label>
-              <label className="block space-y-1 text-center">
-                <span className="text-sm font-medium">{en ? 'Ore / rock type' : '矿岩类型'}</span>
-                <input className={centered} value={pointOreType} onChange={(event) => onPointOreTypeChange(event.target.value)} />
-              </label>
-              <label className="block space-y-1 text-center">
-                <span className="text-sm font-medium">{en ? 'Point note' : '点位说明'}</span>
-                <input className={centered} value={pointNote} onChange={(event) => onPointNoteChange(event.target.value)} />
-              </label>
-            </div>
+            <PointInformationFields
+              darkMode={darkMode}
+              language={language}
+              pointOrdinal={pointOrdinal}
+              pointName={pointName}
+              pointNote={pointNote}
+              pointOreType={pointOreType}
+              oreTypeOptions={oreTypeOptions}
+              listId="gsi-rock-mass-groups"
+              inputClassName={centered}
+              onPointNameChange={onPointNameChange}
+              onPointNoteChange={onPointNoteChange}
+              onPointOreTypeChange={onPointOreTypeChange}
+            />
           </section>
 
           <section data-testid="gsi-method-introduction" className={card}>
@@ -150,29 +147,29 @@ export default function GsiClassificationPage({
             <p className={`mb-4 text-sm leading-relaxed ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               {en ? (
                 <>
-                  The Geological Strength Index <InlineMath math="\mathrm{GSI}" /> was proposed by Hoek, Kaiser and Brown in 1995 to estimate rock-mass strength from structure (block interlocking) and discontinuity surface quality. <InlineMath math="\mathrm{GSI}" /> ranges from 0 to 100 and is the usual entry to the Hoek–Brown criterion.
+                  The Geological Strength Index <Km math={SYM.GSI} /> was proposed by Hoek, Kaiser and Brown in 1995 to estimate rock-mass strength from structure (block interlocking) and discontinuity surface quality. <Km math={SYM.GSI} /> ranges from 0 to 100 and is the usual entry to the Hoek–Brown criterion.
                   {quantitative ? (
                     <>
-                      {' '}Hoek, Carter and Diederichs (2013) recast the chart as continuous scales: the horizontal axis is discontinuity condition <InlineMath math="1.5\,\mathrm{JCond}_{89}" /> (0–45) and the vertical axis is <InlineMath math="\mathrm{RQD}/2" /> (0–40), so <InlineMath math="\mathrm{GSI}=1.5\,\mathrm{JCond}_{89}+\mathrm{RQD}/2" />.
-                      {' '}<InlineMath math="\mathrm{JCond}_{89}" /> is Bieniawski’s (1989) joint-condition rating (0–30), obtained from a five-class summary or from persistence, aperture, roughness, infilling and weathering; <InlineMath math="\mathrm{RQD}" /> is the percentage of a core run made up of intact pieces at least 10 cm long. Both should be taken from the same engineering zone. Isolines on the quantitative chart run from 10 to 80.
+                      {' '}Hoek, Carter and Diederichs (2013) recast the chart as continuous scales: the horizontal axis is discontinuity condition <Km math={SYM.JCond89_scaled} /> (0–45) and the vertical axis is <Km math={SYM.RQD_over_2} /> (0–40), so <Km math={SYM.GSI_quant} />.
+                      {' '}<Km math={SYM.JCond89} /> is Bieniawski’s (1989) joint-condition rating (0–30), obtained from a five-class summary or from persistence, aperture, roughness, infilling and weathering; <Km math={SYM.RQD} /> is the percentage of a core run made up of intact pieces at least 10 cm long. Both should be taken from the same engineering zone. Isolines on the quantitative chart run from 10 to 80.
                     </>
                   ) : (
                     <>
-                      {' '}It is obtained as Scale <InlineMath math="A" /> (surface quality) plus Scale <InlineMath math="B" /> (structure): <InlineMath math="\mathrm{GSI}=\mathrm{Scale}\,A+\mathrm{Scale}\,B" />. The chart method reads GSI from structure class and surface condition; quantitative filling uses <InlineMath math="\mathrm{Scale}\,A=1.5\,\mathrm{JCond}_{89}" /> and <InlineMath math="\mathrm{Scale}\,B=\mathrm{RQD}/2" />.
+                      {' '}It is obtained as <Km math={SYM.ScaleA} /> (surface quality) plus <Km math={SYM.ScaleB} /> (structure): <Km math={SYM.GSI_chart} />. The chart method reads GSI from structure class and surface condition; quantitative filling uses <Km math={SYM.ScaleA_quant} /> and <Km math={SYM.ScaleB_quant} />.
                     </>
                   )}
                 </>
               ) : (
                 <>
-                  地质强度指标 <InlineMath math="\mathrm{GSI}" /> 由 Hoek、Kaiser、Brown 于 1995 年提出，根据岩体结构（块体镶嵌程度）和结构面表面质量估计岩体强度，取值 0～100，是进入 Hoek–Brown 强度准则的常用入口。
+                  地质强度指标 <Km math={SYM.GSI} /> 由 Hoek、Kaiser、Brown 于 1995 年提出，根据岩体结构（块体镶嵌程度）和结构面表面质量估计岩体强度，取值 0～100，是进入 Hoek–Brown 强度准则的常用入口。
                   {quantitative ? (
                     <>
-                      Hoek、Carter 与 Diederichs（2013）将原图表法写成连续刻度：横轴为结构面状态 <InlineMath math="1.5\,\mathrm{JCond}_{89}" />（0～45），纵轴为岩石质量指标 <InlineMath math="\mathrm{RQD}/2" />（0～40），即 <InlineMath math="\mathrm{GSI}=1.5\,\mathrm{JCond}_{89}+\mathrm{RQD}/2" />。
-                      <InlineMath math="\mathrm{JCond}_{89}" /> 为 Bieniawski（1989）结构面条件评分（0～30），可由五档综合描述或按迹长、张开度、粗糙度、充填、风化五项求和得到；<InlineMath math="\mathrm{RQD}" /> 按同一岩芯回次统计长度不小于 10 cm 的完整段占钻孔长度的百分数。二者应取自同一工程分区。定量图等值线给出 10～80 的指标值。
+                      Hoek、Carter 与 Diederichs（2013）将原图表法写成连续刻度：横轴为结构面状态 <Km math={SYM.JCond89_scaled} />（0～45），纵轴为岩石质量指标 <Km math={SYM.RQD_over_2} />（0～40），即 <Km math={SYM.GSI_quant} />。
+                      <Km math={SYM.JCond89} /> 为 Bieniawski（1989）结构面条件评分（0～30），可由五档综合描述或按迹长、张开度、粗糙度、充填、风化五项求和得到；<Km math={SYM.RQD} /> 按同一岩芯回次统计长度不小于 10 cm 的完整段占钻孔长度的百分数。二者应取自同一工程分区。定量图等值线给出 10～80 的指标值。
                     </>
                   ) : (
                     <>
-                      <InlineMath math="\mathrm{GSI}" /> 由刻度 <InlineMath math="A" />（表面质量）与刻度 <InlineMath math="B" />（岩体结构）相加得到，即 <InlineMath math="\mathrm{GSI}=\mathrm{Scale}\,A+\mathrm{Scale}\,B" />；图表法按构造类别与表面条件在图上读取，定量法时 <InlineMath math="\mathrm{Scale}\,A=1.5\,\mathrm{JCond}_{89}" />、<InlineMath math="\mathrm{Scale}\,B=\mathrm{RQD}/2" />。
+                      <Km math={SYM.GSI} /> 由刻度 <Km math="A" />（表面质量）与刻度 <Km math="B" />（岩体结构）相加得到，即 <Km math={SYM.GSI_chart} />；图表法按构造类别与表面条件在图上读取，定量法时 <Km math={SYM.ScaleA_quant} />、<Km math={SYM.ScaleB_quant} />。
                     </>
                   )}
                 </>
@@ -181,7 +178,7 @@ export default function GsiClassificationPage({
             <div data-testid="gsi-formula">
               <FormulaFrame darkMode={darkMode}>
                 <div className={`space-y-1 text-center ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                  <BlockMath math={quantitative ? String.raw`\mathrm{GSI}=1.5\,\mathrm{JCond}_{89}+\mathrm{RQD}/2` : String.raw`\mathrm{GSI}=\mathrm{Scale}\,A+\mathrm{Scale}\,B`} />
+                  <Kblock math={quantitative ? SYM.GSI_quant : SYM.GSI_chart} />
                 </div>
               </FormulaFrame>
             </div>
@@ -196,8 +193,8 @@ export default function GsiClassificationPage({
             <p className={`mt-1 text-sm leading-relaxed ${muted}`}>
               {quantitative
                 ? (en
-                  ? <>The table below determines GSI from discontinuity condition and RQD. The horizontal axis is joint surface quality (strong to weak to the right; <InlineMath math="1.5\,\mathrm{JCond}_{89}" />); the vertical axis is rock-mass structure (strong to weak downward; <InlineMath math="\mathrm{RQD}/2" />, 0–40). Mean GSI is <InlineMath math="1.5\,\mathrm{JCond}_{89}+\mathrm{RQD}/2" />; contour lines give index values from 10 to 80. Enter the two ratings above, or select a matching cell.</>
-                  : <>下表为根据结构面状态和岩石质量指标确定地质强度指标（GSI）的量化图。横轴为结构面质量（由左至右由强到弱，对应 <InlineMath math="1.5\,\mathrm{JCond}_{89}" />），纵轴为岩体结构（由上至下由强到弱，对应 <InlineMath math="\mathrm{RQD}/2" />，0～40）。平均 GSI 为 <InlineMath math="1.5\,\mathrm{JCond}_{89}+\mathrm{RQD}/2" />，图中等值线给出 10～80 的指标值。可在上方输入两项参数，或在下表中选择对应方格。</>)
+                  ? <>The table below determines GSI from discontinuity condition and RQD. The horizontal axis is joint surface quality (strong to weak to the right; <Km math={SYM.JCond89_scaled} />); the vertical axis is rock-mass structure (strong to weak downward; <Km math={SYM.RQD_over_2} />, 0–40). Mean GSI is <Km math={SYM.GSI_quant} />; contour lines give index values from 10 to 80. Enter the two ratings above, or select a matching cell.</>
+                  : <>下表为根据结构面状态和岩石质量指标确定地质强度指标（GSI）的量化图。横轴为结构面质量（由左至右由强到弱，对应 <Km math={SYM.JCond89_scaled} />），纵轴为岩体结构（由上至下由强到弱，对应 <Km math={SYM.RQD_over_2} />，0～40）。平均 GSI 为 <Km math={SYM.GSI_quant} />，图中等值线给出 10～80 的指标值。可在上方输入两项参数，或在下表中选择对应方格。</>)
                 : (en
                   ? 'The table below is the Geological Strength Index (GSI) chart for jointed rock masses. The horizontal axis is discontinuity surface condition (surface quality decreasing to the right; Scale A); the vertical axis is rock-mass structure (interlocking decreasing downward; Scale B). Mean GSI is Scale A + Scale B at that combination; contour lines give index values from 10 to 90. N/A means that combination is not applicable.'
                   : '下表为节理岩体地质强度指标（GSI）分级图。横轴为结构面表面条件（由左至右表面质量降低，对应 Scale A），纵轴为岩体结构（由上至下块体镶嵌程度降低，对应 Scale B）。平均 GSI 为该组合的 Scale A + Scale B，图中等值线给出 10～90 的指标值。N/A 表示该组合在工程上不适用。')}

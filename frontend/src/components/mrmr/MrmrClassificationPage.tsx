@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
-// @ts-ignore - react-katex types
-import { BlockMath, InlineMath } from 'react-katex'
-import 'katex/dist/katex.min.css'
+import { Km, Kblock } from '../math/Katex'
+import { SYM } from '../math/symbols'
 import BackIconButton from '../BackIconButton'
 import { FormulaFrame } from '../calculationUiPrimitives'
+import PointInformationFields from '../classification/PointInformationFields'
 import RmrParamSection from '../rmr/RmrParamSection'
 import MrmrScorePreview from './MrmrScorePreview'
 import {
@@ -29,6 +29,7 @@ interface MrmrClassificationPageProps {
   pointName: string
   pointNote: string
   pointOreType: string
+  oreTypeOptions?: string[]
   pointOrdinal: number
   pointTotal: number
   value: MrmrFormState
@@ -63,7 +64,7 @@ function NumberInput({ darkMode, field, label, value, unit, min, max, step = 'an
   return <Field darkMode={darkMode} field={field} label={label}><div className="relative"><input aria-label={label} type="number" className={input} value={value ?? ''} min={min} max={max} step={step} onChange={(event) => onChange(event.target.value === '' ? null : Number(event.target.value))} />{unit ? <span className={`pointer-events-none absolute right-3 top-2 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{unit}</span> : null}</div></Field>
 }
 
-export default function MrmrClassificationPage({ darkMode, language, caseName, pointName, pointNote, pointOreType, pointOrdinal, pointTotal, value, onChange, onPointNameChange, onPointNoteChange, onPointOreTypeChange, onBackToWorkspace, onBackToPoints, onComplete, onCompleteAndNext }: MrmrClassificationPageProps) {
+export default function MrmrClassificationPage({ darkMode, language, caseName, pointName, pointNote, pointOreType, oreTypeOptions = [], pointOrdinal, pointTotal, value, onChange, onPointNameChange, onPointNoteChange, onPointOreTypeChange, onBackToWorkspace, onBackToPoints, onComplete, onCompleteAndNext }: MrmrClassificationPageProps) {
   const en = language === 'en'
   const state = useMemo(() => normalizeMrmrState(value), [value])
   const issues = useMemo(() => validateMrmrState(state), [state])
@@ -83,19 +84,34 @@ export default function MrmrClassificationPage({ darkMode, language, caseName, p
       <div className="grid w-full min-h-0 flex-1 grid-cols-1 gap-4 px-4 py-5 sm:px-6 lg:px-8 xl:grid-cols-[minmax(0,3fr)_minmax(220px,1fr)]">
         <main data-testid="calculation-input-pane" className="thin-scroll -mr-1 min-h-0 min-w-0 flex-1 overflow-y-auto space-y-4 pr-0.5">
           <header className="flex items-start gap-2"><BackIconButton label={en ? 'Back' : '返回'} onClick={onBackToPoints} darkMode={darkMode} className="mt-1" /><div className="min-w-0"><nav className={`flex flex-wrap items-center gap-1 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}><button type="button" onClick={onBackToWorkspace} className="hover:text-blue-600">{en ? 'Project workspace' : '项目工作区'}</button><span>/</span><button type="button" onClick={onBackToPoints} className="hover:text-blue-600">{caseName}</button><span>/</span><span>{pointName}</span></nav><h1 className={`mt-1 text-2xl font-bold tracking-tight sm:text-3xl ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'MRMR Mining Rock Mass Rating' : 'MRMR 采矿岩体分级'}</h1><p className={`mt-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{en ? 'Point' : '点位'} {pointOrdinal} / {pointTotal}</p></div></header>
-          <section className={card}><h2 className={`mb-3 text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Point information' : '点位信息'}</h2><div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4"><label className="block space-y-1"><span className="text-sm font-medium">{en ? 'Point number' : '点位序号'}</span><input className={`${input} text-center`} value={pointOrdinal} readOnly /></label><label className="block space-y-1"><span className="text-sm font-medium">{en ? 'Point name' : '点位名称'}</span><input className={input} value={pointName} onChange={(event) => onPointNameChange(event.target.value)} /></label><label className="block space-y-1"><span className="text-sm font-medium">{en ? 'Ore / rock type' : '矿岩类型'}</span><input className={input} value={pointOreType} onChange={(event) => onPointOreTypeChange(event.target.value)} /></label><label className="block space-y-1"><span className="text-sm font-medium">{en ? 'Point note' : '点位说明'}</span><input className={input} value={pointNote} onChange={(event) => onPointNoteChange(event.target.value)} /></label></div></section>
+          <section className={card}>
+            <PointInformationFields
+              darkMode={darkMode}
+              language={language}
+              pointOrdinal={pointOrdinal}
+              pointName={pointName}
+              pointNote={pointNote}
+              pointOreType={pointOreType}
+              oreTypeOptions={oreTypeOptions}
+              listId="mrmr-rock-mass-groups"
+              inputClassName={input}
+              onPointNameChange={onPointNameChange}
+              onPointNoteChange={onPointNoteChange}
+              onPointOreTypeChange={onPointOreTypeChange}
+            />
+          </section>
           <section data-testid="mrmr-method-introduction" className={card}>
             <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
               {en ? (
                 <>
-                  The MRMR (Mining Rock Mass Rating) method extends the in-situ rock mass rating <InlineMath math="\mathrm{IRMR}" /> for underground mining roadways and stopes.
-                  It first converts intact rock strength and in-block size or fracture effects into a rock-block strength rating <InlineMath math="\mathrm{RBS}" />, then combines open-joint spacing <InlineMath math="\mathrm{JS}" /> and joint condition <InlineMath math="\mathrm{JC}" />.
+                  The MRMR (Mining Rock Mass Rating) method extends the in-situ rock mass rating <Km math={SYM.IRMR} /> for underground mining roadways and stopes.
+                  It first converts intact rock strength and in-block size or fracture effects into a rock-block strength rating <Km math={SYM.RBS} />, then combines open-joint spacing <Km math={SYM.JS} /> and joint condition <Km math={SYM.JC} />.
                   Mining environment observations are reported as candidate corrections; the controlling engineering factor is selected for the final result rather than multiplying every correction mechanically.
                 </>
               ) : (
                 <>
-                  MRMR（Mining Rock Mass Rating，采矿岩体分级）是在原位岩体质量 <InlineMath math="\mathrm{IRMR}" /> 基础上，面向地下采矿巷道和采场的工程评价方法。
-                  页面先将完整岩石强度及块内尺寸或裂隙影响换算为块体强度评分 <InlineMath math="\mathrm{RBS}" />，再结合开放节理间距评分 <InlineMath math="\mathrm{JS}" /> 和结构面条件评分 <InlineMath math="\mathrm{JC}" />。
+                  MRMR（Mining Rock Mass Rating，采矿岩体分级）是在原位岩体质量 <Km math={SYM.IRMR} /> 基础上，面向地下采矿巷道和采场的工程评价方法。
+                  页面先将完整岩石强度及块内尺寸或裂隙影响换算为块体强度评分 <Km math={SYM.RBS} />，再结合开放节理间距评分 <Km math={SYM.JS} /> 和结构面条件评分 <Km math={SYM.JC} />。
                   采矿环境资料作为候选修正值列出，最终根据工程条件选择控制修正因素，不将所有修正项机械连乘。
                 </>
               )}
@@ -104,9 +120,9 @@ export default function MrmrClassificationPage({ darkMode, language, caseName, p
               <p className={`mb-2 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{en ? 'Calculation formulas' : '计算公式'}</p>
               <FormulaFrame darkMode={darkMode}>
                 <div className={`space-y-2 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                  <BlockMath math={String.raw`\mathrm{RBS\ (MPa)}=\mathrm{IRS}\times\mathrm{size\ adjustment}\times\mathrm{in\mbox{-}block\ fracture/vein\ factor}`} />
-                  <BlockMath math={String.raw`\mathrm{IRMR}=\mathrm{RBS\ rating}+\mathrm{JS}+\mathrm{JC}`} />
-                  <BlockMath math={String.raw`\mathrm{MRMR}=\mathrm{IRMR}\times\mathrm{controlling\ adjustment\ factor}`} />
+                  <Kblock math={String.raw`\mathrm{RBS\ (MPa)}=\mathrm{IRS}\times\mathrm{size\ adjustment}\times\mathrm{in\mbox{-}block\ fracture/vein\ factor}`} />
+                  <Kblock math={String.raw`\mathrm{IRMR}=\mathrm{RBS\ rating}+\mathrm{JS}+\mathrm{JC}`} />
+                  <Kblock math={String.raw`\mathrm{MRMR}=\mathrm{IRMR}\times\mathrm{controlling\ adjustment\ factor}`} />
                 </div>
               </FormulaFrame>
             </div>
@@ -117,7 +133,7 @@ export default function MrmrClassificationPage({ darkMode, language, caseName, p
             <div className="grid grid-cols-1 gap-2 md:grid-cols-3"><Field darkMode={darkMode} field="scenarioId" label={en ? 'Engineering setting' : '工程场景'} wide><select aria-label={en ? 'Engineering setting' : '工程场景'} className={input} value={state.applicability?.scenarioId ?? ''} onChange={(event) => patchApplicability({ scenarioId: event.target.value as MrmrApplicability['scenarioId'] })}><option value="">{en ? 'Select an option' : '请选择'}</option><option value="underground_roadway">{en ? 'Underground mining roadway' : '地下采矿巷道'}</option><option value="underground_stope">{en ? 'Underground stope' : '地下采场'}</option><option value="other">{en ? 'Other setting' : '其他工程场景'}</option></select></Field><Field darkMode={darkMode} field="jointedRockMass" label={en ? 'Rock mass structure' : '岩体结构'} wide><select aria-label={en ? 'Rock mass structure' : '岩体结构'} className={input} value={state.applicability?.jointedRockMass == null ? '' : state.applicability.jointedRockMass ? 'yes' : 'no'} onChange={(event) => patchApplicability({ jointedRockMass: event.target.value === '' ? null : event.target.value === 'yes' })}><option value="">{en ? 'Select an option' : '请选择'}</option><option value="yes">{en ? 'Jointed rock mass' : '节理发育岩体'}</option><option value="no">{en ? 'Massive / not jointed' : '块状或非节理岩体'}</option></select></Field><div className="grid grid-cols-1 gap-2 md:col-span-3 md:grid-cols-2">{check('irsBasisConfirmed', en ? 'IRS is supported by a test or traceable field record.' : 'IRS 有试验或可追溯现场记录依据。')}{check('jointSpacingBasisConfirmed', en ? 'Joint spacing is supported by a structural mapping record.' : '节理间距有结构面调查记录依据。')}{check('jointConditionBasisConfirmed', en ? 'Joint condition represents the controlling structural zone.' : '结构面条件代表控制性结构分区。')}{check('groundwaterBasisConfirmed', en ? 'Groundwater data are available.' : '地下水资料具备。')}{check('miningEnvironmentBasisConfirmed', en ? 'Mining method, stress and excavation data are available.' : '采矿方式、应力和开挖资料具备。')}</div></div>
           </RmrParamSection>
 
-          <RmrParamSection darkMode={darkMode} language={language} title={en ? '2. Intact rock strength IRS and size correction' : '2. 完整岩石强度 IRS、尺寸修正'} score={result?.rbsRating ?? null} description={en ? 'Enter the measured intact rock strength, then apply the size / in-block fracture correction before deriving RBS.' : '先输入完整岩石实测强度，再完成尺寸 / 块内裂隙修正，随后得到块体强度 RBS。'}>
+          <RmrParamSection darkMode={darkMode} language={language} title={en ? <>2. Intact rock strength <Km math={SYM.IRS} /> and size correction</> : <>2. 完整岩石强度 <Km math={SYM.IRS} />、尺寸修正</>} score={result?.rbsRating ?? null} description={en ? <>Enter the measured intact rock strength, then apply the size / in-block fracture correction before deriving <Km math={SYM.RBS} />.</> : <>先输入完整岩石实测强度，再完成尺寸 / 块内裂隙修正，随后得到块体强度 <Km math={SYM.RBS} />。</>}>
             <NumberInput darkMode={darkMode} field="irsMpa" label={en ? 'Intact rock strength IRS' : '完整岩石强度 IRS'} value={state.irsMpa} unit="MPa" min={0} onChange={(irsMpa) => patch({ irsMpa })} />
             <NumberInput darkMode={darkMode} field="sizeAdjustmentPercent" label={en ? 'Size / fracture adjustment' : '尺寸 / 块内裂隙修正'} value={state.sizeAdjustmentPercent} unit="%" min={0} max={100} onChange={(sizeAdjustmentPercent) => patch({ sizeAdjustmentPercent })} />
             <Field darkMode={darkMode} field="fractureVeinMode" label={en ? 'Fractures or veins inside block' : '块内裂隙 / 脉体'} wide><div className="grid grid-cols-2 overflow-hidden rounded-lg border"><button type="button" className={`px-3 py-2 text-sm ${state.fractureVeinMode === 'none' ? 'bg-blue-600 text-white' : ''}`} onClick={() => patch({ fractureVeinMode: 'none' })}>{en ? 'None' : '无'}</button><button type="button" className={`border-l px-3 py-2 text-sm ${state.fractureVeinMode === 'measured' ? 'bg-blue-600 text-white' : ''}`} onClick={() => patch({ fractureVeinMode: 'measured' })}>{en ? 'Measured' : '有，按曲线修正'}</button></div></Field>
@@ -125,17 +141,17 @@ export default function MrmrClassificationPage({ darkMode, language, caseName, p
             <div className={`md:col-span-2 rounded-lg border px-3 py-2 text-sm ${darkMode ? 'border-gray-600 bg-gray-900/40 text-gray-300' : 'border-gray-200 bg-gray-50 text-gray-600'}`}>{en ? 'RBS MPa and the 0-25 RBS rating are calculated after this section is complete.' : '本段完成后计算 RBS（MPa）和 0～25 的 RBS 评分。'}</div>
           </RmrParamSection>
 
-          <RmrParamSection darkMode={darkMode} language={language} title={en ? '3. Open-joint spacing JS' : '3. 开放节理间距 JS'} score={result?.jointSpacingRating ?? null} description={en ? 'Use the mean spacing of the controlling open-joint set and select the number of open-joint sets.' : '输入控制性开放节理组的平均间距，并选择开放节理组数。'}>
+          <RmrParamSection darkMode={darkMode} language={language} title={en ? <>3. Open-joint spacing <Km math={SYM.JS} /></> : <>3. 开放节理间距 <Km math={SYM.JS} /></>} score={result?.jointSpacingRating ?? null} description={en ? 'Use the mean spacing of the controlling open-joint set and select the number of open-joint sets.' : '输入控制性开放节理组的平均间距，并选择开放节理组数。'}>
             <NumberInput darkMode={darkMode} field="jointSpacingM" label={en ? 'Mean open-joint spacing' : '开放节理平均间距'} value={state.jointSpacingM} unit="m" min={0.1} max={5} step={0.01} onChange={(jointSpacingM) => patch({ jointSpacingM })} />
             <Select darkMode={darkMode} field="jointSetCount" value={state.jointSetCount} options={MRMR_JOINT_SET_OPTIONS} language={language} onChange={(jointSetCount) => patch({ jointSetCount: jointSetCount as MrmrFormState['jointSetCount'] })} />
           </RmrParamSection>
 
-          <RmrParamSection darkMode={darkMode} language={language} title={en ? '4. Joint condition JC' : '4. 结构面条件 JC'} score={result?.jointConditionRating ?? null} description={en ? 'Select the representative controlling joint condition from Table 57.1.' : '按表 57.1 选择代表控制性结构面的条件。'}>
+          <RmrParamSection darkMode={darkMode} language={language} title={en ? <>4. Joint condition <Km math={SYM.JC} /></> : <>4. 结构面条件 <Km math={SYM.JC} /></>} score={result?.jointConditionRating ?? null} description={en ? 'Select the representative controlling joint condition from Table 57.1.' : '按表 57.1 选择代表控制性结构面的条件。'}>
             <Select darkMode={darkMode} field="jointConditionId" value={state.jointConditionId} options={MRMR_JOINT_OPTIONS.map((item) => ({ ...item, label: `${item.label}（${item.value}/40）`, labelEn: `${item.labelEn} (${item.value}/40)` }))} language={language} onChange={(jointConditionId) => patch({ jointConditionId })} wide />
             <details className="md:col-span-2"><summary className="cursor-pointer text-sm font-medium text-blue-700 dark:text-blue-300">{en ? 'Open reference table' : '查看评分参考表'}</summary><p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{en ? 'The selected condition contributes 0-40 JC points.' : '所选结构面条件贡献 0～40 的 JC 分值。'}</p></details>
           </RmrParamSection>
 
-          <RmrParamSection darkMode={darkMode} language={language} title={en ? '5. In-situ rock mass rating IRMR' : '5. 原位岩体质量 IRMR'} score={result?.irmr ?? null} description={en ? 'IRMR = RBS rating + JS rating + JC rating.' : 'IRMR = RBS 评分 + JS 评分 + JC 评分。'}><div className={`md:col-span-2 rounded-lg border px-3 py-3 text-sm ${darkMode ? 'border-blue-500/40 bg-blue-950/30 text-blue-100' : 'border-blue-200 bg-blue-50 text-blue-900'}`}>{result ? `${result.rbsRating.toFixed(1)} + ${result.jointSpacingRating.toFixed(1)} + ${result.jointConditionRating.toFixed(1)} = ${result.irmr.toFixed(1)}` : (en ? 'Complete the preceding three sections to show IRMR.' : '完成前面三段后显示 IRMR。')}</div></RmrParamSection>
+          <RmrParamSection darkMode={darkMode} language={language} title={en ? <>5. In-situ rock mass rating <Km math={SYM.IRMR} /></> : <>5. 原位岩体质量 <Km math={SYM.IRMR} /></>} score={result?.irmr ?? null} description={en ? <><Km math={SYM.IRMR} /> = <Km math={SYM.RBS} /> rating + <Km math={SYM.JS} /> rating + <Km math={SYM.JC} /> rating.</> : <><Km math={SYM.IRMR} /> = <Km math={SYM.RBS} /> 评分 + <Km math={SYM.JS} /> 评分 + <Km math={SYM.JC} /> 评分。</>}><div className={`md:col-span-2 rounded-lg border px-3 py-3 text-sm ${darkMode ? 'border-blue-500/40 bg-blue-950/30 text-blue-100' : 'border-blue-200 bg-blue-50 text-blue-900'}`}>{result ? `${result.rbsRating.toFixed(1)} + ${result.jointSpacingRating.toFixed(1)} + ${result.jointConditionRating.toFixed(1)} = ${result.irmr.toFixed(1)}` : (en ? 'Complete the preceding three sections to show IRMR.' : '完成前面三段后显示 IRMR。')}</div></RmrParamSection>
 
           <RmrParamSection darkMode={darkMode} language={language} title={en ? '6. Mining-environment adjustments' : '6. 采矿环境修正'} score={result ? result.controllingAdjustment.factor : null} description={en ? 'Select each candidate adjustment. The result displays all candidates and adopts one controlling factor; factors are not mechanically multiplied.' : '分别选择各项候选修正。结果区展示全部候选值并采用一个控制因素，不机械连乘。'}>
             <Select darkMode={darkMode} field="weatheringConditionId" value={state.weatheringConditionId} options={MRMR_WEATHERING_CONDITIONS} language={language} onChange={(weatheringConditionId) => patch({ weatheringConditionId })} />

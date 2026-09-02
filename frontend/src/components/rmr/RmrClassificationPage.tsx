@@ -1,10 +1,10 @@
 import { useMemo, useRef, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
-// @ts-ignore - react-katex types
-import { BlockMath, InlineMath } from 'react-katex'
-import 'katex/dist/katex.min.css'
+import { Km, Kblock } from '../math/Katex'
+import { SYM } from '../math/symbols'
 import BackIconButton from '../BackIconButton'
-import { FormulaFrame } from '../calculationUiPrimitives'
+import { FormulaFrame, QuickCalcLink } from '../calculationUiPrimitives'
+import PointInformationFields from '../classification/PointInformationFields'
 import QuickRqdCalculator from '../rqd/QuickRqdCalculator'
 import {
   A2_REFERENCE_TABLE,
@@ -24,7 +24,6 @@ import {
 } from '../../config/rmrTables'
 import {
   computeRmrScores,
-  RMR_PARAM_TITLES,
   resolveFavorabilityFromTableB,
   a1PointLoadOptionForValue,
   a1UcsOptionForValue,
@@ -252,56 +251,34 @@ export default function RmrClassificationPage({
           </div>
 
           <div className={cardCls}>
-            <h2 className={`mb-3 text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{isEn ? 'Point information' : '点位信息'}</h2>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <label className="block space-y-1">
-                <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{isEn ? 'Point number' : '点位序号'}</span>
-                <input className={inputCls} value={pointOrdinal} readOnly aria-readonly="true" aria-label={isEn ? 'Point number' : '点位序号'} />
-              </label>
-              <label className="block space-y-1">
-                <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{isEn ? 'Point name' : '点位名称'}</span>
-                <input
-                  className={inputCls}
-                  value={pointName}
-                  onChange={(event) => onPointNameChange(event.target.value)}
-                  placeholder={isEn ? 'e.g. K12+350 crown' : '如：K12+350 拱顶'}
-                />
-              </label>
-              <label className="block space-y-1">
-                <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{isEn ? 'Ore / rock type' : '矿岩类型'}</span>
-                <input
-                  className={inputCls}
-                  value={pointOreType}
-                  onChange={(event) => onPointOreTypeChange(event.target.value)}
-                  placeholder={isEn ? 'e.g. Granite' : '如：花岗岩'}
-                />
-              </label>
-              <label className="block space-y-1">
-                <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                  {isEn ? 'Point note (chainage / borehole)' : '点位说明（桩号 / 钻孔号）'}
-                </span>
-                <input
-                  className={inputCls}
-                  value={pointNote}
-                  onChange={(event) => onPointNoteChange(event.target.value)}
-                  placeholder={isEn ? 'e.g. BH-07, depth 45-52 m' : '如：ZK-07，深度 45 ~ 52 m'}
-                />
-              </label>
-            </div>
+            <PointInformationFields
+              darkMode={darkMode}
+              language={language}
+              pointOrdinal={pointOrdinal}
+              pointName={pointName}
+              pointNote={pointNote}
+              pointOreType={pointOreType}
+              oreTypeOptions={oreTypeOptions}
+              listId="rmr-rock-mass-groups"
+              inputClassName={inputCls}
+              onPointNameChange={onPointNameChange}
+              onPointNoteChange={onPointNoteChange}
+              onPointOreTypeChange={onPointOreTypeChange}
+            />
           </div>
 
           <div className={cardCls}>
             <p className={`text-sm leading-relaxed mb-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
               {isEn ? (
                 <>
-                  The RMR (Rock Mass Rating) system was developed by Bieniawski in 1973 and revised in 1989; this page follows the 1989 revision.
-                  Six ratings are summed: intact-rock uniaxial compressive strength <InlineMath math="A_1" />, RQD <InlineMath math="A_2" />, discontinuity spacing <InlineMath math="A_3" />, discontinuity condition <InlineMath math="A_4" />, groundwater <InlineMath math="A_5" />, and discontinuity orientation <InlineMath math="A_6" />.
+                  The <Km math={SYM.RMR89} /> (Rock Mass Rating) system was developed by Bieniawski in 1973 and revised in 1989; this page follows the 1989 revision.
+                  Six ratings are summed: intact-rock uniaxial compressive strength <Km math={SYM.A1} />, <Km math={SYM.RQD} /> <Km math={SYM.A2} />, discontinuity spacing <Km math={SYM.A3} />, discontinuity condition <Km math={SYM.A4} />, groundwater <Km math={SYM.A5} />, and discontinuity orientation <Km math={SYM.A6} />.
                   Discontinuity condition includes persistence, separation, roughness, infilling, and alteration/weathering. Apply the system to structural regions of broadly uniform geology and rate representative typical conditions.
                 </>
               ) : (
                 <>
-                  RMR（Rock Mass Rating）岩体地质力学分级系统由 Bieniawski 于 1973 年提出，1989 年修订；本页采用 1989 年修订版。
-                  六项评分求和：完整岩石单轴抗压强度 <InlineMath math="A_1" />、RQD <InlineMath math="A_2" />、结构面间距 <InlineMath math="A_3" />、结构面条件 <InlineMath math="A_4" />、地下水 <InlineMath math="A_5" /> 和结构面方向 <InlineMath math="A_6" />。
+                  <Km math={SYM.RMR89} />（Rock Mass Rating）岩体地质力学分级系统由 Bieniawski 于 1973 年提出，1989 年修订；本页采用 1989 年修订版。
+                  六项评分求和：完整岩石单轴抗压强度 <Km math={SYM.A1} />、<Km math={SYM.RQD} /> <Km math={SYM.A2} />、结构面间距 <Km math={SYM.A3} />、结构面条件 <Km math={SYM.A4} />、地下水 <Km math={SYM.A5} /> 和结构面方向 <Km math={SYM.A6} />。
                   结构面条件包括延续性、张开度、粗糙度、充填物和蚀变/风化。应按地质特征大致均一的结构分区评价，并采用具有代表性的通常条件。
                 </>
               )}
@@ -309,18 +286,18 @@ export default function RmrClassificationPage({
 
             <FormulaFrame darkMode={darkMode}>
               <div className={`flex justify-center ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                <BlockMath math={'RMR = A_1 + A_2 + A_3 + A_4 + A_5 + A_6'} />
+                <Kblock math={SYM.RMR_formula} />
               </div>
             </FormulaFrame>
 
             <div data-testid="rmr-class-summary" className="mt-4 space-y-1.5">
-              <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{isEn ? 'RMR class summary' : 'RMR 分级汇总'}</div>
+              <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{isEn ? <><Km math={SYM.RMR} /> class summary</> : <><Km math={SYM.RMR} /> 分级汇总</>}</div>
               <div className="overflow-x-auto">
                 <table className={`w-full min-w-[420px] border-collapse border text-sm ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>
                   <thead className={darkMode ? 'bg-gray-700/60 text-gray-200' : 'bg-gray-100 text-gray-700'}>
                     <tr>
                       <th className="border px-2 py-2 text-center font-medium">{isEn ? 'Rock-mass class' : '岩体质量等级'}</th>
-                      <th className="border px-2 py-2 text-center font-medium">{isEn ? 'RMR range' : 'RMR 区间'}</th>
+                      <th className="border px-2 py-2 text-center font-medium">{isEn ? <> <Km math={SYM.RMR} /> range</> : <><Km math={SYM.RMR} /> 区间</>}</th>
                       <th className="border px-2 py-2 text-center font-medium">{isEn ? 'Rock-mass quality' : '岩体质量'}</th>
                     </tr>
                   </thead>
@@ -346,13 +323,13 @@ export default function RmrClassificationPage({
                 language={language}
                 sectionId="rmr-a1"
                 sectionRef={a1Ref}
-                title={isEn ? RMR_PARAM_TITLES.A1.titleEn : RMR_PARAM_TITLES.A1.title}
+                title={isEn ? <><Km math={SYM.A1} /> · Strength of intact rock material</> : <><Km math={SYM.A1} /> · 完整岩石材料的强度</>}
                 description={SECTION_HELP.a1[language]}
                 score={scores.A1}
               >
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   <label className="block space-y-1">
-                    <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{isEn ? 'Point-load strength index (MPa)' : '点荷载强度指标（MPa）'}</span>
+                    <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{isEn ? <>Point-load strength index <Km math={SYM.Is50} /> (MPa)</> : <>点荷载强度指标 <Km math={SYM.Is50} />（MPa）</>}</span>
                     <input
                       aria-label={isEn ? 'Point-load strength index' : '点荷载强度指标'}
                       type="number"
@@ -372,7 +349,7 @@ export default function RmrClassificationPage({
                     />
                   </label>
                   <label className="block space-y-1">
-                    <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{isEn ? 'Uniaxial compressive strength (MPa)' : '单轴抗压强度（MPa）'}</span>
+                    <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{isEn ? <>Uniaxial compressive strength <Km math={SYM.UCS} /> (MPa)</> : <>单轴抗压强度 <Km math={SYM.UCS} />（MPa）</>}</span>
                     <input
                       aria-label={isEn ? 'Uniaxial compressive strength' : '单轴抗压强度'}
                       type="number"
@@ -413,24 +390,15 @@ export default function RmrClassificationPage({
                 language={language}
                 sectionId="rmr-a2"
                 sectionRef={a2Ref}
-                title={isEn ? RMR_PARAM_TITLES.A2.titleEn : `${RMR_PARAM_TITLES.A2.title}（%）`}
+                title={isEn ? <><Km math={SYM.A2} /> · Rock Quality Designation (<Km math={SYM.RQD} />)</> : <><Km math={SYM.A2} /> · 岩石质量指标 <Km math={SYM.RQD} />（%）</>}
                 description={SECTION_HELP.a2[language]}
                 score={scores.A2}
-                hint={
-                  <button
-                    type="button"
-                    onClick={() => setRqdCalculatorOpen(true)}
-                    className="font-semibold underline"
-                  >
-                    {isEn ? 'Open RQD calculator' : '进入 RQD 计算'}
-                  </button>
-                }
               >
                 <label className="block max-w-xs space-y-1">
-                  <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{isEn ? 'RQD value (%)' : 'RQD 值（%）'}</span>
+                  <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{isEn ? <><Km math={SYM.RQD} /> value (%)</> : <><Km math={SYM.RQD} /> 值（%）</>}</span>
                   <input
-                    list="rmr-rock-mass-groups"
                     aria-label={isEn ? 'RQD value' : 'RQD 值'}
+                    data-testid="rmr-rqd-input"
                     type="number"
                     min="0"
                     max="100"
@@ -442,7 +410,12 @@ export default function RmrClassificationPage({
                       patch({ a2RqdValue: numeric, a2OptionId: a2RqdOptionForValue(numeric) })
                     }}
                   />
-                  <datalist id="rmr-rock-mass-groups">{oreTypeOptions.map((option) => <option key={option} value={option} />)}</datalist>
+                  <QuickCalcLink
+                    darkMode={darkMode}
+                    language={language}
+                    testId="rmr-rqd-quick-open"
+                    onClick={() => setRqdCalculatorOpen(true)}
+                  />
                 </label>
                 <RmrReferenceTable
                   darkMode={darkMode}
@@ -460,7 +433,7 @@ export default function RmrClassificationPage({
                 language={language}
                 sectionId="rmr-a3"
                 sectionRef={a3Ref}
-                title={isEn ? RMR_PARAM_TITLES.A3.titleEn : `${RMR_PARAM_TITLES.A3.title}（cm）`}
+                title={isEn ? <><Km math={SYM.A3} /> · Spacing of discontinuities</> : <><Km math={SYM.A3} /> · 结构面间距（cm）</>}
                 description={SECTION_HELP.a3[language]}
                 score={scores.A3}
               >
@@ -495,14 +468,14 @@ export default function RmrClassificationPage({
                 language={language}
                 sectionId="rmr-a4"
                 sectionRef={a4Ref}
-                title={isEn ? RMR_PARAM_TITLES.A4.titleEn : RMR_PARAM_TITLES.A4.title}
+                title={isEn ? <><Km math={SYM.A4} /> · Condition of discontinuities</> : <><Km math={SYM.A4} /> · 结构面条件</>}
                 description={SECTION_HELP.a4[language]}
                 score={scores.A4}
                 hint={
                   value.a4Detailed
                     ? isEn
-                      ? `Current basis: detailed ratings; their sum is A4. Current sum: ${a4SumExpression}`
-                      : `当前口径：详细评分，五项评分之和即为 A4。当前求和：${a4SumExpression}`
+                      ? <>Current basis: detailed ratings; their sum is <Km math={SYM.A4} />. Current sum: {a4SumExpression}</>
+                      : <>当前口径：详细评分，五项评分之和即为 <Km math={SYM.A4} />。当前求和：{a4SumExpression}</>
                     : undefined
                 }
                 panels={[
@@ -520,7 +493,7 @@ export default function RmrClassificationPage({
                         footnote={isEn ? 'The sum of these ratings is A4. If conditions are mutually exclusive, such as infilling obscuring roughness, use the summary description in Table 4.' : '以各项评分之和作为 A4；若部分条件相互排斥（例如充填遮蔽粗糙度），应直接按表4的综合描述评分。'}
                       />
                       <p className={`text-sm font-medium ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>
-                        A4 = {a4SumExpression}
+                        <Km math={SYM.A4} /> = {a4SumExpression}
                       </p>
                     </>
                   ),
@@ -550,7 +523,7 @@ export default function RmrClassificationPage({
                 language={language}
                 sectionId="rmr-a5"
                 sectionRef={a5Ref}
-                title={isEn ? RMR_PARAM_TITLES.A5.titleEn : RMR_PARAM_TITLES.A5.title}
+                title={isEn ? <><Km math={SYM.A5} /> · Groundwater</> : <><Km math={SYM.A5} /> · 地下水</>}
                 description={SECTION_HELP.a5[language]}
                 score={scores.A5}
               >
@@ -576,7 +549,7 @@ export default function RmrClassificationPage({
                     />
                   </label>
                   <label className="block space-y-1">
-                    <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{isEn ? 'Joint water pressure ratio (pw / σ1)' : '结构面水压力比（pw / σ1）'}</span>
+                    <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{isEn ? <>Joint water pressure ratio (<Km math={SYM.pwSigma1} />)</> : <>结构面水压力比（<Km math={SYM.pwSigma1} />）</>}</span>
                     <input
                       aria-label={isEn ? 'Joint water pressure ratio (pw / σ1)' : '结构面水压力比（pw / σ1）'}
                       type="number"
@@ -643,7 +616,7 @@ export default function RmrClassificationPage({
                 language={language}
                 sectionId="rmr-a6"
                 sectionRef={a6Ref}
-                title={isEn ? RMR_PARAM_TITLES.A6.titleEn : RMR_PARAM_TITLES.A6.title}
+                title={isEn ? <><Km math={SYM.A6} /> · Discontinuity orientation adjustment</> : <><Km math={SYM.A6} /> · 结构面方向修正</>}
                 description={SECTION_HELP.a6[language]}
                 score={scores.A6}
               >
@@ -726,9 +699,10 @@ export default function RmrClassificationPage({
         <QuickRqdCalculator
           darkMode={darkMode}
           language={language}
+          showIntro
           titleId="rmr-rqd-quick-title"
           formulaTestId="rmr-rqd-formula"
-          confirmLabel={isEn ? 'Confirm and fill RMR' : '确认并回填 RMR'}
+          confirmLabel={isEn ? 'Confirm and fill RQD' : '确认并回填 RQD'}
           onClose={() => setRqdCalculatorOpen(false)}
           onComplete={(rqd) => {
             patch({ a2RqdValue: rqd, a2OptionId: a2RqdOptionForValue(rqd) })

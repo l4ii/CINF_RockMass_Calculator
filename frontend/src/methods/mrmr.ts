@@ -338,8 +338,6 @@ export function buildMrmrHandoffFromRmr(
   return { form, source }
 }
 
-export const buildMrmrPrefillFromRmr = buildMrmrHandoffFromRmr
-
 export function normalizeMrmrState(raw: unknown): MrmrFormState {
   const value = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
   const legacy = Object.prototype.hasOwnProperty.call(value, 'correctedIrsMpa') || Object.prototype.hasOwnProperty.call(value, 'orientationId')

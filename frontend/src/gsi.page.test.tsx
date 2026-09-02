@@ -16,6 +16,7 @@ function renderPage(initial: GsiFormState = createInitialGsiState()) {
         pointName="P1"
         pointNote=""
         pointOreType=""
+        oreTypeOptions={['花岗岩']}
         pointOrdinal={1}
         pointTotal={1}
         value={form}
@@ -70,9 +71,19 @@ describe('GSI dedicated page', () => {
     expect(preview).toHaveTextContent('在图上点选格点后显示正式等级')
   })
 
-  it('centers every point-information field', () => {
+  it('labels the reusable rock-mass group field as 岩矿类型', () => {
     renderPage()
-    const section = screen.getByText('点位信息').closest('section')
+    const input = screen.getByLabelText('岩矿类型')
+    expect(input.className).toMatch(/text-center/)
+    fireEvent.click(screen.getByRole('button', { name: '打开岩矿类型列表' }))
+    expect(screen.getByRole('option', { name: '花岗岩' })).toBeInTheDocument()
+  })
+
+  it('keeps point-information inputs centered', () => {
+    renderPage()
+    const heading = screen.getByRole('heading', { name: '点位信息' })
+    expect(heading.className).not.toContain('text-center')
+    const section = heading.closest('section')
     expect(section).toBeTruthy()
     const inputs = section!.querySelectorAll('input')
     expect(inputs.length).toBe(4)

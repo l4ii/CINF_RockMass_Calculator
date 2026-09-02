@@ -5,7 +5,6 @@ import {
   GSI_STANDARD,
   calculateGsi,
   createInitialGsiState,
-  describeGsi,
   normalizeGsiState,
   validateGsiState,
 } from '../../methods/gsi'
@@ -23,13 +22,16 @@ import {
   formatTimestamp,
   upsertCase,
   writeCaseRecords,
+  rockMassGroups,
+  withRockMassOreType,
 } from '../../utils/rockmassCaseStore'
 import ClassificationExportDialog, { type ClassificationExportFormat } from '../classification/ClassificationExportDialog'
+import { exportFailureMessage, exportSuccessMessage } from '../classification/exportMessages'
 import ClassificationWorkspacePage from '../classification/ClassificationWorkspacePage'
 import ClassificationPointListPage from '../classification/ClassificationPointListPage'
-import ClassificationSummaryPage, { type ClassificationSummaryRow } from '../classification/ClassificationSummaryPage'
 import ConfirmDialog from '../ConfirmDialog'
 import GsiClassificationPage from './GsiClassificationPage'
+import GsiSummaryPage from './GsiSummaryPage'
 
 const METHOD_ID = 'gsi' as const
 
@@ -87,12 +89,13 @@ export default function GsiModule({ darkMode, language, methodName, onBackToHome
 
   const visibleCases = useMemo(() => sortCaseRecords(cases.filter((record) => record.methodId === METHOD_ID)), [cases])
   const activePoint = draft?.points.find((point) => point.id === activePointId) ?? null
+  const oreTypeOptions = draft ? rockMassGroups(draft.points) : []
   const updatePoint = (pointId: string, patch: Partial<RockMassPointRecord>) =>
     setDraft((current) =>
       current
         ? {
             ...current,
-            points: current.points.map((point) => (point.id === pointId ? { ...point, ...patch, updatedAt: new Date().toISOString() } : point)),
+            points: current.points.map((point) => (point.id === pointId ? { ...point, ...withRockMassOreType(patch), updatedAt: new Date().toISOString() } : point)),
           }
         : current
     )
@@ -152,19 +155,6 @@ export default function GsiModule({ darkMode, language, methodName, onBackToHome
     return { value: result.gsi.toFixed(1), grade: en ? result.grade.labelEn : result.grade.label, incomplete: false }
   }
 
-  const summaryRows = useMemo<ClassificationSummaryRow[]>(
-    () =>
-      draft
-        ? draft.points.map((point) => {
-            const form = normalizeGsiState(point.input)
-            const issues = validateGsiState(form)
-            const result = issues.length ? null : gsiAdapter.calculate(form as unknown as Record<string, unknown>)
-            return { point, result, descriptions: describeGsi(form), issueCount: issues.length }
-          })
-        : [],
-    [draft]
-  )
-
   const dialogs = (
     <>
       <ClassificationExportDialog
@@ -177,15 +167,25 @@ export default function GsiModule({ darkMode, language, methodName, onBackToHome
           if (!draft) return
           setExportBusy(true)
           const saved = persist(draft)
-          for (const format of formats) {
-            const result =
-              format === 'case'
-                ? await exportCaseFile(saved)
-                : await import('../../utils/classificationReportDocx').then((module) => module.exportClassificationReport(saved, gsiAdapter))
-            if (!result.ok && !result.cancelled) setMessage(en ? 'Export failed.' : `导出失败：${result.error ?? ''}`)
+          const failures: string[] = []
+          const successes: ClassificationExportFormat[] = []
+          try {
+            for (const format of formats) {
+              const result =
+                format === 'case'
+                  ? await exportCaseFile(saved)
+                  : await import('../../utils/classificationReportDocx').then((module) => module.exportClassificationReport(saved, gsiAdapter))
+              if (result.ok) successes.push(format)
+              else if (!result.cancelled) failures.push(result.error ?? '')
+            }
+            if (failures.length > 0) setMessage(exportFailureMessage(language, failures))
+            else if (successes.length > 0) {
+              setMessage(exportSuccessMessage(language, successes))
+              setExportOpen(false)
+            }
+          } finally {
+            setExportBusy(false)
           }
-          setExportBusy(false)
-          setExportOpen(false)
         }}
         onClose={() => setExportOpen(false)}
       />
@@ -256,6 +256,7 @@ export default function GsiModule({ darkMode, language, methodName, onBackToHome
           pointName={activePoint.name}
           pointNote={activePoint.note ?? ''}
           pointOreType={activePoint.oreType ?? ''}
+          oreTypeOptions={oreTypeOptions}
           pointOrdinal={draft.points.findIndex((point) => point.id === activePoint.id) + 1}
           pointTotal={draft.points.length}
           value={normalizeGsiState(activePoint.input)}
@@ -297,13 +298,11 @@ export default function GsiModule({ darkMode, language, methodName, onBackToHome
   if (stage === 'summary') {
     return (
       <>
-        <ClassificationSummaryPage
+        <GsiSummaryPage
           darkMode={darkMode}
           language={language}
           methodName={methodName}
-          standard={GSI_STANDARD}
           caseRecord={draft}
-          rows={summaryRows}
           message={message}
           onBackToWorkspace={() => {
             persist(draft)

@@ -177,9 +177,9 @@ export default function ClassificationPointListPage({
                         <tr key={point.id} className={darkMode ? 'hover:bg-gray-800/50' : 'hover:bg-white'}>
                           <td className="px-3 py-2.5 text-center tabular-nums">{index + 1}</td>
                           <td className="px-3 py-2.5 text-center">
-                            <button type="button" onClick={() => onOpenPoint(point.id)} className={`font-medium ${link}`}>{point.name}</button>
+                            <button type="button" onClick={() => onOpenPoint(point.id)} className={`font-medium ${link}`} title={point.name}>{point.name}</button>
                           </td>
-                          <td className="max-w-[220px] truncate px-3 py-2.5 text-center">{point.note || '—'}</td>
+                          <td className="max-w-[220px] truncate px-3 py-2.5 text-center" title={point.note || undefined}>{point.note || '—'}</td>
                           <td className="px-3 py-2.5 text-center tabular-nums">
                             {result.incomplete ? (
                               <span className="text-amber-600 dark:text-amber-300">{copy.needsInput}</span>

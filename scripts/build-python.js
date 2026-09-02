@@ -19,14 +19,6 @@ const systemPython = os.platform() === 'win32' ? 'python' : 'python3'
 const LLAMA_CPP_EXTRA_INDEX = 'https://abetlen.github.io/llama-cpp-python/whl/cpu'
 const PYINSTALLER_MODE = (process.env.CINF_PYINSTALLER_MODE || 'onefile').trim()
 
-function pipEnvWithLlamaIndex() {
-  if (!localAiEnabled) return { ...process.env }
-  return {
-    ...process.env,
-    PIP_EXTRA_INDEX_URL: LLAMA_CPP_EXTRA_INDEX,
-  }
-}
-
 function createVenvWindows() {
   const cmds = [
     `py -3.11 -m venv "${buildEnvDir}"`,
@@ -76,7 +68,6 @@ function ensureBuildEnv() {
 }
 
 function ensurePythonDepsForPackaging(pythonExe) {
-  const env = pipEnvWithLlamaIndex()
   if (localAiEnabled) {
     execSyncSafe(
       `"${pythonExe}" -m pip install "llama-cpp-python>=0.3.0" --upgrade --prefer-binary --extra-index-url ${LLAMA_CPP_EXTRA_INDEX}`

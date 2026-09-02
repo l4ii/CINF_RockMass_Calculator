@@ -45,8 +45,8 @@ export default function RmrOverviewControls({
     allParameters: 'No parameter filter',
   } : {
     filters: '筛选与排序',
-    ore: '矿岩类型搜索',
-    missing: '只看未填写矿岩类型',
+    ore: '岩矿类型搜索',
+    missing: '只看未填写岩矿类型',
     rmrMin: 'RMR 最小值',
     rmrMax: 'RMR 最大值',
     parameter: '参数范围',

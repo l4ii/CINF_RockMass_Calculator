@@ -1,6 +1,7 @@
 import { useState, type KeyboardEvent, type ReactNode, type WheelEvent } from 'react'
-// @ts-ignore - react-katex types
-import { InlineMath } from 'react-katex'
+import { Km } from '../math/Katex'
+import { SYM } from '../math/symbols'
+import { QuickCalcLink } from '../calculationUiPrimitives'
 import QuickRqdCalculator from '../rqd/QuickRqdCalculator'
 import GsiJcond89Calculator from './GsiJcond89Calculator'
 import GsiQuantitativeChartPanel from './GsiQuantitativeChartPanel'
@@ -98,16 +99,13 @@ function NumberInput({
         {unit ? <span className={`pointer-events-none absolute right-3 top-2 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{unit}</span> : null}
       </div>
       {invalid ? <p role="alert" className={`mt-1 text-xs ${darkMode ? 'text-red-300' : 'text-red-600'}`}>{invalidText}</p> : null}
-      <div className="mt-1 flex justify-end">
-        <button
-          type="button"
-          data-testid={`${testId}-quick-open`.replace('-input', '')}
-          onClick={onQuick}
-          className={`text-sm font-medium underline underline-offset-2 ${darkMode ? 'text-blue-300 hover:text-blue-200' : 'text-blue-700 hover:text-blue-800'}`}
-        >
-          ({quickLabel})
-        </button>
-      </div>
+      <QuickCalcLink
+        darkMode={darkMode}
+        language={language}
+        testId={`${testId}-quick-open`.replace('-input', '')}
+        label={quickLabel}
+        onClick={onQuick}
+      />
     </div>
   )
 }
@@ -127,7 +125,7 @@ export default function GsiQuantitativePanel({ darkMode, language, state, patch 
           testId="gsi-jcond89-input"
           ariaLabel={en ? 'Joint condition JCond89' : '节理状态 JCond89'}
           symbol="JCond₈₉"
-          label={en ? <>Joint condition <InlineMath math="\mathrm{JCond}_{89}" />:</> : <>节理状态 <InlineMath math="\mathrm{JCond}_{89}" />：</>}
+          label={en ? <>Joint condition <Km math={SYM.JCond89} />:</> : <>节理状态 <Km math={SYM.JCond89} />：</>}
           quickLabel={en ? 'Quick calculation' : '快速计算'}
           value={state.jcond89Value}
           min={0}
@@ -142,7 +140,7 @@ export default function GsiQuantitativePanel({ darkMode, language, state, patch 
           testId="gsi-rqd-input"
           ariaLabel={en ? 'Rock Quality Designation RQD' : '岩石质量指标 RQD'}
           symbol="RQD"
-          label={en ? <>Rock Quality Designation <InlineMath math="\mathrm{RQD}" />:</> : <>岩石质量指标 <InlineMath math="\mathrm{RQD}" />：</>}
+          label={en ? <>Rock Quality Designation <Km math={SYM.RQD} />:</> : <>岩石质量指标 <Km math={SYM.RQD} />：</>}
           quickLabel={en ? 'Quick calculation' : '快速计算'}
           value={state.rqd}
           unit="%"

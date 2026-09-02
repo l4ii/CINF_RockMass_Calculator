@@ -89,7 +89,7 @@ export default function RmrCaseSummaryPage({
     : {
         back: '返回点位列表', workspace: '项目工作区', overview: '工程总览', noProjectInfo: '未填写工程信息',
         export: '导出', noPoints: '项目内还没有点位。', point: '点位名称',
-        pointNote: '说明', oreType: '矿岩类型', grade: '等级', details: '参数', hideDetails: '隐藏参数', showDetails: '显示参数',
+        pointNote: '说明', oreType: '岩矿类型', grade: '等级', details: '参数', hideDetails: '隐藏参数', showDetails: '显示参数',
         parameterDetail: '参数', actualInput: '实际输入', score: '分值', description: '岩体描述', standup: '自稳跨度 / 时间',
         cohesion: '粘聚力', friction: '内摩擦角', needsReview: '待复核',
         note: '点击点位名称进入 RMR 计算；点击末列箭头查看实际输入和工程参数。',

@@ -1,7 +1,7 @@
 import { Check } from 'lucide-react'
 import type { ReactNode } from 'react'
-// @ts-ignore - react-katex types
-import { InlineMath } from 'react-katex'
+import { Km } from '../math/Katex'
+import { SYM } from '../math/symbols'
 import {
   GSI_STRUCTURE_OPTIONS,
   GSI_SURFACE_OPTIONS,
@@ -43,7 +43,7 @@ export default function GsiScorePreview({ darkMode, language, state, result }: G
     ? (rqdReady ? round1((state.rqd as number) / 2) : null)
     : (structure ? structure.scaleB : null))
   const emptyGrade = quantitative
-    ? (en ? <>Enter <InlineMath math="\mathrm{JCond}_{89}" /> and <InlineMath math="\mathrm{RQD}" /> to show the class.</> : <>输入 <InlineMath math="\mathrm{JCond}_{89}" /> 和 <InlineMath math="\mathrm{RQD}" /> 后显示正式等级</>)
+    ? (en ? <>Enter <Km math={SYM.JCond89} /> and <Km math={SYM.RQD} /> to show the class.</> : <>输入 <Km math={SYM.JCond89} /> 和 <Km math={SYM.RQD} /> 后显示正式等级</>)
     : (en ? 'Select a cell on the chart to show the class.' : '在图上点选格点后显示正式等级')
   const gradeLine = result ? (en ? result.grade.labelEn : result.grade.label) : null
 
@@ -66,8 +66,8 @@ export default function GsiScorePreview({ darkMode, language, state, result }: G
       <ul className="space-y-2">
         {quantitative ? (
           <>
-            {row(en ? <>Joint condition <InlineMath math="\mathrm{JCond}_{89}" /></> : <>节理状态 <InlineMath math="\mathrm{JCond}_{89}" /></>, jcondReady ? state.jcond89Value : '—', jcondReady)}
-            {row(en ? <>Rock Quality Designation <InlineMath math="\mathrm{RQD}" /></> : <>岩石质量指标 <InlineMath math="\mathrm{RQD}" /></>, rqdReady ? `${state.rqd}%` : '—', rqdReady)}
+            {row(en ? <>Joint condition <Km math={SYM.JCond89} /></> : <>节理状态 <Km math={SYM.JCond89} /></>, jcondReady ? state.jcond89Value : '—', jcondReady)}
+            {row(en ? <>Rock Quality Designation <Km math={SYM.RQD} /></> : <>岩石质量指标 <Km math={SYM.RQD} /></>, rqdReady ? `${state.rqd}%` : '—', rqdReady)}
           </>
         ) : (
           <>
@@ -81,7 +81,7 @@ export default function GsiScorePreview({ darkMode, language, state, result }: G
       <div className={`mt-4 border-t pt-3 ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
         <div data-testid="gsi-preview-result">
           <div className="flex items-baseline justify-between">
-            <span className={`text-sm ${muted}`}><InlineMath math="\mathrm{GSI}" />{en ? ' evaluation result' : '评价结果'}</span>
+            <span className={`text-sm ${muted}`}><Km math={SYM.GSI} />{en ? ' evaluation result' : '评价结果'}</span>
             <span className={`text-2xl font-bold tabular-nums ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>{result ? result.gsi : '—'}</span>
           </div>
           {gradeLine ? (

@@ -7,7 +7,6 @@ node_modules/
 # Testing
 coverage/
 test-results/
-playwright-report/
 
 # Production
 dist/
@@ -102,9 +101,6 @@ backend/models/*.bin
 
 # Python virtual environment (build environment)
 build_env/
-
-# Documentation (moved to docs/)
-# Keep root README.md only
 
 # 冶金配料离线授权签发私钥（公钥 electron/license-public.pem 可入库）
 scripts/license-private.pem

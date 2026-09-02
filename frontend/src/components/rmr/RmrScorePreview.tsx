@@ -1,3 +1,5 @@
+import { Km } from '../math/Katex'
+import { SYM } from '../math/symbols'
 import { RMR_PARAM_TITLES, type RmrScoreBreakdown } from '../../utils/rmrCalc'
 
 const ROWS: (keyof Pick<RmrScoreBreakdown, 'A1' | 'A2' | 'A3' | 'A4' | 'A5' | 'A6'>)[] = [
@@ -52,7 +54,7 @@ export default function RmrScorePreview({ darkMode, language, scores }: RmrScore
                   {done ? '✓' : key.replace('A', '')}
                 </span>
                 <span className={`min-w-0 break-words leading-5 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                  {key} · {isEn ? RMR_PARAM_TITLES[key].shortEn : RMR_PARAM_TITLES[key].short}
+                  <Km math={SYM[key]} /> · {isEn ? RMR_PARAM_TITLES[key].shortEn : RMR_PARAM_TITLES[key].short}
                 </span>
               </span>
               <span className={`ml-2 shrink-0 tabular-nums font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
@@ -66,7 +68,7 @@ export default function RmrScorePreview({ darkMode, language, scores }: RmrScore
       <div className={`mt-4 border-t pt-3 ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
         <div className="flex items-baseline justify-between">
           <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            {scores.allComplete ? (isEn ? 'RMR total' : 'RMR 总分') : (isEn ? 'Current sum Σ' : '当前合计 Σ')}
+            {scores.allComplete ? (isEn ? <><Km math={SYM.RMR} /> total</> : <><Km math={SYM.RMR} /> 总分</>) : (isEn ? 'Current sum Σ' : '当前合计 Σ')}
           </span>
           <span className={`text-2xl font-bold tabular-nums ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>
             {scores.completedCount > 0 ? scores.partialSum : '—'}

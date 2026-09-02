@@ -17,7 +17,6 @@ export const APP_TITLE_SIDEBAR_EN = 'Rock Mass Platform'
 export const APP_ORG_NAME_ZH = '长沙有色冶金设计研究院有限公司'
 export const APP_ORG_NAME_EN = 'Changsha Nonferrous Metallurgical Design & Research Institute Co., Ltd.'
 
-export const APP_EXPORT_FILENAME_PREFIX = 'CINF-MRQR'
 
 /** 离线授权码行首（与 electron/license.js、scripts/issue-offline-license.js 一致） */
 export const LICENSE_TOKEN_PREFIX = 'CINF-ROCK-LIC1.'

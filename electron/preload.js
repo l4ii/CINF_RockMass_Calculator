@@ -49,11 +49,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.removeAllListeners(channel)
     }
   },
-  // 导出计算书：显示“另存为”对话框，返回用户选择的路径或 null
-  showSaveDialogForExport: (defaultFileName) => ipcRenderer.invoke('show-save-dialog-export', defaultFileName),
-  exportWorkbookToFile: (fileName, content, format) =>
-    ipcRenderer.invoke('export:save-workbook', { fileName, content, format }),
-  exportBinaryToFile: (fileName, buffer) => ipcRenderer.invoke('export:save-binary', { fileName, buffer }),
   // 通用另存为：后缀由 fileName 决定，data 支持字符串与 ArrayBuffer
   saveFileToDisk: (fileName, data, options) =>
     ipcRenderer.invoke('export:save-file', {
@@ -63,8 +58,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
       title: options?.title,
       encoding: options?.encoding,
     }),
-  openFloTemplateFile: () => ipcRenderer.invoke('export:open-flo-template'),
-  saveCopperCaseToDesktop: (fileName, content) => ipcRenderer.invoke('copper-case:save-desktop', { fileName, content }),
   // 离线一机一证：设备码 + 授权码（前缀 CINF-ROCK-LIC1.）
   license: {
     getStatus: () => ipcRenderer.invoke('license:get-status'),

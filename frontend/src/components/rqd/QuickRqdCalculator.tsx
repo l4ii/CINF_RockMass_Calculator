@@ -1,6 +1,5 @@
 import { useState, type KeyboardEvent, type WheelEvent } from 'react'
-// @ts-ignore - react-katex types
-import { BlockMath } from 'react-katex'
+import { Kblock } from '../math/Katex'
 
 interface QuickRqdCalculatorProps {
   darkMode: boolean
@@ -9,6 +8,7 @@ interface QuickRqdCalculatorProps {
   onComplete: (rqd: number) => void
   confirmLabel?: string
   showIntro?: boolean
+  qSystemNotes?: boolean
   titleId?: string
   formulaTestId?: string
 }
@@ -28,6 +28,7 @@ export default function QuickRqdCalculator({
   onComplete,
   confirmLabel,
   showIntro = false,
+  qSystemNotes = false,
   titleId = 'rqd-quick-title',
   formulaTestId = 'rqd-quick-formula',
 }: QuickRqdCalculatorProps) {
@@ -81,12 +82,26 @@ export default function QuickRqdCalculator({
                 ? 'RQD (Rock Quality Designation, Deere et al. 1964) is a core-recovery index of fracturing. For one drill run it is the percentage of the drilled length represented by intact pieces at least 10 cm long, measured along the core axis. Mechanical breaks from drilling are not counted as fractures; pieces shorter than 10 cm, including rubble and no-recovery intervals, contribute zero to the numerator.'
                 : '岩石质量指标 RQD（Deere 等，1964）用取芯回次表征岩体破碎程度。同一回次内，沿岩芯轴线量测长度不小于 10 cm 的完整段并累计，除以该回次钻孔长度，得百分数。钻进造成的机械折断不计入裂隙；短于 10 cm 的碎块、无回次段分子记 0。'}
             </p>
+            {qSystemNotes ? (
+              <div className="space-y-1">
+                <p>
+                  {isEn
+                    ? 'Note 1: If the reported or measured RQD is ≤ 10 (including 0), use a nominal 10 when calculating Q. The measured value is still kept on the form.'
+                    : '注 1：当统计或实测 RQD ≤ 10（含 0）时，计算 Q 采用名义值 10；表单仍保留实测值。'}
+                </p>
+                <p>
+                  {isEn
+                    ? 'Note 2: Taking RQD in steps of 5 (100, 95, 90, …) is accurate enough. Core-run results are not rounded automatically.'
+                    : '注 2：建议按 5 为间隔取值（100、95、90…）已足够准确；岩芯回算结果不强制四舍五入。'}
+                </p>
+              </div>
+            ) : null}
           </div>
         ) : null}
 
         <div data-testid={formulaTestId} className={`mt-4 rounded-lg border px-3 py-2 ${darkMode ? 'border-gray-600 bg-gray-900/40' : 'border-gray-200 bg-gray-50'}`}>
           <p className={`mb-1 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{isEn ? 'Formula' : '计算公式'}</p>
-          <BlockMath
+          <Kblock
             math={isEn
               ? String.raw`\mathrm{RQD}=\frac{\text{cumulative core length }\ge 10\,\mathrm{cm}}{\text{drill hole length}}\times 100\%`
               : String.raw`\mathrm{RQD}=\frac{\text{长度 }\ge 10\,\mathrm{cm}\text{ 的岩芯累计长度}}{\text{钻孔长度}}\times 100\%`}
