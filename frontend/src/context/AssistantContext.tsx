@@ -2,13 +2,25 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
   type Dispatch,
   type ReactNode,
   type SetStateAction,
 } from 'react'
 import type { SelectedMethod } from '../types'
+
+const ASSISTANT_DISMISSED_KEY = 'cinf-assistant-dismissed'
+
+function readAssistantDismissed(): boolean {
+  try {
+    return sessionStorage.getItem(ASSISTANT_DISMISSED_KEY) === '1'
+  } catch {
+    return false
+  }
+}
 
 /** 供助手后端注入的软件状态（MainContent 持续更新） */
 export type AssistantWorkspaceSnapshot = {
@@ -23,6 +35,8 @@ type AssistantContextValue = {
   setAssistantSnapshot: Dispatch<SetStateAction<AssistantWorkspaceSnapshot | null>>
   assistantDockOpen: boolean
   setAssistantDockOpen: Dispatch<SetStateAction<boolean>>
+  assistantDismissed: boolean
+  dismissAssistant: () => void
   pendingAssistantPrompt: string | null
   askAssistant: (prompt: string) => void
   clearPendingAssistantPrompt: () => void
@@ -30,17 +44,42 @@ type AssistantContextValue = {
 
 const AssistantContext = createContext<AssistantContextValue | null>(null)
 
-export function AssistantProvider({ children }: { children: ReactNode }) {
+export function AssistantProvider({ children, pageKey }: { children: ReactNode; pageKey?: string }) {
   const [assistantSnapshot, setAssistantSnapshot] = useState<AssistantWorkspaceSnapshot | null>(null)
   const [assistantDockOpen, setAssistantDockOpen] = useState(false)
+  const [assistantDismissed, setAssistantDismissed] = useState(readAssistantDismissed)
   const [pendingAssistantPrompt, setPendingAssistantPrompt] = useState<string | null>(null)
+  const lastPageKeyRef = useRef(pageKey)
+
+  const dismissAssistant = useCallback(() => {
+    setAssistantDismissed(true)
+    setAssistantDockOpen(false)
+    setPendingAssistantPrompt(null)
+    try {
+      sessionStorage.setItem(ASSISTANT_DISMISSED_KEY, '1')
+    } catch {
+      /* Storage may be unavailable; keep the in-memory state. */
+    }
+  }, [])
+
+  useEffect(() => {
+    if (pageKey === lastPageKeyRef.current) return
+    lastPageKeyRef.current = pageKey
+    setAssistantDismissed(false)
+    setAssistantDockOpen(false)
+    try {
+      sessionStorage.removeItem(ASSISTANT_DISMISSED_KEY)
+    } catch {
+      /* Storage may be unavailable; keep the in-memory state. */
+    }
+  }, [pageKey])
 
   const askAssistant = useCallback((prompt: string) => {
     const text = prompt.trim()
-    if (!text) return
+    if (!text || assistantDismissed) return
     setPendingAssistantPrompt(text)
     setAssistantDockOpen(true)
-  }, [])
+  }, [assistantDismissed])
 
   const clearPendingAssistantPrompt = useCallback(() => {
     setPendingAssistantPrompt(null)
@@ -52,6 +91,8 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
       setAssistantSnapshot,
       assistantDockOpen,
       setAssistantDockOpen,
+      assistantDismissed,
+      dismissAssistant,
       pendingAssistantPrompt,
       askAssistant,
       clearPendingAssistantPrompt,
@@ -60,7 +101,9 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
       askAssistant,
       assistantDockOpen,
       assistantSnapshot,
+      assistantDismissed,
       clearPendingAssistantPrompt,
+      dismissAssistant,
       pendingAssistantPrompt,
     ]
   )

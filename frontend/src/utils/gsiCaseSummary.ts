@@ -78,8 +78,8 @@ function partialScales(form: GsiFormState, result: GsiResult | null) {
   }
   if (form.entryMode === 'chart') {
     return {
-      scaleA: surfaceScaleA(form.surfaceQualityId),
-      scaleB: structureScaleB(form.structureId),
+      scaleA: form.chartScaleA ?? surfaceScaleA(form.surfaceQualityId),
+      scaleB: form.chartScaleB ?? structureScaleB(form.structureId),
       gsi: null,
       rqd: null,
       jcond89: null,

@@ -4,6 +4,7 @@ import { Km } from '../math/Katex'
 import { SYM } from '../math/symbols'
 import {
   displayedFactorValue,
+  formatQValue,
   Q_FACTOR_BOUNDS,
   Q_JA_OPTIONS,
   Q_JN_OPTIONS,
@@ -25,10 +26,7 @@ function inRange(value: number | null | undefined, min: number, max: number) {
   return value != null && Number.isFinite(value) && value >= min && value <= max
 }
 
-function formatPreview(value: number) {
-  if (value !== 0 && (Math.abs(value) < 0.001 || Math.abs(value) >= 10000)) return value.toExponential(3)
-  return Number(value.toPrecision(5)).toString()
-}
+const formatPreview = formatQValue
 
 export default function QScorePreview({ darkMode, language, state, result }: QScorePreviewProps) {
   const en = language === 'en'
@@ -85,7 +83,7 @@ export default function QScorePreview({ darkMode, language, state, result }: QSc
             <span className={`text-2xl font-bold tabular-nums ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>{result ? formatPreview(result.q) : '—'}</span>
           </div>
           {gradeLine ? (
-            <p className={`mt-2 text-sm ${darkMode ? 'text-green-300' : 'text-green-800'}`}>{gradeLine}</p>
+            <div className={`mt-2 text-sm ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}><p>{gradeLine}</p><p className={`mt-1 text-xs ${muted}`}>{result ? (en ? result.grade.rangeEn ?? result.grade.range : result.grade.range) : ''}</p></div>
           ) : (
             <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               {en ? 'Enter the six ratings to show the class.' : '输入六项参数后显示正式等级'}

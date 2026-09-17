@@ -67,7 +67,7 @@ interface MethodFileContract {
 const METHOD_FILE_CONTRACTS: Record<ClassificationMethodId, MethodFileContract> = {
   rqd: { standardId: rqdAdapter.standard.id, inputVersion: rqdAdapter.inputVersion, adapter: rqdAdapter },
   bq: { standardId: bqAdapter.standard.id, inputVersion: bqAdapter.inputVersion, adapter: bqAdapter },
-  q: { standardId: qAdapter.standard.id, inputVersion: qAdapter.inputVersion, adapter: qAdapter },
+  q: { standardId: qAdapter.standard.id, standardAliases: ['ngi-q-2025'], inputVersion: qAdapter.inputVersion, adapter: qAdapter },
   rmr: {
     standardId: RMR_STANDARD_ID,
     standardAliases: [LEGACY_MISSPELLED_RMR_STANDARD_ID],

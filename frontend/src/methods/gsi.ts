@@ -20,6 +20,7 @@ import {
   A4_ROUGHNESS,
   A4_SIMPLE,
   A4_WEATHERING,
+  RMR_CLASSES,
   type ScoreOption,
 } from '../config/rmrTables'
 import type { ParameterDescription, ValidationIssue } from './types'
@@ -72,6 +73,10 @@ export interface GsiFormState {
   jrValue: number | null
   jaId: string
   jaValue: number | null
+  quantChartScaleA: number | null
+  quantChartScaleB: number | null
+  chartScaleA: number | null
+  chartScaleB: number | null
 }
 
 export interface GsiLocalized {
@@ -84,6 +89,10 @@ export interface GsiGradeInfo {
   min: number
   label: string
   labelEn: string
+  range: string
+  rangeEn: string
+  quality: string
+  qualityEn: string
 }
 
 export interface GsiResolvedRqd {
@@ -300,10 +309,31 @@ export const GSI_QUANT_SURFACE_OPTIONS: readonly {
 export const GSI_QUANT_SCALE_A_MAX = 45
 export const GSI_QUANT_SCALE_B_MAX = 40
 export const GSI_QUANT_TICK_STEP = 5
+export const GSI_QUANT_POINT_STEP = 1
 export const GSI_QUANT_TICK_COLS = GSI_QUANT_SCALE_A_MAX / GSI_QUANT_TICK_STEP
 export const GSI_QUANT_TICK_ROWS = GSI_QUANT_SCALE_B_MAX / GSI_QUANT_TICK_STEP
 export const GSI_QUANT_SCALE_A_TICKS = [45, 40, 35, 30, 25, 20, 15, 10, 5, 0] as const
 export const GSI_QUANT_SCALE_B_TICKS = [40, 35, 30, 25, 20, 15, 10, 5, 0] as const
+export const GSI_QUANT_SCALE_A_POINTS = Array.from({ length: GSI_QUANT_SCALE_A_MAX / GSI_QUANT_POINT_STEP + 1 }, (_, index) => GSI_QUANT_SCALE_A_MAX - index * GSI_QUANT_POINT_STEP)
+export const GSI_QUANT_SCALE_B_POINTS = Array.from({ length: GSI_QUANT_SCALE_B_MAX / GSI_QUANT_POINT_STEP + 1 }, (_, index) => GSI_QUANT_SCALE_B_MAX - index * GSI_QUANT_POINT_STEP)
+
+function stepSeries(max: number, step: number) {
+  const count = Math.round(max / step)
+  return Array.from({ length: count + 1 }, (_, index) => Math.round((max - index * step) * 10) / 10)
+}
+
+export const GSI_CHART_SCALE_A_MAX = 45
+export const GSI_CHART_SCALE_B_MAX = 50
+export const GSI_CHART_POINT_STEP = 2.5
+export const GSI_CHART_ROW_COUNT = GSI_STRUCTURE_OPTIONS.length
+export const GSI_CHART_ISOLINE_MIN = 5
+export const GSI_CHART_ISOLINE_MAX = 95
+export const GSI_CHART_ISOLINE_STEP = 5
+export const GSI_CHART_ISOLINE_VALUES = stepSeries(GSI_CHART_ISOLINE_MAX, GSI_CHART_ISOLINE_STEP).filter((gsi) => gsi >= GSI_CHART_ISOLINE_MIN)
+export const GSI_CHART_SCALE_A_TICKS = stepSeries(GSI_CHART_SCALE_A_MAX, GSI_CHART_POINT_STEP)
+export const GSI_CHART_SCALE_B_TICKS = stepSeries(GSI_CHART_SCALE_B_MAX, GSI_CHART_POINT_STEP)
+export const GSI_CHART_SCALE_A_POINTS = GSI_CHART_SCALE_A_TICKS
+export const GSI_CHART_SCALE_B_POINTS = GSI_CHART_SCALE_B_TICKS
 
 function relabelScoreOptions(source: readonly ScoreOption[], labels: readonly { label: string; labelEn: string }[]): ScoreOption[] {
   return source.map((item, index) => ({ ...item, label: labels[index].label, labelEn: labels[index].labelEn }))
@@ -416,23 +446,107 @@ export function quantitativeCellFill(structureId: GsiQuantStructureId, surfaceQu
   return { jcond89: scaleA / 1.5, rqd: scaleB * 2 }
 }
 
-export function locateQuantitativeTickCell(jcond89: number, rqd: number) {
-  const scaleA = Math.min(GSI_QUANT_SCALE_A_MAX, Math.max(0, 1.5 * jcond89))
-  const scaleB = Math.min(GSI_QUANT_SCALE_B_MAX, Math.max(0, rqd / 2))
-  const col = clampIndex(Math.floor((GSI_QUANT_SCALE_A_MAX - scaleA) / GSI_QUANT_TICK_STEP), GSI_QUANT_TICK_COLS - 1)
-  const row = clampIndex(Math.floor((GSI_QUANT_SCALE_B_MAX - scaleB) / GSI_QUANT_TICK_STEP), GSI_QUANT_TICK_ROWS - 1)
+export function quantitativeChartPercent(scaleA: number, scaleB: number) {
   return {
-    col,
-    row,
-    scaleAMin: GSI_QUANT_SCALE_A_MAX - (col + 1) * GSI_QUANT_TICK_STEP,
-    scaleBMin: GSI_QUANT_SCALE_B_MAX - (row + 1) * GSI_QUANT_TICK_STEP,
+    left: ((GSI_QUANT_SCALE_A_MAX - scaleA) / GSI_QUANT_SCALE_A_MAX) * 100,
+    top: ((GSI_QUANT_SCALE_B_MAX - scaleB) / GSI_QUANT_SCALE_B_MAX) * 100,
   }
 }
 
-export function quantitativeTickFill(col: number, row: number) {
-  const scaleA = GSI_QUANT_SCALE_A_MAX - (col + 0.5) * GSI_QUANT_TICK_STEP
-  const scaleB = GSI_QUANT_SCALE_B_MAX - (row + 0.5) * GSI_QUANT_TICK_STEP
-  return { jcond89: Math.round((scaleA / 1.5) * 10) / 10, rqd: scaleB * 2 }
+export function locateQuantitativePoint(jcond89: number, rqd: number) {
+  const scaleA = Math.round(Math.min(GSI_QUANT_SCALE_A_MAX, Math.max(0, 1.5 * jcond89)) / GSI_QUANT_POINT_STEP) * GSI_QUANT_POINT_STEP
+  const scaleB = Math.round(Math.min(GSI_QUANT_SCALE_B_MAX, Math.max(0, rqd / 2)) / GSI_QUANT_POINT_STEP) * GSI_QUANT_POINT_STEP
+  return { scaleA, scaleB }
+}
+
+export function quantitativePointFill(scaleA: number, scaleB: number) {
+  return { scaleA, scaleB, jcond89: scaleA / 1.5, rqd: scaleB * 2 }
+}
+
+export function hasQuantitativeChartPick(state: GsiFormState) {
+  return state.quantChartScaleA != null && state.quantChartScaleB != null
+}
+
+export function chartScaleAToX(scaleA: number) {
+  return ((GSI_CHART_SCALE_A_MAX - scaleA) / GSI_CHART_SCALE_A_MAX) * 100
+}
+
+export function chartScaleBToY(scaleB: number) {
+  return ((GSI_CHART_SCALE_B_MAX - scaleB) / GSI_CHART_SCALE_B_MAX) * 100
+}
+
+export function chartPlotPercent(scaleA: number, scaleB: number) {
+  return {
+    left: chartScaleAToX(scaleA),
+    top: chartScaleBToY(scaleB),
+  }
+}
+
+/** Label position on the undrawn top-left → bottom-right diagonal, where it meets GSI = A + B. */
+export function chartIsolineDiagonalLabel(gsi: number) {
+  const span = GSI_CHART_SCALE_A_MAX + GSI_CHART_SCALE_B_MAX
+  const t = gsi / span
+  return chartPlotPercent(GSI_CHART_SCALE_A_MAX * t, GSI_CHART_SCALE_B_MAX * t)
+}
+
+export function chartIsoline(gsi: number) {
+  const bLow = Math.max(0, gsi - GSI_CHART_SCALE_A_MAX)
+  const bHigh = Math.min(GSI_CHART_SCALE_B_MAX, gsi)
+  if (bLow > bHigh + 0.05) return null
+  const low = { left: chartScaleAToX(gsi - bLow), top: chartScaleBToY(bLow) }
+  const high = { left: chartScaleAToX(gsi - bHigh), top: chartScaleBToY(bHigh) }
+  return {
+    points: [
+      [high.left, high.top],
+      [low.left, low.top],
+    ] as Array<[number, number]>,
+    x1: high.left,
+    y1: high.top,
+    x2: low.left,
+    y2: low.top,
+    mx: (high.left + low.left) / 2,
+    my: (high.top + low.top) / 2,
+  }
+}
+
+export function chartIsolinePickPoints(): Array<{ scaleA: number; scaleB: number; gsi: number }> {
+  const points: Array<{ scaleA: number; scaleB: number; gsi: number }> = []
+  for (const gsi of GSI_CHART_ISOLINE_VALUES) {
+    const aMin = Math.max(0, gsi - GSI_CHART_SCALE_B_MAX)
+    const aMax = Math.min(GSI_CHART_SCALE_A_MAX, gsi)
+    const a0 = Math.ceil(aMin / GSI_CHART_POINT_STEP - 1e-9) * GSI_CHART_POINT_STEP
+    for (let a = a0; a <= aMax + 1e-9; a += GSI_CHART_POINT_STEP) {
+      const scaleA = Math.round((a + Number.EPSILON) * 10) / 10
+      const scaleB = Math.round((gsi - scaleA + Number.EPSILON) * 10) / 10
+      if (scaleB < -1e-6 || scaleB > GSI_CHART_SCALE_B_MAX + 1e-6) continue
+      if (!chartPointApplicable(scaleA, scaleB)) continue
+      points.push({ scaleA, scaleB, gsi })
+    }
+  }
+  return points
+}
+
+export function locateChartRegion(scaleA: number, scaleB: number): {
+  structureId: Exclude<GsiStructureId, ''>
+  surfaceQualityId: Exclude<GsiSurfaceQualityId, ''>
+} {
+  const colWidth = GSI_CHART_SCALE_A_MAX / GSI_SURFACE_OPTIONS.length
+  const rowHeight = GSI_CHART_SCALE_B_MAX / GSI_CHART_ROW_COUNT
+  const col = clampIndex(Math.floor((GSI_CHART_SCALE_A_MAX - scaleA) / colWidth), GSI_SURFACE_OPTIONS.length - 1)
+  const row = clampIndex(Math.floor((GSI_CHART_SCALE_B_MAX - scaleB) / rowHeight), GSI_CHART_ROW_COUNT - 1)
+  return {
+    structureId: GSI_STRUCTURE_OPTIONS[row].id,
+    surfaceQualityId: GSI_SURFACE_OPTIONS[col].id,
+  }
+}
+
+export function chartPointApplicable(scaleA: number, scaleB: number) {
+  const region = locateChartRegion(scaleA, scaleB)
+  return chartCellGsi(region.structureId, region.surfaceQualityId).applicable
+}
+
+export function hasChartPointPick(state: GsiFormState) {
+  return state.chartScaleA != null && state.chartScaleB != null
 }
 
 export const GSI_JCOND76_OPTIONS: readonly { id: string; label: string; labelEn: string; value: number }[] = [
@@ -443,13 +557,29 @@ export const GSI_JCOND76_OPTIONS: readonly { id: string; label: string; labelEn:
   { id: 'j76_0', label: '软泥质充填 > 5 mm，或连续张开 > 5 mm', labelEn: 'Soft gouge > 5 mm thick, or continuous opening > 5 mm', value: 0 },
 ]
 
-export const GSI_GRADES: readonly GsiGradeInfo[] = [
-  { id: 'good', min: 75, label: '好', labelEn: 'Good' },
-  { id: 'fair_good', min: 55, label: '较好', labelEn: 'Fair to good' },
-  { id: 'fair', min: 40, label: '一般', labelEn: 'Fair' },
-  { id: 'poor', min: 25, label: '较差', labelEn: 'Poor' },
-  { id: 'very_poor', min: 0, label: '很差', labelEn: 'Very poor' },
-]
+/**
+ * GSI 的工程分级沿用 RMR 的五级框架，并将边界扩展为连续 GSI 值。
+ * RMR 的整数档位为 0～20、21～40、41～60、61～80、81～100；
+ * GSI 可能带小数，因此采用 >20、>40、>60、>80 的下档归属，避免区间空档。
+ */
+const GSI_GRADE_BANDS = [
+  { id: 'good', min: 80, range: '>80～100', rangeEn: '>80–100' },
+  { id: 'fair_good', min: 60, range: '>60～80', rangeEn: '>60–80' },
+  { id: 'fair', min: 40, range: '>40～60', rangeEn: '>40–60' },
+  { id: 'poor', min: 20, range: '>20～40', rangeEn: '>20–40' },
+  { id: 'very_poor', min: 0, range: '0～20', rangeEn: '0–20' },
+] as const
+
+export const GSI_GRADES: readonly GsiGradeInfo[] = GSI_GRADE_BANDS.map((band, index) => {
+  const rmr = RMR_CLASSES[index]
+  return {
+    ...band,
+    label: rmr.label,
+    labelEn: rmr.labelEn,
+    quality: rmr.quality,
+    qualityEn: rmr.qualityEn,
+  }
+})
 
 export function createInitialGsiState(): GsiFormState {
   return {
@@ -475,6 +605,10 @@ export function createInitialGsiState(): GsiFormState {
     jrValue: null,
     jaId: '',
     jaValue: null,
+    quantChartScaleA: null,
+    quantChartScaleB: null,
+    chartScaleA: null,
+    chartScaleB: null,
   }
 }
 
@@ -532,6 +666,10 @@ export function normalizeGsiState(raw: unknown): GsiFormState {
     jrValue: finiteNumber(source.jrValue),
     jaId: knownId(source.jaId, optionIds(Q_JA_OPTIONS)),
     jaValue: finiteNumber(source.jaValue),
+    quantChartScaleA: finiteNumber(source.quantChartScaleA),
+    quantChartScaleB: finiteNumber(source.quantChartScaleB),
+    chartScaleA: finiteNumber(source.chartScaleA),
+    chartScaleB: finiteNumber(source.chartScaleB),
   }
 }
 
@@ -767,12 +905,12 @@ export function validateGsiState(raw: unknown): ValidationIssue[] {
   }
   if (state.entryMode === 'chart') {
     if (!state.structureId || !state.surfaceQualityId) {
-      issues.push(issue('structureId', '请在 GSI 图上点选格点（构造 × 表面条件）。', 'Click a cell on the GSI chart (structure × surface condition).'))
+      issues.push(issue('structureId', '请在 GSI 图上点选点位（岩体结构 × 表面条件）。', 'Click a point on the GSI chart (rock-mass structure × surface condition).'))
       return issues
     }
     const cell = chartCellGsi(state.structureId, state.surfaceQualityId)
     if (!cell.applicable) {
-      issues.push(issue('structureId', '该构造与表面条件组合在 GSI 图上为不适用（N/A）。', 'That structure × surface combination is marked N/A on the GSI chart.'))
+      issues.push(issue('structureId', '该岩体结构与表面条件组合在 GSI 图上为不适用（N/A）。', 'That rock-mass structure × surface combination is marked N/A on the GSI chart.'))
     }
     return issues
   }
@@ -784,7 +922,14 @@ export function validateGsiState(raw: unknown): ValidationIssue[] {
 }
 
 export function classifyGsi(gsi: number): GsiGradeInfo {
-  return GSI_GRADES.find((item) => gsi >= item.min) ?? GSI_GRADES[GSI_GRADES.length - 1]
+  // RMR boundaries are integer lower limits. GSI can be decimal, so each
+  // exact boundary remains with the lower class and only values above it
+  // move into the next class.
+  if (gsi > 80) return GSI_GRADES[0]
+  if (gsi > 60) return GSI_GRADES[1]
+  if (gsi > 40) return GSI_GRADES[2]
+  if (gsi > 20) return GSI_GRADES[3]
+  return GSI_GRADES[4]
 }
 
 function round1(value: number) {
@@ -833,19 +978,22 @@ export function calculateGsi(raw: unknown): GsiResult {
   if (state.entryMode === 'chart') {
     const cell = chartCellGsi(state.structureId as Exclude<GsiStructureId, ''>, state.surfaceQualityId as Exclude<GsiSurfaceQualityId, ''>)
     if (!cell.applicable || cell.gsi == null) throw new Error('该格点在 GSI 图上为不适用。')
-    const gsi = cell.gsi
+    const chartPick = hasChartPointPick(state)
+    const scaleA = chartPick ? (state.chartScaleA as number) : cell.scaleA
+    const scaleB = chartPick ? (state.chartScaleB as number) : cell.scaleB
+    const gsi = gsiFromScales(scaleA, scaleB)
     const grade = classifyGsi(gsi)
     const { warnings, warningsEn } = buildWarnings(state, gsi, null, null)
     return {
       gsi,
       entryMode: 'chart',
-      rqd: cell.scaleB * 2,
-      jcond89Equivalent: cell.scaleA / 1.5,
-      scaleA: cell.scaleA,
-      scaleB: cell.scaleB,
+      rqd: scaleB * 2,
+      jcond89Equivalent: scaleA / 1.5,
+      scaleA,
+      scaleB,
       grade,
-      formula: `GSI = 刻度 A + 刻度 B = ${cell.scaleA} + ${cell.scaleB} = ${gsi}`,
-      formulaEn: `GSI = Scale A + Scale B = ${cell.scaleA} + ${cell.scaleB} = ${gsi}`,
+      formula: `GSI = 刻度 A + 刻度 B = ${scaleA} + ${scaleB} = ${gsi}`,
+      formulaEn: `GSI = Scale A + Scale B = ${scaleA} + ${scaleB} = ${gsi}`,
       warnings,
       warningsEn,
       rqdResolution: null,
@@ -857,8 +1005,12 @@ export function calculateGsi(raw: unknown): GsiResult {
   const rqd = resolveQuantitativeRqd(state)
   const surface = resolveQuantitativeSurface(state)
   if (!rqd.ok || !surface.ok) throw new Error('GSI 定量输入不完整。')
-  const gsiRaw =
-    surface.resolved.method === 'jcond76'
+  const chartPick = hasQuantitativeChartPick(state) && surface.resolved.method === 'jcond89'
+  const scaleA = chartPick ? (state.quantChartScaleA as number) : surface.resolved.scaleA
+  const scaleB = chartPick ? (state.quantChartScaleB as number) : rqd.resolved.value / 2
+  const gsiRaw = chartPick
+    ? scaleA + scaleB
+    : surface.resolved.method === 'jcond76'
       ? 2 * (surface.resolved.jcond76 as number) + rqd.resolved.value / 2
       : surface.resolved.method === 'jr_ja'
         ? 52.5 * ((surface.resolved.jrJa as number) / (1 + (surface.resolved.jrJa as number))) + rqd.resolved.value / 2
@@ -866,14 +1018,16 @@ export function calculateGsi(raw: unknown): GsiResult {
   const gsi = round1(Math.min(100, Math.max(0, gsiRaw)))
   const grade = classifyGsi(gsi)
   const { warnings, warningsEn } = buildWarnings(state, gsi, rqd.resolved, surface.resolved)
-  const formulaZh =
-    surface.resolved.method === 'jcond76'
+  const formulaZh = chartPick
+    ? `GSI = 刻度 A + 刻度 B = ${scaleA} + ${scaleB} = ${gsi}`
+    : surface.resolved.method === 'jcond76'
       ? `GSI = 2 JCond₇₆ + RQD/2 = 2×${surface.resolved.jcond76} + ${rqd.resolved.value}/2 = ${gsi}`
       : surface.resolved.method === 'jr_ja'
         ? `GSI = 52.5 (Jr/Ja)/(1+Jr/Ja) + RQD/2 = 52.5×${round2((surface.resolved.jrJa as number) / (1 + (surface.resolved.jrJa as number)))} + ${rqd.resolved.value}/2 = ${gsi}`
         : `GSI = 1.5 JCond₈₉ + RQD/2 = 1.5×${round1(surface.resolved.jcond89Equivalent)} + ${rqd.resolved.value}/2 = ${gsi}`
-  const formulaEn =
-    surface.resolved.method === 'jcond76'
+  const formulaEn = chartPick
+    ? `GSI = Scale A + Scale B = ${scaleA} + ${scaleB} = ${gsi}`
+    : surface.resolved.method === 'jcond76'
       ? `GSI = 2 JCond76 + RQD/2 = 2×${surface.resolved.jcond76} + ${rqd.resolved.value}/2 = ${gsi}`
       : surface.resolved.method === 'jr_ja'
         ? `GSI = 52.5 (Jr/Ja)/(1+Jr/Ja) + RQD/2 = 52.5×${round2((surface.resolved.jrJa as number) / (1 + (surface.resolved.jrJa as number)))} + ${rqd.resolved.value}/2 = ${gsi}`
@@ -881,10 +1035,10 @@ export function calculateGsi(raw: unknown): GsiResult {
   return {
     gsi,
     entryMode: 'quantitative',
-    rqd: rqd.resolved.value,
-    jcond89Equivalent: round1(surface.resolved.jcond89Equivalent),
-    scaleA: round1(surface.resolved.scaleA),
-    scaleB: round1(rqd.resolved.value / 2),
+    rqd: chartPick ? scaleB * 2 : rqd.resolved.value,
+    jcond89Equivalent: chartPick ? scaleA / 1.5 : round1(surface.resolved.jcond89Equivalent),
+    scaleA: round1(scaleA),
+    scaleB: round1(scaleB),
     grade,
     formula: formulaZh,
     formulaEn,
@@ -892,7 +1046,7 @@ export function calculateGsi(raw: unknown): GsiResult {
     warningsEn,
     rqdResolution: rqd.resolved,
     surfaceResolution: surface.resolved,
-    chartCell: nearestChartCell(rqd.resolved.value, surface.resolved.jcond89Equivalent),
+    chartCell: nearestChartCell(chartPick ? scaleB * 2 : rqd.resolved.value, chartPick ? scaleA / 1.5 : surface.resolved.jcond89Equivalent),
   }
 }
 

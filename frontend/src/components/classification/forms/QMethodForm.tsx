@@ -73,7 +73,7 @@ export default function QMethodForm({ form, onChange, darkMode, language }: Meth
       {optionalRangeField('srfValue', en ? 'SRF · Adopted value within range' : 'SRF · 区间内采用值', state.srfId, Q_SRF_OPTIONS)}
       </MethodSection>
 
-      <MethodSection darkMode={darkMode} title={en ? 'Equivalent dimension and support' : '等效尺寸与支护初判'} description={en ? 'The support zone is an explicitly labelled preliminary approximation and must be checked against the original chart.' : '支护分区为明确标注的初步近似，工程设计须回查 NGI 2025 原支护图。'} source="De = span / ESR">
+      <MethodSection darkMode={darkMode} title={en ? 'Equivalent dimension and support' : '当量尺寸与支护需求判定'} description={en ? 'Screening against the empirical unsupported limit De = 2Q^0.4; verify against project conditions.' : '将当量尺寸与经验无支护极限 De＝2Q^0.4 比较，判定支护需求。'} source="De = span / ESR">
       <NumberField field="span" label={en ? 'Excavation span, diameter, or height' : '开挖跨度、直径或高度'} value={state.span} unit="m" min={0.01} step={0.1} darkMode={darkMode} onChange={(span) => patch({ span })} />
       <SelectField field="esrId" label={en ? 'ESR · Excavation support ratio' : 'ESR · 开挖支护比'} value={state.esrId} options={Q_ESR_OPTIONS.map((option) => ({ id: option.id, label: option.label.zh, labelEn: option.label.en }))} darkMode={darkMode} language={language} onChange={(esrId) => patch({ esrId, esrValue: null })} />
       {optionalRangeField('esrValue', en ? 'ESR · Adopted value within range' : 'ESR · 区间内采用值', state.esrId, Q_ESR_OPTIONS)}

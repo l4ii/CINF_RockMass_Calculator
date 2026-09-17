@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { X } from 'lucide-react'
 import { CLASSIFICATION_METHODS, type SelectedMethod } from '../types'
 import { API_BASE_URL, API_TIMEOUT } from '../config/api'
 import { useAssistantContext } from '../context/AssistantContext'
@@ -73,6 +74,8 @@ export default function AssistantPanel({ darkMode, language, onMethodSelect }: A
     assistantSnapshot,
     assistantDockOpen,
     setAssistantDockOpen,
+    assistantDismissed,
+    dismissAssistant,
     pendingAssistantPrompt,
     clearPendingAssistantPrompt,
   } = useAssistantContext()
@@ -392,7 +395,10 @@ export default function AssistantPanel({ darkMode, language, onMethodSelect }: A
   }
 
   const stripLabel = language === 'en' ? 'Assistant' : '智能助手'
+  const closeLabel = language === 'en' ? 'Hide assistant' : '关闭智能助手'
   const roleLabelAssistant = language === 'en' ? 'Assistant' : '助手'
+
+  if (assistantDismissed) return null
 
   // 右侧间距与主区 lg:px-8 对齐，宽度与分值预览列 300px 一致
   return (
@@ -480,17 +486,35 @@ export default function AssistantPanel({ darkMode, language, onMethodSelect }: A
           </div>
         )}
 
-        <button
-          type="button"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white shadow-lg transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 sm:h-14 sm:w-14 sm:rounded-full"
-          title={stripLabel}
-          aria-label={stripLabel}
-          onFocus={() => onDockEnter()}
-        >
-          <span className="text-base leading-none sm:text-2xl" aria-hidden>
-            💬
-          </span>
-        </button>
+        <div className="group relative">
+          <button
+            type="button"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white shadow-lg transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 sm:h-14 sm:w-14 sm:rounded-full"
+            title={stripLabel}
+            aria-label={stripLabel}
+            aria-expanded={dockOpen}
+            onFocus={() => onDockEnter()}
+            onClick={() => onDockEnter()}
+          >
+            <span className="text-base leading-none sm:text-2xl" aria-hidden>
+              💬
+            </span>
+          </button>
+          <button
+            type="button"
+            aria-label={closeLabel}
+            title={closeLabel}
+            className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-gray-800 text-white shadow-md ring-1 ring-white/70 transition-opacity sm:opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-gray-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+            onClick={(event) => {
+              event.stopPropagation()
+              clearHideTimer()
+              closeDock()
+              dismissAssistant()
+            }}
+          >
+            <X className="h-3.5 w-3.5" aria-hidden />
+          </button>
+        </div>
       </div>
     </div>
   )

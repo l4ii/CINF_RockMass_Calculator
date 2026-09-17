@@ -8,9 +8,17 @@ import {
   gsiFromRatings,
   nearestChartCell,
   locateQuantitativeCell,
-  locateQuantitativeTickCell,
+  locateQuantitativePoint,
   quantitativeCellFill,
-  quantitativeTickFill,
+  quantitativePointFill,
+  locateChartRegion,
+  chartIsoline,
+  chartIsolineDiagonalLabel,
+  chartIsolinePickPoints,
+  chartPointApplicable,
+  classifyGsi,
+  GSI_GRADES,
+  GSI_CHART_ISOLINE_VALUES,
   GSI_QUANT_SCALE_A_TICKS,
   GSI_QUANT_SCALE_B_TICKS,
   normalizeGsiState,
@@ -34,6 +42,25 @@ function complete(partial: Partial<GsiFormState>): GsiFormState {
 }
 
 describe('GSI domain calculations', () => {
+  it('uses the RMR five-class bands with explicit decimal boundaries', () => {
+    const cases: Array<[number, string]> = [
+      [0, 'very_poor'],
+      [20, 'very_poor'],
+      [20.1, 'poor'],
+      [40, 'poor'],
+      [40.1, 'fair'],
+      [60, 'fair'],
+      [60.1, 'fair_good'],
+      [80, 'fair_good'],
+      [80.1, 'good'],
+      [81, 'good'],
+      [100, 'good'],
+    ]
+    cases.forEach(([value, id]) => expect(classifyGsi(value).id).toBe(id))
+    expect(GSI_GRADES.map((grade) => grade.label)).toEqual(['I 级', 'II 级', 'III 级', 'IV 级', 'V 级'])
+    expect(GSI_GRADES.map((grade) => grade.range)).toEqual(['>80～100', '>60～80', '>40～60', '>20～40', '0～20'])
+  })
+
   it('accepts JCond89 typed as an input value', () => {
     const result = calculateGsi(complete({ jcond89SimpleId: '', jcond89Value: 25 }))
     expect(result.scaleA).toBe(37.5)
@@ -127,10 +154,57 @@ describe('GSI domain calculations', () => {
     expect(locateQuantitativeCell(15, 50)).toEqual({ structureId: 'very_blocky', surfaceQualityId: 'fair' })
     expect(quantitativeCellFill('very_blocky', 'fair')).toEqual({ jcond89: 15, rqd: 50 })
     expect(quantitativeCellFill('blocky', 'good')).toEqual({ jcond89: 21, rqd: 70 })
-    expect(locateQuantitativeTickCell(15, 45)).toEqual({ col: 4, row: 3, scaleAMin: 20, scaleBMin: 20 })
-    expect(quantitativeTickFill(4, 3)).toEqual({ jcond89: 15, rqd: 45 })
+    expect(locateQuantitativePoint(15, 45)).toEqual({ scaleA: 23, scaleB: 23 })
+    expect(quantitativePointFill(24, 20)).toEqual({ scaleA: 24, scaleB: 20, jcond89: 16, rqd: 40 })
+    expect(quantitativePointFill(16, 34)).toEqual({ scaleA: 16, scaleB: 34, jcond89: 16 / 1.5, rqd: 68 })
     expect(GSI_QUANT_SCALE_A_TICKS).toEqual([45, 40, 35, 30, 25, 20, 15, 10, 5, 0])
     expect(GSI_QUANT_SCALE_B_TICKS).toEqual([40, 35, 30, 25, 20, 15, 10, 5, 0])
+    expect(locateChartRegion(35, 40)).toEqual({ structureId: 'blocky', surfaceQualityId: 'good' })
+    expect(locateChartRegion(15, 0)).toEqual({ structureId: 'laminated', surfaceQualityId: 'poor' })
+    expect(locateChartRegion(10, 10)).toEqual({ structureId: 'disintegrated', surfaceQualityId: 'poor' })
+    expect(chartPointApplicable(15, 0)).toBe(true)
+    expect(chartPointApplicable(15, 5)).toBe(true)
+    expect(chartPointApplicable(5, 50)).toBe(false)
+    expect(chartIsolinePickPoints().some((item) => item.scaleA === 35 && item.scaleB === 40)).toBe(true)
+    expect(chartIsolinePickPoints().some((item) => item.scaleA === 37.5 && item.scaleB === 40)).toBe(false)
+    expect(GSI_CHART_ISOLINE_VALUES[0]).toBe(95)
+    expect(GSI_CHART_ISOLINE_VALUES[GSI_CHART_ISOLINE_VALUES.length - 1]).toBe(5)
+    expect(chartIsoline(95)).not.toBeNull()
+    const isoline5 = chartIsoline(5)
+    expect(isoline5?.points).toHaveLength(2)
+    expect(isoline5?.y2).toBe(100)
+    const label50 = chartIsolineDiagonalLabel(50)
+    expect(label50.left).toBeCloseTo(label50.top)
+    expect(label50.left).toBeCloseTo((1 - 50 / 95) * 100)
+    expect(chartIsolineDiagonalLabel(90).left).toBeLessThan(chartIsolineDiagonalLabel(10).left)
+  })
+
+  it('uses clicked chart Scale A + Scale B without cell-center values', () => {
+    const result = calculateGsi(complete({
+      entryMode: 'chart',
+      structureId: 'blocky',
+      surfaceQualityId: 'good',
+      chartScaleA: 35,
+      chartScaleB: 40,
+    }))
+    expect(result.scaleA).toBe(35)
+    expect(result.scaleB).toBe(40)
+    expect(result.gsi).toBe(75)
+    expect(result.formula).toContain('35 + 40')
+  })
+
+  it('uses clicked Scale A + Scale B without reverse-calculating through JCond89', () => {
+    const result = calculateGsi(complete({
+      jcond89SimpleId: '',
+      jcond89Value: 16 / 1.5,
+      rqd: 68,
+      quantChartScaleA: 16,
+      quantChartScaleB: 34,
+    }))
+    expect(result.scaleA).toBe(16)
+    expect(result.scaleB).toBe(34)
+    expect(result.gsi).toBe(50)
+    expect(result.formula).toContain('16 + 34')
   })
 
   it('requires a chart cell by default', () => {

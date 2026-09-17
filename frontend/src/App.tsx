@@ -230,7 +230,7 @@ function App() {
           : language === 'en' ? 'Rock mass classification methods' : '岩体分级方法'
 
   return (
-    <AssistantProvider>
+    <AssistantProvider pageKey={`${currentView}:${selectedMethod?.id ?? 'home'}:${aboutDepartment ?? ''}`}>
       <div className={`relative flex h-screen flex-col overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <ElectronAppTitleBar darkMode={darkMode} language={language} />
         <div className="relative flex min-h-0 flex-1 overflow-hidden">

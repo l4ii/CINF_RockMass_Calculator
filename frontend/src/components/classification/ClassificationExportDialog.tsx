@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { X } from 'lucide-react'
 
 export type ClassificationExportFormat = 'case' | 'report'
 
@@ -46,9 +47,45 @@ export default function ClassificationExportDialog({
 }: ClassificationExportDialogProps) {
   const isEn = language === 'en'
   const [selected, setSelected] = useState<ClassificationExportFormat[]>(['report', 'case'])
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const cancelRef = useRef<HTMLButtonElement>(null)
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
 
   useEffect(() => {
     if (open) setSelected(['report', 'case'])
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    cancelRef.current?.focus()
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        onCloseRef.current()
+        return
+      }
+      if (event.key !== 'Tab') return
+      const focusable = Array.from(
+        dialogRef.current?.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])') ?? []
+      )
+      if (focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      previousFocus?.focus()
+    }
   }, [open])
 
   if (!open) return null
@@ -60,18 +97,33 @@ export default function ClassificationExportDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/45 px-4" onMouseDown={onClose}>
+    <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/40 px-4 backdrop-blur-[1px]" onMouseDown={onClose}>
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="classification-export-title"
+        aria-describedby="classification-export-case-name"
         onMouseDown={(event) => event.stopPropagation()}
         className={`w-full max-w-lg rounded-lg border p-5 shadow-xl ${
           darkMode ? 'border-gray-600 bg-gray-800 text-gray-100' : 'border-gray-200 bg-white text-gray-900'
         }`}
       >
-        <h2 id="classification-export-title" className="text-base font-semibold">{isEn ? 'Select export content' : '选择导出内容'}</h2>
-        <p className={`mt-1 truncate text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{caseName}</p>
+        <div className="flex items-start gap-3">
+          <div className="min-w-0 flex-1">
+            <h2 id="classification-export-title" className="text-base font-semibold">{isEn ? 'Select export content' : '选择导出内容'}</h2>
+            <p id="classification-export-case-name" className={`mt-1 truncate text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{caseName}</p>
+          </div>
+          <button
+            type="button"
+            aria-label={isEn ? 'Close' : '关闭'}
+            title={isEn ? 'Close' : '关闭'}
+            onClick={onClose}
+            className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'}`}
+          >
+            <X aria-hidden className="h-4 w-4" />
+          </button>
+        </div>
 
         <div className="mt-4 divide-y divide-gray-200 dark:divide-gray-700">
           {OPTIONS.map((option) => (
@@ -94,10 +146,11 @@ export default function ClassificationExportDialog({
 
         <div className="mt-5 flex justify-end gap-2">
           <button
+            ref={cancelRef}
             type="button"
             disabled={busy}
             onClick={onClose}
-            className={`rounded-lg border px-4 py-2 text-sm font-medium disabled:opacity-50 ${
+            className={`min-h-10 rounded-lg border px-4 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 ${
               darkMode ? 'border-gray-600 text-gray-200 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'
             }`}
           >
@@ -107,7 +160,7 @@ export default function ClassificationExportDialog({
             type="button"
             disabled={busy || selected.length === 0}
             onClick={() => onExport(selected)}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="min-h-10 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {busy
               ? isEn ? 'Exporting…' : '导出中…'

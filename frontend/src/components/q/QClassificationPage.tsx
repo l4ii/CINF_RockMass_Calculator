@@ -8,6 +8,8 @@ import PointInformationFields from '../classification/PointInformationFields'
 import QuickRqdCalculator from '../rqd/QuickRqdCalculator'
 import QFactorCalculator from './QFactorCalculator'
 import QScorePreview from './QScorePreview'
+import QResultPanel from './QResultPanel'
+import QSupportPanel from './QSupportPanel'
 import {
   displayedFactorValue,
   factorOptionsFor,
@@ -236,7 +238,7 @@ export default function QClassificationPage({
                 <span>{pointName}</span>
               </nav>
               <h1 className={`mt-1 text-2xl font-bold tracking-tight sm:text-3xl ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                {en ? 'Barton Q-system rock-mass classification' : 'Q 系统岩体分级'}
+                {en ? 'Q classification' : 'Q分级'}
               </h1>
               <p className={`mt-1 text-sm ${muted}`}>{en ? 'Point' : '点位'} {pointOrdinal} / {pointTotal}</p>
             </div>
@@ -412,6 +414,9 @@ export default function QClassificationPage({
               />
             </div>
           </section>
+
+          <QResultPanel darkMode={darkMode} language={language} result={result} />
+          <QSupportPanel darkMode={darkMode} language={language} result={result} state={state} onChange={patch} />
 
           <footer className={card}>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">

@@ -1,17 +1,18 @@
 import { useState } from 'react'
 import { ArrowDown, ArrowRight, Plus } from 'lucide-react'
+import { Km } from '../math/Katex'
+import { SYM } from '../math/symbols'
 import {
   GSI_QUANT_SCALE_A_MAX,
+  GSI_QUANT_SCALE_A_POINTS,
   GSI_QUANT_SCALE_A_TICKS,
   GSI_QUANT_SCALE_B_MAX,
+  GSI_QUANT_SCALE_B_POINTS,
   GSI_QUANT_SCALE_B_TICKS,
   GSI_QUANT_STRUCTURE_OPTIONS,
   GSI_QUANT_SURFACE_OPTIONS,
-  GSI_QUANT_TICK_COLS,
-  GSI_QUANT_TICK_ROWS,
-  GSI_QUANT_TICK_STEP,
-  locateQuantitativeTickCell,
-  quantitativeTickFill,
+  locateQuantitativePoint,
+  quantitativeChartPercent,
   type GsiQuantStructureId,
 } from '../../methods/gsi'
 import GsiStructureExampleDialog from './GsiStructureExampleDialog'
@@ -22,7 +23,9 @@ interface GsiQuantitativeChartPanelProps {
   language: 'zh' | 'en'
   jcond89: number | null
   rqd: number | null
-  onSelect: (jcond89: number, rqd: number) => void
+  chartScaleA: number | null
+  chartScaleB: number | null
+  onSelect: (scaleA: number, scaleB: number) => void
 }
 
 function uniquePoints(points: Array<[number, number]>) {
@@ -52,21 +55,21 @@ function isoline(gsi: number) {
   return { x1: pts[0][0], y1: pts[0][1], x2: pts[1][0], y2: pts[1][1], mx: (pts[0][0] + pts[1][0]) / 2, my: (pts[0][1] + pts[1][1]) / 2 }
 }
 
-export default function GsiQuantitativeChartPanel({ darkMode, language, jcond89, rqd, onSelect }: GsiQuantitativeChartPanelProps) {
+export default function GsiQuantitativeChartPanel({ darkMode, language, jcond89, rqd, chartScaleA, chartScaleB, onSelect }: GsiQuantitativeChartPanelProps) {
   const en = language === 'en'
-  const contourValues = [80, 75, 70, 65, 60, 55, 50, 45, 40, 35, 30, 25, 20, 15, 10]
+  const contourValues = [80, 75, 70, 65, 60, 55, 50, 45, 40, 35, 30, 25, 20, 15, 10, 5]
   const contours = contourValues.map((gsi) => ({ gsi, line: isoline(gsi) })).filter((item) => item.line)
   const [previewId, setPreviewId] = useState<GsiQuantStructureId | null>(null)
   const preview = GSI_QUANT_STRUCTURE_OPTIONS.find((item) => item.id === previewId)
   const jcondReady = jcond89 != null && jcond89 >= 0 && jcond89 <= 30
   const rqdReady = rqd != null && rqd >= 0 && rqd <= 100
-  const selected = jcondReady && rqdReady ? locateQuantitativeTickCell(jcond89, rqd) : null
-  const point = jcondReady && rqdReady
-    ? {
-        left: ((GSI_QUANT_SCALE_A_MAX - Math.min(GSI_QUANT_SCALE_A_MAX, Math.max(0, 1.5 * jcond89))) / GSI_QUANT_SCALE_A_MAX) * 100,
-        top: ((GSI_QUANT_SCALE_B_MAX - Math.min(GSI_QUANT_SCALE_B_MAX, Math.max(0, rqd / 2))) / GSI_QUANT_SCALE_B_MAX) * 100,
-      }
-    : null
+  const selected = chartScaleA != null && chartScaleB != null
+    ? { scaleA: chartScaleA, scaleB: chartScaleB }
+    : jcondReady && rqdReady
+      ? locateQuantitativePoint(jcond89, rqd)
+      : null
+  const point = selected ? quantitativeChartPercent(selected.scaleA, selected.scaleB) : null
+  const selectedBox = point
 
   return (
     <div data-testid="gsi-quantitative-chart" className="w-full">
@@ -92,13 +95,13 @@ export default function GsiQuantitativeChartPanel({ darkMode, language, jcond89,
         >
           <div className="border border-gray-800 px-2 py-1 leading-snug text-gray-700">
             {en
-              ? 'When describing rock-mass structure and surface conditions, select the matching cell in the table below and estimate the average strength index.'
-              : '描述岩体的构造和表面条件时，在下表中选择一个对应的方块，估算其平均强度因子。'}
+              ? 'When describing rock-mass structure and surface conditions, select the matching point in the chart below and estimate the average strength index.'
+              : '描述岩体的构造和表面条件时，在下图中点选对应的点位，估算其平均强度因子。'}
           </div>
           <div className="col-span-5 grid grid-rows-2 border border-l-0 border-gray-800 text-center">
             <div className="flex items-center justify-center px-2 py-1 font-semibold">{en ? 'Joint surface quality' : '结构面质量'}</div>
             <div className="flex items-center justify-center gap-1 border-t border-gray-800 px-3 py-1 font-normal text-gray-700">
-              <span>{en ? 'Strong to weak' : '由强到弱'}</span>
+              <span>{en ? 'Good to poor' : '由好到差'}</span>
               <ArrowRight className="h-4 w-4 shrink-0 text-gray-800" strokeWidth={2} aria-hidden />
             </div>
           </div>
@@ -106,8 +109,8 @@ export default function GsiQuantitativeChartPanel({ darkMode, language, jcond89,
 
           <div className="grid grid-rows-2 border border-t-0 border-gray-800 text-center">
             <div className="flex items-center justify-center px-2 py-1 font-semibold text-gray-800">{en ? 'Rock-mass structure' : '岩体结构'}</div>
-            <div className="flex items-center justify-center gap-1 border-t border-gray-800 px-1.5 py-1 font-normal text-gray-700">
-              <span>{en ? 'Strong to weak' : '由强到弱'}</span>
+            <div className="flex flex-col items-center justify-center gap-0.5 border-t border-gray-800 px-1.5 py-1 font-normal text-gray-700">
+              <span>{en ? 'Intact to broken' : '由完整到破碎'}</span>
               <ArrowDown className="h-4 w-4 shrink-0 text-gray-800" strokeWidth={2} aria-hidden />
             </div>
           </div>
@@ -117,7 +120,14 @@ export default function GsiQuantitativeChartPanel({ darkMode, language, jcond89,
               <div className="mt-0.5 leading-snug text-gray-600">{en ? surface.descriptionEn : surface.description}</div>
             </div>
           ))}
-          <div />
+          <div
+            data-testid="gsi-quant-axis-b"
+            className="relative min-w-0 overflow-visible"
+          >
+            <span className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-[11px] leading-none text-gray-600 [writing-mode:vertical-rl]">
+              <Km math={SYM.RQD_over_2} />
+            </span>
+          </div>
 
           {GSI_QUANT_STRUCTURE_OPTIONS.map((structure, rowIndex) => (
             <div key={structure.id} className="contents">
@@ -141,38 +151,27 @@ export default function GsiQuantitativeChartPanel({ darkMode, language, jcond89,
               </div>
               {rowIndex === 0 ? (
                 <div className="relative col-span-5 row-span-4 min-h-0 border border-l-0 border-t-0 border-gray-800">
-                  <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden>
-                    {Array.from({ length: GSI_QUANT_TICK_ROWS - 1 }, (_, index) => {
-                      const scaleB = GSI_QUANT_SCALE_B_MAX - (index + 1) * GSI_QUANT_TICK_STEP
-                      return (
-                        <line
-                          key={`h-${scaleB}`}
-                          x1="0"
-                          y1={((index + 1) / GSI_QUANT_TICK_ROWS) * 100}
-                          x2="100"
-                          y2={((index + 1) / GSI_QUANT_TICK_ROWS) * 100}
-                          stroke="#d1d5db"
-                          strokeWidth={scaleB % 10 === 0 ? 0.45 : 0.28}
-                        />
-                      )
-                    })}
-                    {Array.from({ length: GSI_QUANT_TICK_COLS - 1 }, (_, index) => {
-                      const scaleA = GSI_QUANT_SCALE_A_MAX - (index + 1) * GSI_QUANT_TICK_STEP
-                      return (
-                        <line
-                          key={`v-${scaleA}`}
-                          x1={((index + 1) / GSI_QUANT_TICK_COLS) * 100}
-                          y1="0"
-                          x2={((index + 1) / GSI_QUANT_TICK_COLS) * 100}
-                          y2="100"
-                          stroke="#d1d5db"
-                          strokeWidth={scaleA % 10 === 0 ? 0.45 : 0.28}
-                        />
-                      )
-                    })}
+                  {GSI_QUANT_SCALE_A_TICKS.filter((tick) => tick > 0 && tick < GSI_QUANT_SCALE_A_MAX).map((tick) => (
+                    <span
+                      key={`grid-a-${tick}`}
+                      data-testid={`gsi-quant-grid-a-${tick}`}
+                      className="pointer-events-none absolute top-0 z-[1] h-full w-px -translate-x-1/2 border-l border-dashed border-gray-400"
+                      style={{ left: `${((GSI_QUANT_SCALE_A_MAX - tick) / GSI_QUANT_SCALE_A_MAX) * 100}%` }}
+                    />
+                  ))}
+                  {GSI_QUANT_SCALE_B_TICKS.filter((tick) => tick > 0 && tick < GSI_QUANT_SCALE_B_MAX).map((tick) => (
+                    <span
+                      key={`grid-b-${tick}`}
+                      data-testid={`gsi-quant-grid-b-${tick}`}
+                      className="pointer-events-none absolute left-0 z-[1] h-px w-full -translate-y-1/2 border-t border-dashed border-gray-400"
+                      style={{ top: `${((GSI_QUANT_SCALE_B_MAX - tick) / GSI_QUANT_SCALE_B_MAX) * 100}%` }}
+                    />
+                  ))}
+                  <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 z-[1] h-full w-full" aria-hidden>
                     {contours.map(({ gsi, line }) => (
                       <line
                         key={gsi}
+                        data-testid={`gsi-quant-isoline-${gsi}`}
                         x1={line!.x1}
                         y1={line!.y1}
                         x2={line!.x2}
@@ -194,27 +193,33 @@ export default function GsiQuantitativeChartPanel({ darkMode, language, jcond89,
                       {gsi}
                     </span>
                   ))}
-                  <div
-                    className="absolute inset-0 z-[2] grid"
-                    style={{ gridTemplateColumns: `repeat(${GSI_QUANT_TICK_COLS}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${GSI_QUANT_TICK_ROWS}, minmax(0, 1fr))` }}
-                  >
-                    {Array.from({ length: GSI_QUANT_TICK_ROWS }, (_, row) =>
-                      Array.from({ length: GSI_QUANT_TICK_COLS }, (_, col) => {
-                        const fill = quantitativeTickFill(col, row)
-                        const scaleAMin = GSI_QUANT_SCALE_A_MAX - (col + 1) * GSI_QUANT_TICK_STEP
-                        const scaleBMin = GSI_QUANT_SCALE_B_MAX - (row + 1) * GSI_QUANT_TICK_STEP
-                        const isSelected = selected?.col === col && selected.row === row
+                  {selectedBox ? (
+                    <span
+                      data-testid="gsi-quant-selection"
+                      className="pointer-events-none absolute z-[2] -translate-x-1/2 -translate-y-1/2 rounded-sm bg-sky-400/20 ring-1 ring-sky-400/70"
+                      style={{
+                        left: `${selectedBox.left}%`,
+                        top: `${selectedBox.top}%`,
+                        width: `${100 / GSI_QUANT_SCALE_A_MAX}%`,
+                        height: `${100 / GSI_QUANT_SCALE_B_MAX}%`,
+                      }}
+                    />
+                  ) : null}
+                  <div className="absolute inset-0 z-[2]">
+                    {GSI_QUANT_SCALE_B_POINTS.flatMap((scaleB) =>
+                      GSI_QUANT_SCALE_A_POINTS.map((scaleA) => {
+                        const pos = quantitativeChartPercent(scaleA, scaleB)
+                        const isSelected = selected?.scaleA === scaleA && selected.scaleB === scaleB
                         return (
                           <button
-                            key={`${col}-${row}`}
+                            key={`${scaleA}-${scaleB}`}
                             type="button"
-                            data-testid={`gsi-quant-tick-${scaleAMin}-${scaleBMin}`}
-                            aria-label={en
-                              ? `Scale A ${scaleAMin}–${scaleAMin + GSI_QUANT_TICK_STEP}, Scale B ${scaleBMin}–${scaleBMin + GSI_QUANT_TICK_STEP}`
-                              : `刻度 A ${scaleAMin}～${scaleAMin + GSI_QUANT_TICK_STEP}，刻度 B ${scaleBMin}～${scaleBMin + GSI_QUANT_TICK_STEP}`}
+                            data-testid={`gsi-quant-tick-${scaleA}-${scaleB}`}
+                            aria-label={en ? `Scale A ${scaleA}, Scale B ${scaleB}` : `刻度 A ${scaleA}，刻度 B ${scaleB}`}
                             aria-pressed={isSelected}
-                            onClick={() => onSelect(fill.jcond89, fill.rqd)}
-                            className={`min-h-0 min-w-0 ${isSelected ? 'bg-blue-600/25 ring-2 ring-inset ring-blue-700' : 'bg-transparent hover:bg-blue-500/10'}`}
+                            onClick={() => onSelect(scaleA, scaleB)}
+                            className="absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 bg-transparent hover:bg-blue-500/10"
+                            style={{ left: `${pos.left}%`, top: `${pos.top}%` }}
                           />
                         )
                       })
@@ -230,7 +235,7 @@ export default function GsiQuantitativeChartPanel({ darkMode, language, jcond89,
                 </div>
               ) : null}
               {rowIndex === 0 ? (
-                <div data-testid="gsi-quant-scale-b" className="relative row-span-4 min-h-0">
+                <div data-testid="gsi-quant-scale-b" className="relative row-span-4 min-h-0 min-w-0">
                   {GSI_QUANT_SCALE_B_TICKS.filter((tick) => tick !== 0).map((tick) => (
                     <span
                       key={tick}
@@ -245,7 +250,9 @@ export default function GsiQuantitativeChartPanel({ darkMode, language, jcond89,
             </div>
           ))}
 
-          <div />
+          <div data-testid="gsi-quant-axis-a" className="flex items-center justify-center px-1 pt-1 text-xs text-gray-600">
+            <Km math={SYM.JCond89_scaled} />
+          </div>
           <div data-testid="gsi-quant-scale-a" className="relative col-span-5 pt-1">
             <div className="relative h-4">
               {GSI_QUANT_SCALE_A_TICKS.filter((tick) => tick !== 0).map((tick) => {

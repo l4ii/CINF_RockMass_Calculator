@@ -4,6 +4,7 @@ import { Km, Kblock } from '../math/Katex'
 import { SYM } from '../math/symbols'
 import BackIconButton from '../BackIconButton'
 import { FormulaFrame } from '../calculationUiPrimitives'
+import { CoefficientSectionHeader } from '../CoefficientSectionHeader'
 import type { CustomEditorPageProps } from '../classification/ClassificationModule'
 import PointInformationFields from '../classification/PointInformationFields'
 import {
@@ -836,90 +837,6 @@ function MeasuredNumberField({
   )
 }
 
-function formatCoefficientScore(value: number | null | undefined) {
-  if (value == null) return '—'
-  return String(Number(value.toFixed(3)))
-}
-
-function CoefficientSectionHeader({
-  darkMode,
-  language,
-  title,
-  symbol,
-  score,
-  editing,
-  canEdit,
-  value,
-  validationMin,
-  validationMax,
-  onStartEdit,
-  onChange,
-  onEndEdit,
-}: {
-  darkMode: boolean
-  language: 'zh' | 'en'
-  title: ReactNode
-  symbol: string
-  score: number | null | undefined
-  editing: boolean
-  canEdit: boolean
-  value: number | null
-  validationMin: number
-  validationMax: number
-  onStartEdit: () => void
-  onChange: (value: number | null) => void
-  onEndEdit: () => void
-}) {
-  const en = language === 'en'
-  const invalid = value != null && (value < validationMin || value > validationMax)
-  const editHint = en ? 'Click to edit' : '点击修改'
-  const invalidText = en
-    ? `Value must be between ${validationMin} and ${validationMax}.`
-    : `异常值：请输入 ${validationMin}～${validationMax} 范围内的 ${symbol}。`
-  const scoreClass = `text-sm font-semibold tabular-nums ${score != null ? (darkMode ? 'text-blue-200' : 'text-blue-800') : mutedClass(darkMode)}`
-  const slotClass = 'relative h-8 w-24 shrink-0'
-  return (
-    <div className="mb-2 flex items-center justify-between gap-3">
-      <h2 className={`min-w-0 text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{title}</h2>
-      <div className={slotClass}>
-        {editing ? (
-          <input
-            aria-label={en ? `${symbol} adopted value` : `${symbol} 输入值`}
-            autoFocus
-            type="number"
-            step="0.01"
-            value={value ?? ''}
-            onChange={(event) => onChange(event.target.value === '' ? null : Number(event.target.value))}
-            onBlur={onEndEdit}
-            onWheel={preventNumberWheel}
-            onKeyDown={(event) => {
-              preventNumberArrow(event)
-              if (event.key === 'Enter') event.currentTarget.blur()
-            }}
-            placeholder={en ? 'Enter value' : '请输入数值'}
-            className={`absolute inset-0 h-8 w-24 rounded-lg border px-2 text-right text-sm tabular-nums outline-none focus:ring-2 focus:ring-blue-500/30 ${darkMode ? 'border-gray-500 bg-gray-700 text-gray-100' : 'border-gray-300 bg-white text-gray-900'}`}
-          />
-        ) : canEdit ? (
-          <button
-            type="button"
-            aria-label={en ? `Edit ${symbol}` : `修改 ${symbol}`}
-            title={editHint}
-            onClick={onStartEdit}
-            className="group absolute inset-0 flex items-center justify-end pr-2.5"
-          >
-            <span data-testid={`bq-${symbol.toLowerCase()}-score`} className={scoreClass}>{formatCoefficientScore(score)}</span>
-            <span className={`absolute right-0 top-0 text-[11px] font-semibold leading-none ${invalid ? 'text-red-600 dark:text-red-300' : (darkMode ? 'text-blue-300' : 'text-blue-700')}`} aria-hidden>*</span>
-            <span className={`pointer-events-none absolute bottom-full right-0 z-20 mb-1 hidden whitespace-nowrap rounded-md px-2 py-1 text-xs shadow-sm group-hover:block ${darkMode ? 'bg-gray-700 text-gray-100' : 'bg-gray-900 text-white'}`}>{editHint}</span>
-          </button>
-        ) : (
-          <div data-testid={`bq-${symbol.toLowerCase()}-score`} className={`flex h-full w-full items-center justify-end ${scoreClass}`}>{formatCoefficientScore(score)}</div>
-        )}
-        {invalid ? <p role="alert" className={`pointer-events-none absolute right-0 top-full z-20 mt-1 w-max max-w-[16rem] rounded-md px-2 py-1 text-left text-xs shadow-sm ${darkMode ? 'bg-gray-800 text-red-300' : 'bg-white text-red-600 ring-1 ring-red-200'}`}>{invalidText}</p> : null}
-      </div>
-    </div>
-  )
-}
-
 export default function BqClassificationPage(props: BqProps) {
   const { darkMode, language, form, caseName, pointName, pointNote, pointOreType, oreTypeOptions = [], pointOrdinal, pointTotal, onFormChange, onPointNameChange, onPointNoteChange, onPointOreTypeChange, onBackToWorkspace, onBackToPoints, onComplete, onNext } = props
   const en = language === 'en'
@@ -1153,6 +1070,7 @@ export default function BqClassificationPage(props: BqProps) {
                   language={language}
                   title={<><Km math={SYM.K1} /> · {en ? 'Groundwater influence' : '地下水影响'}</>}
                   symbol="K1"
+                  scoreTestId="bq-k1-score"
                   score={result?.corrections.k1?.value ?? state.k1Value}
                   editing={editingCoefficient === 'K1'}
                   canEdit={Boolean(selectedWater && selectedWater.id !== 'none')}
@@ -1181,6 +1099,7 @@ export default function BqClassificationPage(props: BqProps) {
                   language={language}
                   title={<><Km math={SYM.K2} /> · {en ? 'Major discontinuity orientation' : '主要结构面产状'}</>}
                   symbol="K2"
+                  scoreTestId="bq-k2-score"
                   score={result?.corrections.k2?.value ?? state.k2Value}
                   editing={editingCoefficient === 'K2'}
                   canEdit={Boolean(selectedOrientation && selectedOrientation.id !== 'none')}
@@ -1203,6 +1122,7 @@ export default function BqClassificationPage(props: BqProps) {
                   language={language}
                   title={<><Km math={SYM.K3} /> · {en ? 'Initial stress condition' : '初始应力状态'}</>}
                   symbol="K3"
+                  scoreTestId="bq-k3-score"
                   score={result?.corrections.k3?.value ?? state.k3Value}
                   editing={editingCoefficient === 'K3'}
                   canEdit={Boolean(selectedStress && selectedStress.id !== 'none_or_ratio_gt7')}
@@ -1231,6 +1151,7 @@ export default function BqClassificationPage(props: BqProps) {
                   language={language}
                   title={<><Km math="\lambda" /> · {en ? 'Main discontinuity type and persistence' : '主要结构面类型及其延伸性'}</>}
                   symbol="lambda"
+                  scoreTestId="bq-lambda-score"
                   score={result?.corrections.lambda?.value ?? state.lambdaValue}
                   editing={editingCoefficient === 'lambda'}
                   canEdit={Boolean(selectedLambda && selectedLambda.id !== 'none')}
@@ -1253,6 +1174,7 @@ export default function BqClassificationPage(props: BqProps) {
                   language={language}
                   title={<><Km math={SYM.K4} /> · {en ? 'Groundwater influence' : '地下水影响'}</>}
                   symbol="K4"
+                  scoreTestId="bq-k4-score"
                   score={result?.corrections.k4?.value ?? state.k4Value}
                   editing={editingCoefficient === 'K4'}
                   canEdit={Boolean(selectedSlopeWater && selectedSlopeWater.id !== 'none')}
@@ -1279,6 +1201,7 @@ export default function BqClassificationPage(props: BqProps) {
                   language={language}
                   title={<><Km math={SYM.K5} /> · {en ? 'Main discontinuity orientation' : '主要结构面产状'}</>}
                   symbol="K5"
+                  scoreTestId="bq-k5-score"
                   score={state.slopeStructureTypeId === 'none' ? 0 : (slopeK5Ready ? result?.corrections.slopeFactors?.k5 : null)}
                   editing={false}
                   canEdit={false}

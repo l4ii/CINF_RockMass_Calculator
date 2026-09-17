@@ -1,6 +1,8 @@
 import {
   GSI_GRADES,
   GSI_STRUCTURE_OPTIONS,
+  chartIsoline,
+  chartPlotPercent,
   type GsiEntryMode,
   type GsiStructureId,
 } from '../methods/gsi'
@@ -213,48 +215,12 @@ export function getGsiOverviewStats(rows: GsiPointSummary[], includeIncomplete: 
   }
 }
 
-const SCALE_A_MAX = 45
-const SCALE_B_MAX = 50
-
-function uniquePoints(points: Array<[number, number]>) {
-  const seen = new Set<string>()
-  const out: Array<[number, number]> = []
-  for (const [x, y] of points) {
-    const key = `${x.toFixed(2)},${y.toFixed(2)}`
-    if (seen.has(key)) continue
-    seen.add(key)
-    out.push([x, y])
-  }
-  return out
-}
-
-/** Chart-space percent: Scale A 45 at left, Scale B 50 at top (same orientation as GsiChartPanel). */
+/** Chart-space percent: Scale A 45 at left; Scale B 50 at top, 0 on the laminated row. */
 export function gsiChartPoint(scaleA: number, scaleB: number) {
-  return {
-    x: ((SCALE_A_MAX - scaleA) / SCALE_A_MAX) * 100,
-    y: ((SCALE_B_MAX - scaleB) / SCALE_B_MAX) * 100,
-  }
+  const point = chartPlotPercent(scaleA, scaleB)
+  return { x: point.left, y: point.top }
 }
 
 export function gsiChartIsoline(gsi: number) {
-  const candidates: Array<[number, number]> = []
-  const add = (scaleA: number, scaleB: number) => {
-    if (scaleA < -0.05 || scaleA > SCALE_A_MAX + 0.05 || scaleB < -0.05 || scaleB > SCALE_B_MAX + 0.05) return
-    const point = gsiChartPoint(scaleA, scaleB)
-    candidates.push([point.x, point.y])
-  }
-  add(SCALE_A_MAX, gsi - SCALE_A_MAX)
-  add(0, gsi)
-  add(gsi - SCALE_B_MAX, SCALE_B_MAX)
-  add(gsi, 0)
-  const pts = uniquePoints(candidates)
-  if (pts.length < 2) return null
-  return {
-    x1: pts[0][0],
-    y1: pts[0][1],
-    x2: pts[1][0],
-    y2: pts[1][1],
-    mx: (pts[0][0] + pts[1][0]) / 2,
-    my: (pts[0][1] + pts[1][1]) / 2,
-  }
+  return chartIsoline(gsi)
 }

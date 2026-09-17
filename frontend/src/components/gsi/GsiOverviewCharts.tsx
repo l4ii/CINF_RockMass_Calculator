@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Maximize2, X } from 'lucide-react'
-import { GSI_STRUCTURE_OPTIONS } from '../../methods/gsi'
+import { GSI_STRUCTURE_OPTIONS, chartScaleBToY } from '../../methods/gsi'
 import {
   formatGsiNumber,
   gsiChartIsoline,
@@ -65,12 +65,10 @@ function GsiCloudPlot({ darkMode, language, cloud, showLabels, className }: GsiC
         <line key={`v-${index}`} x1={px((index / 5) * 100)} y1={py(0)} x2={px((index / 5) * 100)} y2={py(100)} stroke={grid} strokeWidth="0.35" />
       ))}
       {contours.map(({ gsi, line }) => (
-        <line
+        <polyline
           key={gsi}
-          x1={px(line!.x1)}
-          y1={py(line!.y1)}
-          x2={px(line!.x2)}
-          y2={py(line!.y2)}
+          points={line!.points.map(([x, y]) => `${px(x)},${py(y)}`).join(' ')}
+          fill="none"
           stroke={ink}
           strokeOpacity="0.55"
           strokeWidth={gsi % 20 === 0 ? 0.55 : 0.35}
@@ -102,7 +100,7 @@ function GsiCloudPlot({ darkMode, language, cloud, showLabels, className }: GsiC
         )
       })}
       {SCALE_B_TICKS.map((tick) => {
-        const y = py(gsiChartPoint(0, tick).y)
+        const y = py(chartScaleBToY(tick))
         return (
           <g key={`b-${tick}`}>
             <line x1={px(0) - 2} y1={y} x2={px(0)} y2={y} stroke={ink} strokeWidth="0.4" />

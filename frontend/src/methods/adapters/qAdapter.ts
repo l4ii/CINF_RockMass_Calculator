@@ -10,15 +10,12 @@ import {
   createInitialQState,
   describeQ,
   displayedFactorValue,
+  formatQValue,
+  getQAnalysis,
   normalizeQState,
   validateQState,
   type QFactorOption,
 } from '../q'
-
-function formatQ(value: number) {
-  if (value !== 0 && (Math.abs(value) < 0.001 || Math.abs(value) >= 10000)) return value.toExponential(3)
-  return Number(value.toPrecision(5)).toString()
-}
 
 function factorText(id: string, value: number | null, options: readonly QFactorOption[]) {
   const resolved = displayedFactorValue(id, value, options)
@@ -44,13 +41,13 @@ function incompleteDescriptions(form: Record<string, unknown>): ParameterDescrip
 
 export const qAdapter: AnyClassificationAdapter = {
   id: 'q',
-  name: 'Q-System岩体分级',
-  nameEn: 'Q-System Rock Mass Classification',
+  name: 'Q分级',
+  nameEn: 'Q classification',
   standard: {
-    id: 'ngi-q-2025',
+    id: Q_STANDARD.id,
     title: Q_STANDARD.title.zh,
     titleEn: Q_STANDARD.title.en,
-    edition: 'NGI Q-system Handbook 2025',
+    edition: Q_STANDARD.edition,
     source: Q_STANDARD.references.join('；'),
     sourceEn: Q_STANDARD.references.join('; '),
   },
@@ -63,20 +60,22 @@ export const qAdapter: AnyClassificationAdapter = {
       .map((issue) => ({ field: String(issue.field), message: issue.message.zh, messageEn: issue.message.en })),
   calculate: (form) => {
     const result = calculateQ(form)
+    const analysis = getQAnalysis(result)
     const metrics: ResultMetric[] = [
-      { key: 'block', label: 'RQD / Jn', labelEn: 'RQD / Jn', value: formatQ(result.breakdown.blockSize) },
-      { key: 'shear', label: 'Jr / Ja', labelEn: 'Jr / Ja', value: formatQ(result.breakdown.jointShearStrength) },
-      { key: 'stress', label: 'Jw / SRF', labelEn: 'Jw / SRF', value: formatQ(result.breakdown.activeStress) },
+      ...analysis.map((item) => ({ key: item.key, label: item.title.zh, labelEn: item.title.en, value: item.value })),
+      { key: 'block', label: 'RQD / Jn', labelEn: 'RQD / Jn', value: analysis[0].value },
+      { key: 'shear', label: 'Jr / Ja', labelEn: 'Jr / Ja', value: analysis[1].value },
+      { key: 'stress', label: 'Jw / SRF', labelEn: 'Jw / SRF', value: analysis[2].value },
     ]
     if (result.equivalentDimension != null && result.support) {
       metrics.push(
         { key: 'de', label: '等效尺寸 De', labelEn: 'Equivalent dimension De', value: `${result.equivalentDimension} m` },
-        { key: 'support', label: '初步支护', labelEn: 'Preliminary support', value: `${result.support.category} 区`, valueEn: `Category ${result.support.category}` },
+        { key: 'support', label: '支护需求判定', labelEn: 'Support requirement assessment', value: result.support.label.zh, valueEn: result.support.label.en },
       )
     }
     return {
       value: result.q,
-      displayValue: `Q = ${formatQ(result.q)}`,
+      displayValue: `Q = ${formatQValue(result.q)}`,
       grade: result.grade.label.zh,
       gradeEn: result.grade.label.en,
       summary: result.formula.zh,
@@ -104,7 +103,7 @@ export const qAdapter: AnyClassificationAdapter = {
         row.key === 'grade'
           ? calculated.grade.label.en
           : row.key === 'support' && calculated.support
-            ? `Category ${calculated.support.category}: ${calculated.support.label.en}`
+            ? calculated.support.label.en
             : row.value
                 .replace('（保守取值）', ' (conservative)')
                 .replace('（保守取区间下限）', ' (conservative lower bound)'),

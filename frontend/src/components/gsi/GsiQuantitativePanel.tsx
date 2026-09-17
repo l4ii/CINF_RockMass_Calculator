@@ -131,7 +131,7 @@ export default function GsiQuantitativePanel({ darkMode, language, state, patch 
           min={0}
           max={30}
           onQuick={() => setJcondOpen(true)}
-          onChange={(jcond89Value) => patch({ surfaceMethod: 'jcond89', jcond89Value })}
+          onChange={(jcond89Value) => patch({ surfaceMethod: 'jcond89', jcond89Value, quantChartScaleA: null, quantChartScaleB: null })}
         />
         <NumberInput
           darkMode={darkMode}
@@ -147,7 +147,7 @@ export default function GsiQuantitativePanel({ darkMode, language, state, patch 
           min={0}
           max={100}
           onQuick={() => setRqdOpen(true)}
-          onChange={(rqd) => patch({ rqdSource: 'measured', rqd })}
+          onChange={(rqd) => patch({ rqdSource: 'measured', rqd, quantChartScaleA: null, quantChartScaleB: null })}
         />
       </div>
 
@@ -156,12 +156,16 @@ export default function GsiQuantitativePanel({ darkMode, language, state, patch 
         language={language}
         jcond89={state.jcond89Value}
         rqd={state.rqd}
-        onSelect={(jcond89Value, rqd) => patch({
+        chartScaleA={state.quantChartScaleA}
+        chartScaleB={state.quantChartScaleB}
+        onSelect={(scaleA, scaleB) => patch({
           surfaceMethod: 'jcond89',
           rqdSource: 'measured',
           jcond89Mode: 'simple',
-          jcond89Value,
-          rqd,
+          quantChartScaleA: scaleA,
+          quantChartScaleB: scaleB,
+          jcond89Value: scaleA / 1.5,
+          rqd: scaleB * 2,
         })}
       />
 
@@ -172,7 +176,7 @@ export default function GsiQuantitativePanel({ darkMode, language, state, patch 
           state={state}
           onClose={() => setJcondOpen(false)}
           onComplete={(next) => {
-            patch(next)
+            patch({ ...next, quantChartScaleA: null, quantChartScaleB: null })
             setJcondOpen(false)
           }}
         />
@@ -188,7 +192,7 @@ export default function GsiQuantitativePanel({ darkMode, language, state, patch 
           confirmLabel={en ? 'Confirm and fill RQD' : '确认并回填 RQD'}
           onClose={() => setRqdOpen(false)}
           onComplete={(rqd) => {
-            patch({ rqdSource: 'measured', rqd })
+            patch({ rqdSource: 'measured', rqd, quantChartScaleA: null, quantChartScaleB: null })
             setRqdOpen(false)
           }}
         />

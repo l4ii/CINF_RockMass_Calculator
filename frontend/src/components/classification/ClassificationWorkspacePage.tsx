@@ -134,7 +134,7 @@ export default function ClassificationWorkspacePage({
                 <button
                   type="button"
                   onClick={onCreateCase}
-                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 >
                   <Plus className="h-4 w-4 shrink-0" aria-hidden />
                   {copy.createCase}
@@ -142,7 +142,7 @@ export default function ClassificationWorkspacePage({
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className={`inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                  className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                     darkMode ? 'border-gray-600 text-gray-200 hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-gray-100'
                   }`}
                 >

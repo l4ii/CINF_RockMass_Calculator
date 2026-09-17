@@ -37,14 +37,14 @@ export default function GsiScorePreview({ darkMode, language, state, result }: G
     ? [jcondReady, rqdReady].filter(Boolean).length
     : [Boolean(structure), Boolean(surface)].filter(Boolean).length
   const scaleA = result?.scaleA ?? (quantitative
-    ? (jcondReady ? round1(1.5 * (state.jcond89Value as number)) : null)
-    : (surface ? surface.scaleA : null))
+    ? (state.quantChartScaleA ?? (jcondReady ? round1(1.5 * (state.jcond89Value as number)) : null))
+    : (state.chartScaleA ?? (surface ? surface.scaleA : null)))
   const scaleB = result?.scaleB ?? (quantitative
-    ? (rqdReady ? round1((state.rqd as number) / 2) : null)
-    : (structure ? structure.scaleB : null))
+    ? (state.quantChartScaleB ?? (rqdReady ? round1((state.rqd as number) / 2) : null))
+    : (state.chartScaleB ?? (structure ? structure.scaleB : null)))
   const emptyGrade = quantitative
     ? (en ? <>Enter <Km math={SYM.JCond89} /> and <Km math={SYM.RQD} /> to show the class.</> : <>输入 <Km math={SYM.JCond89} /> 和 <Km math={SYM.RQD} /> 后显示正式等级</>)
-    : (en ? 'Select a cell on the chart to show the class.' : '在图上点选格点后显示正式等级')
+    : (en ? 'Select a point on the chart to show the class.' : '在图上点选点位后显示正式等级')
   const gradeLine = result ? (en ? result.grade.labelEn : result.grade.label) : null
 
   const row = (label: ReactNode, value: ReactNode, done: boolean) => (
@@ -85,7 +85,10 @@ export default function GsiScorePreview({ darkMode, language, state, result }: G
             <span className={`text-2xl font-bold tabular-nums ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>{result ? result.gsi : '—'}</span>
           </div>
           {gradeLine ? (
-            <p className={`mt-2 text-sm ${darkMode ? 'text-green-300' : 'text-green-800'}`}>{gradeLine}</p>
+            <div className={`mt-2 text-sm ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>
+              <p>{gradeLine}</p>
+              <p className={`mt-1 text-xs ${muted}`}>{result ? (en ? result.grade.rangeEn : result.grade.range) : ''}</p>
+            </div>
           ) : (
             <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{emptyGrade}</p>
           )}

@@ -1,9 +1,9 @@
 /**
- * Barton Q-system rock-mass classification and preliminary support design.
+ * Barton Q rock-mass classification and preliminary support screening.
  *
  * Q = (RQD / Jn) * (Jr / Ja) * (Jw / SRF)
  *
- * Several Q-system table cells are ranges rather than single values. The
+ * Several Q table cells are ranges rather than single values. The
  * selected table cell and the engineer-selected value are therefore stored
  * separately. If the value is omitted, this module resolves the range toward
  * the conservative (lower-Q) end and records the decision in the result.
@@ -13,7 +13,7 @@ export type QIssueSeverity = 'error' | 'warning'
 export type QFactorSymbol = 'Jn' | 'Jr' | 'Ja' | 'Jw' | 'SRF'
 export type QGradeId = 'I' | 'II' | 'III' | 'IV' | 'V'
 export type QJnSite = '' | 'normal' | 'intersection' | 'portal'
-export type QSupportCategory = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+export type QSupportStatus = 'required' | 'not-required' | 'boundary' | 'outside-chart'
 
 export interface QFactorModifiers {
   jnSite: QJnSite
@@ -117,14 +117,21 @@ export interface QGradeInfo {
   id: QGradeId
   label: QLocalizedText
   range: string
+  rangeEn?: string
+}
+
+export interface QQualityBand {
+  min: number
+  max: number
+  label: QLocalizedText
 }
 
 export interface QSupportRecommendation {
-  category: QSupportCategory
+  status: QSupportStatus
+  maximumUnsupportedDimension: number
   demandRatio: number
   label: QLocalizedText
   recommendation: QLocalizedText
-  isApproximation: true
   sourceNote: QLocalizedText
 }
 
@@ -146,6 +153,7 @@ export interface QResult {
   }
   q: number
   grade: QGradeInfo
+  quality: QQualityBand | null
   span: number | null
   esr: QResolvedEsr | null
   equivalentDimension: number | null
@@ -160,6 +168,13 @@ export interface QDescriptionRow {
   label: QLocalizedText
   value: string
   basis: QLocalizedText
+}
+
+export interface QAnalysisItem {
+  key: 'blockSize' | 'jointShearStrength' | 'activeStress'
+  title: QLocalizedText
+  value: string
+  description: QLocalizedText
 }
 
 export class QValidationError extends Error {
@@ -177,16 +192,14 @@ const range = (min: number, max = min): QValueRange => ({ min, max })
 
 export const Q_STANDARD: QSourceMetadata = {
   id: 'ngi-q-system',
-  title: text('Q-System 岩体质量分级与支护设计', 'Q-system rock-mass classification and support design'),
-  edition: '经典六参数表；支护图参考 NGI 2025',
+  title: text('Q分级', 'Q classification'),
+  edition: 'Barton 六参数分级；无支护极限示意图',
   references: [
     'Barton, Lien & Lunde (1974), Engineering classification of rock masses for the design of tunnel support',
-    'NGI (2015), Using the Q-system: Rock mass classification and support design',
-    'NGI Q-system support chart (2025)',
   ],
   sourceNote: text(
-    'Q 值采用 Barton 六参数公式及通用参数表。区间项未指定工程取值时，按使 Q 值更低的一端保守计算。支护分区是对 NGI 支护图的经验离散近似，仅用于方案初判，不能代替原图查读、现场工程判断和专项设计。',
-    'Q uses the Barton six-factor equation and commonly published factor tables. If no project value is supplied for a range, the end producing the lower Q is used conservatively. Support zones are an empirical discretized approximation of the NGI support chart for preliminary screening only; they do not replace reading the original chart, engineering judgement, or detailed design.'
+    'Q 值由 RQD/Jn、Jr/Ja 与 Jw/SRF 三个比值相乘得到，按五级区间判定岩体质量等级。支护需求采用当量尺寸与经验无支护极限的比较结果；区间参数未指定采用值时按保守端计算。',
+    'Q is the product of RQD/Jn, Jr/Ja and Jw/SRF and is assigned to one of five rock-mass classes. Support requirements are assessed by comparing the equivalent dimension with the empirical unsupported limit. Unspecified range values use the conservative end.'
   ),
 }
 
@@ -470,22 +483,41 @@ export const Q_SRF_OPTIONS: readonly QFactorOption[] = [
 ]
 
 export const Q_ESR_OPTIONS: readonly QEsrOption[] = [
-  { id: 'temporary_mine', label: text('临时矿山巷道', 'Temporary mine openings'), range: range(3, 5), sourceRef: 'Q-system ESR table' },
-  { id: 'circular_shaft', label: text('圆形竖井', 'Circular shafts'), range: range(2.5), sourceRef: 'Q-system ESR table' },
-  { id: 'rectangular_shaft', label: text('矩形竖井', 'Rectangular shafts'), range: range(2), sourceRef: 'Q-system ESR table' },
-  { id: 'permanent_general', label: text('永久矿山巷道、水工隧洞或大型隧洞导洞', 'Permanent mine openings, water tunnels or pilot tunnels for large excavations'), range: range(1.6), sourceRef: 'Q-system ESR table' },
-  { id: 'storage_minor', label: text('储藏洞室、输水隧洞或小型公路和铁路隧洞', 'Storage rooms, water-treatment tunnels, minor road and railway tunnels'), range: range(1.3), sourceRef: 'Q-system ESR table' },
-  { id: 'major_civil', label: text('主要公路铁路隧洞、电站厂房、地下民防工程及交叉口', 'Major road/rail tunnels, power stations, civil-defence chambers and intersections'), range: range(1), sourceRef: 'Q-system ESR table' },
-  { id: 'public_critical', label: text('公共或重要地下设施、重要洞室', 'Public or critical underground facilities and important caverns'), range: range(0.8), sourceRef: 'Q-system ESR table' },
+  { id: 'temporary_mine', label: text('临时矿山巷道', 'Temporary mine openings'), range: range(3, 5), sourceRef: 'Barton ESR table' },
+  { id: 'circular_shaft', label: text('圆形竖井', 'Circular shafts'), range: range(2.5), sourceRef: 'Barton ESR table' },
+  { id: 'rectangular_shaft', label: text('矩形竖井', 'Rectangular shafts'), range: range(2), sourceRef: 'Barton ESR table' },
+  { id: 'permanent_general', label: text('永久矿山巷道、水工隧洞或大型洞室导洞', 'Permanent mine openings, water tunnels or pilot tunnels for large excavations'), range: range(1.6), sourceRef: 'Barton ESR table' },
+  { id: 'storage_minor', label: text('小型公路和铁路隧洞、调压室及交通隧洞', 'Minor road and railway tunnels, surge chambers and access tunnels'), range: range(1.3), sourceRef: 'Barton ESR table' },
+  { id: 'major_civil', label: text('储藏洞室、水处理设施、电站厂房、主要公路铁路隧洞及地下民防工程', 'Storage caverns, water-treatment facilities, power stations, major road/rail tunnels and civil-defence chambers'), range: range(1), sourceRef: 'Barton ESR table' },
+  { id: 'public_critical', label: text('医院、车站、公共体育设施及重要地下设施', 'Hospitals, stations, public sports facilities and important underground facilities'), range: range(0.8), sourceRef: 'Barton ESR table' },
+  { id: 'critical_permanent', label: text('极重要永久地下工程', 'Critical permanent underground structures'), range: range(0.5), sourceRef: '表3.7 G / Table 3.7 G' },
 ]
 
 export const Q_GRADES: readonly QGradeInfo[] = [
-  { id: 'I', label: text('I 级', 'Class I'), range: 'Q ＞ 40' },
-  { id: 'II', label: text('II 级', 'Class II'), range: '10 ＜ Q ≤ 40' },
-  { id: 'III', label: text('III 级', 'Class III'), range: '1 ＜ Q ≤ 10' },
-  { id: 'IV', label: text('IV 级', 'Class IV'), range: '0.1 ≤ Q ≤ 1' },
-  { id: 'V', label: text('V 级', 'Class V'), range: 'Q ＜ 0.1' },
+  { id: 'I', label: text('I 级', 'Class I'), range: 'Q ＞ 40', rangeEn: 'Q > 40' },
+  { id: 'II', label: text('II 级', 'Class II'), range: '10 ＜ Q ≤ 40', rangeEn: '10 < Q ≤ 40' },
+  { id: 'III', label: text('III 级', 'Class III'), range: '1 ＜ Q ≤ 10', rangeEn: '1 < Q ≤ 10' },
+  { id: 'IV', label: text('IV 级', 'Class IV'), range: '0.1 ≤ Q ≤ 1', rangeEn: '0.1 ≤ Q ≤ 1' },
+  { id: 'V', label: text('V 级', 'Class V'), range: 'Q ＜ 0.1', rangeEn: 'Q < 0.1' },
 ]
+
+/** Standard descriptive bands: lower bound included; upper bound excluded, except 1000 is included. */
+export const Q_QUALITY_BANDS: readonly QQualityBand[] = [
+  { min: 0.001, max: 0.01, label: text('异常差', 'Exceptionally poor') },
+  { min: 0.01, max: 0.1, label: text('极差', 'Extremely poor') },
+  { min: 0.1, max: 1, label: text('很差', 'Very poor') },
+  { min: 1, max: 4, label: text('差', 'Poor') },
+  { min: 4, max: 10, label: text('一般', 'Fair') },
+  { min: 10, max: 40, label: text('好', 'Good') },
+  { min: 40, max: 100, label: text('很好', 'Very good') },
+  { min: 100, max: 400, label: text('极好', 'Extremely good') },
+  { min: 400, max: 1000, label: text('异常好', 'Exceptionally good') },
+]
+
+export function qualityFromQ(q: number): QQualityBand | null {
+  if (!Number.isFinite(q) || q < Q_QUALITY_BANDS[0].min || q > Q_QUALITY_BANDS[Q_QUALITY_BANDS.length - 1].max) return null
+  return Q_QUALITY_BANDS.find((band, index) => q >= band.min && (q < band.max || index === Q_QUALITY_BANDS.length - 1)) ?? null
+}
 
 export const Q_FACTOR_CONSERVATIVE_END: Record<QFactorSymbol, 'minimum' | 'maximum'> = {
   Jn: 'maximum',
@@ -784,6 +816,14 @@ export function validateQState(input: QFormState | unknown): QValidationIssue[] 
 
   const esr = findEsrOption(state.esrId)
   if (esr) validateRangeValue(issues, 'esrValue', state.esrValue, esr.range, 'ESR', 'minimum')
+  else if (state.esrValue != null && state.esrValue <= 0) {
+    issues.push(issue('esrValue', 'out_of_range', 'error', 'ESR 必须大于 0。', 'ESR must be greater than 0.'))
+  }
+  if (state.span != null && !esr) {
+    issues.push(issue('esrId', 'missing_esr', 'warning', '已输入开挖尺寸，但未选择 ESR；Q 值仍可计算，暂不进行支护需求判定。', 'An excavation dimension was entered without ESR; Q remains valid, but support screening is omitted.'))
+  } else if (state.span == null && esr) {
+    issues.push(issue('span', 'missing_span', 'warning', '已选择 ESR，但未输入开挖尺寸；Q 值仍可计算，暂不进行支护需求判定。', 'ESR was selected without an excavation dimension; Q remains valid, but support screening is omitted.'))
+  }
   return issues
 }
 
@@ -853,7 +893,7 @@ function resolveEsr(option: QEsrOption, selected: number | null): QResolvedEsr {
   }
 }
 
-function gradeFromQ(q: number): QGradeInfo {
+export function gradeFromQ(q: number): QGradeInfo {
   if (q > 40) return Q_GRADES[0]
   if (q > 10) return Q_GRADES[1]
   if (q > 1) return Q_GRADES[2]
@@ -861,83 +901,64 @@ function gradeFromQ(q: number): QGradeInfo {
   return Q_GRADES[4]
 }
 
-interface QSupportTemplate {
-  maximumRatio: number
-  category: QSupportCategory
-  label: QLocalizedText
-  recommendation: QLocalizedText
+function sameQClassification(left: number, right: number): boolean {
+  return gradeFromQ(left).id === gradeFromQ(right).id && qualityFromQ(left) === qualityFromQ(right)
 }
 
-const SUPPORT_TEMPLATES: readonly QSupportTemplate[] = [
-  {
-    maximumRatio: 0.5,
-    category: 1,
-    label: text('基本无需支护', 'Generally unsupported'),
-    recommendation: text('以地质巡视和局部安全处理为主；最终方案仍应按原 NGI 支护图复核。', 'Use geological inspection and local scaling as the preliminary basis; verify against the original NGI chart.'),
-  },
-  {
-    maximumRatio: 1,
-    category: 2,
-    label: text('局部锚固', 'Spot bolting'),
-    recommendation: text('局部系统处理，按不稳定块体布置点锚杆。', 'Provide local treatment and spot bolts for identified unstable blocks.'),
-  },
-  {
-    maximumRatio: 2,
-    category: 3,
-    label: text('系统锚杆', 'Systematic bolting'),
-    recommendation: text('采用系统锚杆，并结合掌子面揭露调整间距和长度。', 'Use systematic rock bolts, adjusting spacing and length to exposed conditions.'),
-  },
-  {
-    maximumRatio: 4,
-    category: 4,
-    label: text('系统锚杆与薄层喷射混凝土', 'Systematic bolts and thin shotcrete'),
-    recommendation: text('系统锚杆配合约 40–100 mm 喷射混凝土，厚度需按原图和工程条件复核。', 'Combine systematic bolts with about 40–100 mm shotcrete; verify thickness from the original chart and project conditions.'),
-  },
-  {
-    maximumRatio: 8,
-    category: 5,
-    label: text('纤维喷射混凝土与系统锚杆', 'Fibre-reinforced shotcrete and systematic bolts'),
-    recommendation: text('采用系统锚杆与约 50–90 mm 纤维喷射混凝土，必要时加强局部块体。', 'Use systematic bolts with about 50–90 mm fibre-reinforced shotcrete and reinforce local blocks where needed.'),
-  },
-  {
-    maximumRatio: 16,
-    category: 6,
-    label: text('加厚纤维喷射混凝土与系统锚杆', 'Thicker fibre-reinforced shotcrete and systematic bolts'),
-    recommendation: text('采用系统锚杆与约 90–120 mm 纤维喷射混凝土，按变形监测校核。', 'Use systematic bolts with about 90–120 mm fibre-reinforced shotcrete and check against deformation monitoring.'),
-  },
-  {
-    maximumRatio: 32,
-    category: 7,
-    label: text('重型纤维喷射混凝土支护', 'Heavy fibre-reinforced shotcrete support'),
-    recommendation: text('采用系统锚杆与约 120–150 mm 纤维喷射混凝土，并评估钢筋网或加强肋。', 'Use systematic bolts with about 120–150 mm fibre-reinforced shotcrete and assess mesh or reinforced ribs.'),
-  },
-  {
-    maximumRatio: 64,
-    category: 8,
-    label: text('纤维喷射混凝土与加强肋', 'Fibre-reinforced shotcrete with reinforced ribs'),
-    recommendation: text('采用厚层纤维喷射混凝土、系统锚杆和加强肋，需开展专项支护设计。', 'Use thick fibre-reinforced shotcrete, systematic bolts, and reinforced ribs under a dedicated support design.'),
-  },
-  {
-    maximumRatio: Number.POSITIVE_INFINITY,
-    category: 9,
-    label: text('重型复合支护或混凝土衬砌', 'Heavy composite support or concrete lining'),
-    recommendation: text('按极高支护需求开展专项设计，评估重型复合支护、钢拱架及现浇混凝土衬砌。', 'Perform a dedicated design for very high support demand, assessing heavy composite support, steel sets, and cast concrete lining.'),
-  },
-]
+export function formatQValue(q: number): string {
+  if (!Number.isFinite(q)) return String(q)
+  for (let precision = 5; precision <= 15; precision += 1) {
+    const candidate = Number(q.toPrecision(precision)).toString()
+    if (sameQClassification(q, Number(candidate))) return candidate
+  }
+  return q.toString()
+}
+
+export function maximumUnsupportedDimension(q: number): number {
+  return 2 * q ** 0.4
+}
+
+export const Q_SUPPORT_DESCRIPTION = text(
+  '支护需求由岩体质量 Q、开挖尺寸及工程用途共同确定。开挖支护比 ESR 反映工程用途和稳定性要求，将开挖跨度、直径或高度折算为当量尺寸 De，并与经验无支护极限 De,max 比较。De 小于极限时位于无需支护区，大于或等于极限时按需支护处理。判定用于识别支护需求，支护形式与参数应结合结构面控制、地下水和施工扰动确定。',
+  'Support requirements depend on Q, excavation size and engineering use. ESR represents the use and stability requirements, converting the span, diameter or height to an equivalent dimension De. Compare De with the empirical unsupported limit De,max: below the limit is the unsupported region; at or above it requires support. Support type and parameters depend on discontinuity control, groundwater and construction disturbance.'
+)
 
 function supportFromQ(q: number, equivalentDimension: number): QSupportRecommendation {
-  const demandRatio = equivalentDimension / (2 * q ** 0.4)
-  const template = SUPPORT_TEMPLATES.find((item) => demandRatio <= item.maximumRatio) as QSupportTemplate
+  const limit = maximumUnsupportedDimension(q)
+  const demandRatio = equivalentDimension / limit
+  const outsideChart = q < 0.001 || q > 1000 || equivalentDimension < 0.1 || equivalentDimension > 100
+  const tolerance = 1e-9 * Math.max(1, equivalentDimension, limit)
+  const status: QSupportStatus = outsideChart
+    ? 'outside-chart'
+    : Math.abs(equivalentDimension - limit) <= tolerance
+      ? 'boundary'
+      : equivalentDimension < limit
+        ? 'not-required'
+        : 'required'
+  const content: Record<QSupportStatus, { label: QLocalizedText; recommendation: QLocalizedText }> = {
+    'not-required': {
+      label: text('无需支护区', 'Support not required'),
+      recommendation: text('点位位于无支护极限以内；仍需结合现场块体稳定、施工扰动和工程要求复核。', 'The point lies within the unsupported limit; verify against block stability, construction disturbance, and project requirements.'),
+    },
+    required: {
+      label: text('需支护区', 'Support required'),
+      recommendation: text('点位超过无支护极限，应开展支护设计；本示意不提供支护类型或厚度。', 'The point exceeds the unsupported limit; support design is required. This schematic does not prescribe support type or thickness.'),
+    },
+    boundary: {
+      label: text('无支护极限边界', 'Unsupported-limit boundary'),
+      recommendation: text('点位落在数值边界附近，按需支护侧保守处理并结合现场条件复核。', 'The point is numerically close to the boundary; treat it conservatively as requiring support and verify site conditions.'),
+    },
+    'outside-chart': {
+      label: text('示意图范围外', 'Outside schematic range'),
+      recommendation: text('Q 或 De 超出示意范围，不自动判断是否需要支护；应结合工程条件进行专项设计。', 'Q or De is outside the schematic range, so no automatic support decision is made; perform project-specific assessment and design.'),
+    },
+  }
   return {
-    category: template.category,
-    demandRatio: round(demandRatio),
-    label: template.label,
-    recommendation: template.recommendation,
-    isApproximation: true,
-    sourceNote: text(
-      '该分区由 De/(2Q^0.4) 的经验阈值离散得到，并非 NGI 2025 支护图的精确数字化。',
-      'This zone is discretized from empirical De/(2Q^0.4) thresholds and is not an exact digitization of the NGI 2025 support chart.'
-    ),
+    status,
+    maximumUnsupportedDimension: limit,
+    demandRatio,
+    ...content[status],
+    sourceNote: Q_SUPPORT_DESCRIPTION,
   }
 }
 
@@ -972,11 +993,12 @@ export function calculateQ(input: QFormState | unknown): QResult {
       jointShearStrength: round(jointShearStrength),
       activeStress: round(activeStress),
     },
-    q: round(q, 6),
+    q,
     grade: gradeFromQ(q),
+    quality: qualityFromQ(q),
     span: state.span,
     esr,
-    equivalentDimension: equivalentDimension == null ? null : round(equivalentDimension),
+    equivalentDimension,
     support: equivalentDimension == null ? null : supportFromQ(q, equivalentDimension),
     warnings: issues.filter((item) => item.severity === 'warning'),
     formula: text('Q = (RQD / Jn) × (Jr / Ja) × (Jw / SRF)', 'Q = (RQD / Jn) × (Jr / Ja) × (Jw / SRF)'),
@@ -990,6 +1012,39 @@ export function tryCalculateQ(input: QFormState | unknown): QResult | null {
   } catch {
     return null
   }
+}
+
+export function getQAnalysis(result: QResult): QAnalysisItem[] {
+  const { jn, jr, ja, jw, srf } = result.factors
+  return [
+    {
+      key: 'blockSize',
+      title: text('岩块尺寸指标 RQD / Jn', 'Block-size quotient RQD / Jn'),
+      value: formatQValue(result.breakdown.blockSize),
+      description: text(
+        `采用计算 RQD ${result.effectiveRqd} / ${jn.value} = ${formatQValue(result.breakdown.blockSize)}，表示岩体完整程度与节理组数共同控制的相对岩块尺度。`,
+        `Calculated RQD ${result.effectiveRqd} / ${jn.value} = ${formatQValue(result.breakdown.blockSize)}, expressing the relative block scale governed by rock integrity and joint-set count.`
+      ),
+    },
+    {
+      key: 'jointShearStrength',
+      title: text('节理抗剪指标 Jr / Ja', 'Joint shear-strength quotient Jr / Ja'),
+      value: formatQValue(result.breakdown.jointShearStrength),
+      description: text(
+        `${jr.value} / ${ja.value} = ${formatQValue(result.breakdown.jointShearStrength)}，反映节理面粗糙度与蚀变或填充对抗剪条件的组合。`,
+        `Jr ${jr.value} / Ja ${ja.value} = ${formatQValue(result.breakdown.jointShearStrength)}, combining joint roughness with alteration or filling conditions that affect shear resistance.`
+      ),
+    },
+    {
+      key: 'activeStress',
+      title: text('水与应力指标 Jw / SRF', 'Water-stress quotient Jw / SRF'),
+      value: formatQValue(result.breakdown.activeStress),
+      description: text(
+        `${jw.value} / ${srf.value} = ${formatQValue(result.breakdown.activeStress)}，反映节理水条件与应力折减条件的组合。`,
+        `Jw ${jw.value} / SRF ${srf.value} = ${formatQValue(result.breakdown.activeStress)}, combining joint-water conditions with the stress-reduction condition.`
+      ),
+    },
+  ]
 }
 
 function factorValue(factor: QResolvedFactor): string {
@@ -1035,7 +1090,7 @@ export function describeQ(input: QFormState | unknown, suppliedResult?: QResult)
     {
       key: 'Q',
       label: text('Q 值', 'Q value'),
-      value: String(result.q),
+      value: formatQValue(result.q),
       basis: result.formula,
     },
     {
@@ -1045,6 +1100,9 @@ export function describeQ(input: QFormState | unknown, suppliedResult?: QResult)
       basis: text(result.grade.range, result.grade.range),
     }
   )
+  for (const analysis of getQAnalysis(result)) {
+    rows.push({ key: analysis.key, label: analysis.title, value: analysis.value, basis: analysis.description })
+  }
   if (result.span != null && result.esr && result.equivalentDimension != null && result.support) {
     rows.push(
       {
@@ -1067,8 +1125,8 @@ export function describeQ(input: QFormState | unknown, suppliedResult?: QResult)
       },
       {
         key: 'support',
-        label: text('初步支护分区', 'Preliminary support zone'),
-        value: `${result.support.category} 区：${result.support.label.zh}`,
+        label: text('支护需求判定', 'Unsupported-limit screening'),
+        value: result.support.label.zh,
         basis: result.support.sourceNote,
       }
     )

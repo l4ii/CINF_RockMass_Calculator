@@ -6,6 +6,7 @@ import { FormulaFrame } from '../calculationUiPrimitives'
 import PointInformationFields from '../classification/PointInformationFields'
 import GsiChartPanel from './GsiChartPanel'
 import GsiQuantitativePanel from './GsiQuantitativePanel'
+import GsiResultPanel from './GsiResultPanel'
 import GsiScorePreview from './GsiScorePreview'
 import {
   calculateGsi,
@@ -151,11 +152,11 @@ export default function GsiClassificationPage({
                   {quantitative ? (
                     <>
                       {' '}Hoek, Carter and Diederichs (2013) recast the chart as continuous scales: the horizontal axis is discontinuity condition <Km math={SYM.JCond89_scaled} /> (0–45) and the vertical axis is <Km math={SYM.RQD_over_2} /> (0–40), so <Km math={SYM.GSI_quant} />.
-                      {' '}<Km math={SYM.JCond89} /> is Bieniawski’s (1989) joint-condition rating (0–30), obtained from a five-class summary or from persistence, aperture, roughness, infilling and weathering; <Km math={SYM.RQD} /> is the percentage of a core run made up of intact pieces at least 10 cm long. Both should be taken from the same engineering zone. Isolines on the quantitative chart run from 10 to 80.
+                      {' '}<Km math={SYM.JCond89} /> is Bieniawski’s (1989) joint-condition rating (0–30), obtained from a five-class summary or from persistence, aperture, roughness, infilling and weathering; <Km math={SYM.RQD} /> is the percentage of a core run made up of intact pieces at least 10 cm long. Both should be taken from the same engineering zone. Isolines on the quantitative chart run from 5 to 80.
                     </>
                   ) : (
                     <>
-                      {' '}It is obtained as <Km math={SYM.ScaleA} /> (surface quality) plus <Km math={SYM.ScaleB} /> (structure): <Km math={SYM.GSI_chart} />. The chart method reads GSI from structure class and surface condition; quantitative filling uses <Km math={SYM.ScaleA_quant} /> and <Km math={SYM.ScaleB_quant} />.
+                      {' '}It is obtained as <Km math={SYM.ScaleA} /> (surface quality) plus <Km math={SYM.ScaleB} /> (structure): <Km math={SYM.GSI_chart} />. The chart method reads GSI from structure class and surface condition.
                     </>
                   )}
                 </>
@@ -165,11 +166,11 @@ export default function GsiClassificationPage({
                   {quantitative ? (
                     <>
                       Hoek、Carter 与 Diederichs（2013）将原图表法写成连续刻度：横轴为结构面状态 <Km math={SYM.JCond89_scaled} />（0～45），纵轴为岩石质量指标 <Km math={SYM.RQD_over_2} />（0～40），即 <Km math={SYM.GSI_quant} />。
-                      <Km math={SYM.JCond89} /> 为 Bieniawski（1989）结构面条件评分（0～30），可由五档综合描述或按迹长、张开度、粗糙度、充填、风化五项求和得到；<Km math={SYM.RQD} /> 按同一岩芯回次统计长度不小于 10 cm 的完整段占钻孔长度的百分数。二者应取自同一工程分区。定量图等值线给出 10～80 的指标值。
+                      <Km math={SYM.JCond89} /> 为 Bieniawski（1989）结构面条件评分（0～30），可由五档综合描述或按迹长、张开度、粗糙度、充填、风化五项求和得到；<Km math={SYM.RQD} /> 按同一岩芯回次统计长度不小于 10 cm 的完整段占钻孔长度的百分数。二者应取自同一工程分区。定量图等值线给出 5～80 的指标值。
                     </>
                   ) : (
                     <>
-                      <Km math={SYM.GSI} /> 由刻度 <Km math="A" />（表面质量）与刻度 <Km math="B" />（岩体结构）相加得到，即 <Km math={SYM.GSI_chart} />；图表法按构造类别与表面条件在图上读取，定量法时 <Km math={SYM.ScaleA_quant} />、<Km math={SYM.ScaleB_quant} />。
+                      <Km math={SYM.GSI} /> 由刻度 <Km math="A" />（表面质量）与刻度 <Km math="B" />（岩体结构）相加得到，即 <Km math={SYM.GSI_chart} />；图表法按岩体结构与表面条件在图上读取。
                     </>
                   )}
                 </>
@@ -193,11 +194,11 @@ export default function GsiClassificationPage({
             <p className={`mt-1 text-sm leading-relaxed ${muted}`}>
               {quantitative
                 ? (en
-                  ? <>The table below determines GSI from discontinuity condition and RQD. The horizontal axis is joint surface quality (strong to weak to the right; <Km math={SYM.JCond89_scaled} />); the vertical axis is rock-mass structure (strong to weak downward; <Km math={SYM.RQD_over_2} />, 0–40). Mean GSI is <Km math={SYM.GSI_quant} />; contour lines give index values from 10 to 80. Enter the two ratings above, or select a matching cell.</>
-                  : <>下表为根据结构面状态和岩石质量指标确定地质强度指标（GSI）的量化图。横轴为结构面质量（由左至右由强到弱，对应 <Km math={SYM.JCond89_scaled} />），纵轴为岩体结构（由上至下由强到弱，对应 <Km math={SYM.RQD_over_2} />，0～40）。平均 GSI 为 <Km math={SYM.GSI_quant} />，图中等值线给出 10～80 的指标值。可在上方输入两项参数，或在下表中选择对应方格。</>)
+                  ? <>The table below determines GSI from discontinuity condition and RQD. The horizontal axis is joint surface quality (good to poor to the right; <Km math={SYM.JCond89_scaled} />); the vertical axis is rock-mass structure (intact to broken downward; <Km math={SYM.RQD_over_2} />, 0–40). Mean GSI is <Km math={SYM.GSI_quant} />; contour lines give index values from 5 to 80. Enter the two ratings above, or select a matching point.</>
+                  : <>下表为根据结构面状态和岩石质量指标确定地质强度指标（GSI）的量化图。横轴为结构面质量（由左至右由好到差，对应 <Km math={SYM.JCond89_scaled} />），纵轴为岩体结构（由上至下由完整到破碎，对应 <Km math={SYM.RQD_over_2} />，0～40）。平均 GSI 为 <Km math={SYM.GSI_quant} />，图中等值线给出 5～80 的指标值。可在上方输入两项参数，或在下表中点选对应点位。</>)
                 : (en
-                  ? 'The table below is the Geological Strength Index (GSI) chart for jointed rock masses. The horizontal axis is discontinuity surface condition (surface quality decreasing to the right; Scale A); the vertical axis is rock-mass structure (interlocking decreasing downward; Scale B). Mean GSI is Scale A + Scale B at that combination; contour lines give index values from 10 to 90. N/A means that combination is not applicable.'
-                  : '下表为节理岩体地质强度指标（GSI）分级图。横轴为结构面表面条件（由左至右表面质量降低，对应 Scale A），纵轴为岩体结构（由上至下块体镶嵌程度降低，对应 Scale B）。平均 GSI 为该组合的 Scale A + Scale B，图中等值线给出 10～90 的指标值。N/A 表示该组合在工程上不适用。')}
+                  ? 'The table below is the Geological Strength Index (GSI) chart for jointed rock masses. The horizontal axis is discontinuity surface condition (Scale A, 0–45); the vertical axis is rock-mass structure (Scale B, 0–50). Contour lines give GSI = Scale A + Scale B from 5 to 95; select a marked point on a contour. N/A means that combination is not applicable.'
+                  : '下表为节理岩体地质强度指标（GSI）分级图。横轴为结构面表面条件（Scale A，0～45），纵轴为岩体结构（Scale B，0～50）。等值线给出 GSI = Scale A + Scale B，范围 5～95；在等值线上的标记点中点选。N/A 表示该组合在工程上不适用。')}
             </p>
             {state.entryMode !== 'quantitative' ? (
               <div className="mt-2.5">
@@ -206,7 +207,11 @@ export default function GsiClassificationPage({
                   language={language}
                   structureId={state.structureId}
                   surfaceQualityId={state.surfaceQualityId}
-                  onSelect={(structureId, surfaceQualityId) => patch({ entryMode: 'chart', structureId, surfaceQualityId })}
+                  chartScaleA={state.chartScaleA}
+                  chartScaleB={state.chartScaleB}
+                  onSelect={({ structureId, surfaceQualityId, scaleA, scaleB }) =>
+                    patch({ entryMode: 'chart', structureId, surfaceQualityId, chartScaleA: scaleA, chartScaleB: scaleB })
+                  }
                 />
               </div>
             ) : (
@@ -220,6 +225,8 @@ export default function GsiClassificationPage({
               </div>
             )}
           </section>
+
+          <GsiResultPanel darkMode={darkMode} language={language} result={result} />
 
           <footer className={card}>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">

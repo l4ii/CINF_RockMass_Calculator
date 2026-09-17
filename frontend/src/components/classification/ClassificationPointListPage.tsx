@@ -72,15 +72,15 @@ export default function ClassificationPointListPage({
         count: `${caseRecord.points.length} ${caseRecord.points.length === 1 ? 'point' : 'points'}`,
         projectInfo: 'Project information',
         fields: [
-          { label: 'Project name', placeholder: 'Project name' },
-          { label: 'Project name', placeholder: 'e.g. Deep mine development' },
+          { label: 'Project file name', placeholder: 'Project file name' },
+          { label: 'Engineering project', placeholder: 'e.g. Deep mine development' },
           { label: 'Project location', placeholder: 'e.g. -450 m level' },
           { label: 'Notes', placeholder: 'Data source or investigation stage' },
         ],
         pointList: 'Points',
         overview: 'Project overview',
         newPoint: 'New point',
-        empty: 'No points yet. Select “New point” to start a calculation.',
+        empty: 'No points yet. Create a point to enter parameters and generate a classification result.',
         headers: ['No.', 'Point name', 'Point note', 'Result', 'Class', 'Updated', 'Actions'],
         needsInput: 'Needs input',
         edit: 'Edit',
@@ -102,7 +102,7 @@ export default function ClassificationPointListPage({
         pointList: '点位列表',
         overview: '工程总览',
         newPoint: '新建点位',
-        empty: '暂无点位，点击“新建点位”开始计算。',
+        empty: '暂无点位。新建点位后即可录入参数并生成分级结果。',
         headers: ['序号', '点位名称', '点位说明', '计算结果', '等级', '更新时间', '操作'],
         needsInput: '待补充',
         edit: '编辑',
@@ -149,10 +149,10 @@ export default function ClassificationPointListPage({
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
               <h2 className={`text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{copy.pointList}</h2>
               <div className="flex items-center gap-2">
-                <button type="button" onClick={onGoSummary} className={`rounded-lg border px-3 py-2 text-sm font-medium ${darkMode ? 'border-gray-600 text-gray-200 hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-white'}`}>
+                <button type="button" onClick={onGoSummary} className={`min-h-10 rounded-lg border px-3 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${darkMode ? 'border-gray-600 text-gray-200 hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-white'}`}>
                   {copy.overview}
                 </button>
-                <button type="button" onClick={onCreatePoint} className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                <button type="button" onClick={onCreatePoint} className="min-h-10 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
                   {copy.newPoint}
                 </button>
               </div>
