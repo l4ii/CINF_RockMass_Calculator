@@ -1,5 +1,10 @@
 import type { InputHTMLAttributes, ReactNode } from 'react'
 
+/** Shared overlay + shell for Q RQD / Jn / Jr / Ja / Jw / SRF quick-calc dialogs. */
+export const Q_AUXILIARY_OVERLAY_CLASS = 'fixed inset-0 z-50 grid place-items-center bg-black/45 px-4'
+export const Q_AUXILIARY_DIALOG_CLASS =
+  'q-aux-dialog thin-scroll max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-xl border p-6 shadow-xl'
+
 export function UnitBadge({
   darkMode,
   children,

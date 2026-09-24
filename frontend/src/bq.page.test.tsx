@@ -72,6 +72,7 @@ describe('BQ dedicated page', () => {
     expect(screen.getByTestId('calculation-result-pane')).toBeInTheDocument()
     expect(screen.getByTestId('bq-standard-formulas')).toBeInTheDocument()
     expect(screen.getByTestId('bq-result-section').querySelector('[data-testid="bq-grade-reference"]')).toBeTruthy()
+    expect(screen.getByTestId('bq-result-section').querySelector('.text-3xl')).toBeTruthy()
     expect(screen.getByTestId('bq-preview-rc-label').querySelector('.katex')).toBeTruthy()
     expect(screen.getByTestId('bq-preview-kv-label').querySelector('.katex')).toBeTruthy()
     expect(screen.getByTestId('bq-limitation-formulas')).toHaveTextContent('规范限定')
@@ -569,6 +570,7 @@ describe('BQ dedicated page', () => {
     fireEvent.change(screen.getByLabelText('K4 输入值'), { target: { value: '0.1' } })
 
     const k5Table = screen.getByTestId('bq-k5-table')
+    expect(k5Table.querySelector('.katex')).toBeTruthy()
     expect(k5Table).toHaveTextContent('轻微')
     expect(k5Table).toHaveTextContent('很显著')
     expect(k5Table).toHaveTextContent('≤5')

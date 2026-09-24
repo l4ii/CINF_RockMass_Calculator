@@ -14,7 +14,7 @@ export default function MrmrScorePreview({ darkMode, language, result, issueCoun
   if (!result) {
     return (
       <aside className={panel} data-testid="mrmr-result-preview">
-        <h2 className={`text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'MRMR result' : 'MRMR 结果'}</h2>
+        <h2 className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'MRMR result' : 'MRMR 结果'}</h2>
         <p className={`mt-3 text-sm leading-relaxed ${muted}`}>
           {en ? `${issueCount} required item(s) remain. Complete the applicability check and parameter sequence to calculate.` : `还有 ${issueCount} 项必填内容未完成。请先完成适用性判断和参数填写。`}
         </p>
@@ -23,7 +23,7 @@ export default function MrmrScorePreview({ darkMode, language, result, issueCoun
   }
   return (
     <aside className={panel} data-testid="mrmr-result-preview">
-      <h2 className={`text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'MRMR result' : 'MRMR 结果'}</h2>
+      <h2 className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'MRMR result' : 'MRMR 结果'}</h2>
       <div className={`mt-4 rounded-lg border px-4 py-4 text-center ${darkMode ? 'border-blue-500/40 bg-blue-950/40' : 'border-blue-200 bg-blue-50'}`}>
         <div className={`text-sm ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>{en ? 'MRMR final rating' : 'MRMR 最终评分'}</div>
         <div className={`mt-1 text-3xl font-bold tabular-nums ${darkMode ? 'text-blue-100' : 'text-blue-900'}`}>{Number(result.mrmr.toFixed(1))}</div>

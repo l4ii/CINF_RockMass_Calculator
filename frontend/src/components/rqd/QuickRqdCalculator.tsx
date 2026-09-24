@@ -1,5 +1,6 @@
 import { useState, type KeyboardEvent, type WheelEvent } from 'react'
-import { Kblock } from '../math/Katex'
+import { Q_AUXILIARY_DIALOG_CLASS, Q_AUXILIARY_OVERLAY_CLASS } from '../calculationUiPrimitives'
+import { Km } from '../math/Katex'
 
 interface QuickRqdCalculatorProps {
   darkMode: boolean
@@ -45,12 +46,13 @@ export default function QuickRqdCalculator({
     : null
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/45 px-4" onMouseDown={onClose}>
+    <div className={Q_AUXILIARY_OVERLAY_CLASS} onMouseDown={onClose}>
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={`w-full max-w-4xl rounded-xl border p-5 shadow-xl ${panel}`}
+        data-testid="quick-rqd-calculator"
+        className={`${Q_AUXILIARY_DIALOG_CLASS} ${panel}`}
         onMouseDown={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3">
@@ -101,11 +103,15 @@ export default function QuickRqdCalculator({
 
         <div data-testid={formulaTestId} className={`mt-4 rounded-lg border px-3 py-2 ${darkMode ? 'border-gray-600 bg-gray-900/40' : 'border-gray-200 bg-gray-50'}`}>
           <p className={`mb-1 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{isEn ? 'Formula' : '计算公式'}</p>
-          <Kblock
-            math={isEn
-              ? String.raw`\mathrm{RQD}=\frac{\text{cumulative core length }\ge 10\,\mathrm{cm}}{\text{drill hole length}}\times 100\%`
-              : String.raw`\mathrm{RQD}=\frac{\text{长度 }\ge 10\,\mathrm{cm}\text{ 的岩芯累计长度}}{\text{钻孔长度}}\times 100\%`}
-          />
+          <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm">
+            <Km math={String.raw`\mathrm{RQD}=`} />
+            <span className="inline-flex min-w-[10rem] flex-col items-stretch text-center leading-snug">
+              <span>{isEn ? 'cumulative core length ≥ 10 cm' : '长度 ≥ 10 cm 的岩芯累计长度'}</span>
+              <span className={`my-0.5 h-px w-full ${darkMode ? 'bg-gray-500' : 'bg-gray-400'}`} />
+              <span>{isEn ? 'drill hole length' : '钻孔长度'}</span>
+            </span>
+            <Km math={String.raw`\times 100\%`} />
+          </p>
         </div>
 
         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">

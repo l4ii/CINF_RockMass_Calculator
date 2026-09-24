@@ -125,7 +125,7 @@ export default function GsiClassificationPage({
 
           <section data-testid="gsi-method-introduction" className={card}>
             <div className="mb-3 flex items-center justify-between gap-3">
-              <h2 className={`text-base font-semibold leading-6 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+              <h2 className={`text-lg font-semibold leading-6 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                 {en ? 'Geological Strength Index (GSI)' : '地质强度指标（GSI）'}
               </h2>
               <div data-testid="gsi-entry-mode" data-field="entryMode" className="flex h-6 shrink-0 overflow-hidden rounded-md border text-xs font-medium leading-none">
@@ -186,7 +186,7 @@ export default function GsiClassificationPage({
           </section>
 
           <section className={card}>
-            <h2 className={`text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+            <h2 className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
               {quantitative
                 ? (en ? 'Quantitative method' : '定量法')
                 : (en ? 'Chart method' : '图表法')}
@@ -197,8 +197,8 @@ export default function GsiClassificationPage({
                   ? <>The table below determines GSI from discontinuity condition and RQD. The horizontal axis is joint surface quality (good to poor to the right; <Km math={SYM.JCond89_scaled} />); the vertical axis is rock-mass structure (intact to broken downward; <Km math={SYM.RQD_over_2} />, 0–40). Mean GSI is <Km math={SYM.GSI_quant} />; contour lines give index values from 5 to 80. Enter the two ratings above, or select a matching point.</>
                   : <>下表为根据结构面状态和岩石质量指标确定地质强度指标（GSI）的量化图。横轴为结构面质量（由左至右由好到差，对应 <Km math={SYM.JCond89_scaled} />），纵轴为岩体结构（由上至下由完整到破碎，对应 <Km math={SYM.RQD_over_2} />，0～40）。平均 GSI 为 <Km math={SYM.GSI_quant} />，图中等值线给出 5～80 的指标值。可在上方输入两项参数，或在下表中点选对应点位。</>)
                 : (en
-                  ? 'The table below is the Geological Strength Index (GSI) chart for jointed rock masses. The horizontal axis is discontinuity surface condition (Scale A, 0–45); the vertical axis is rock-mass structure (Scale B, 0–50). Contour lines give GSI = Scale A + Scale B from 5 to 95; select a marked point on a contour. N/A means that combination is not applicable.'
-                  : '下表为节理岩体地质强度指标（GSI）分级图。横轴为结构面表面条件（Scale A，0～45），纵轴为岩体结构（Scale B，0～50）。等值线给出 GSI = Scale A + Scale B，范围 5～95；在等值线上的标记点中点选。N/A 表示该组合在工程上不适用。')}
+                  ? <>The table below is the Geological Strength Index (GSI) chart for jointed rock masses. The horizontal axis is discontinuity surface condition (Scale A, 0–45); the vertical axis is rock-mass structure (Scale B, 0–50). Contour lines give <Km math={SYM.GSI_chart} /> from 5 to 95; select a marked point on a contour. N/A means that combination is not applicable.</>
+                  : <>下表为节理岩体地质强度指标（GSI）分级图。横轴为结构面表面条件（Scale A，0～45），纵轴为岩体结构（Scale B，0～50）。等值线给出 <Km math={SYM.GSI_chart} />，范围 5～95；在等值线上的标记点中点选。N/A 表示该组合在工程上不适用。</>)}
             </p>
             {state.entryMode !== 'quantitative' ? (
               <div className="mt-2.5">

@@ -1,17 +1,18 @@
 import { formatQValue, getQAnalysis, Q_GRADES, type QResult } from '../../methods/q'
+import { Km } from '../math/Katex'
 
 export default function QResultPanel({ result, darkMode, language }: { result: QResult | null; darkMode: boolean; language: 'zh' | 'en' }) {
   const en = language === 'en'
   const muted = darkMode ? 'text-gray-400' : 'text-gray-600'
   const border = darkMode ? 'border-gray-600' : 'border-gray-200'
   return <section data-testid="q-result-analysis" className={`rounded-lg border p-4 sm:p-5 ${darkMode ? 'border-gray-700 bg-gray-800/60' : 'border-gray-200 bg-white shadow-sm'}`}>
-    <h2 className="text-base font-semibold">{en ? 'Results and interpretation' : '结果与分析'}</h2>
+    <h2 className="text-lg font-semibold">{en ? 'Results and interpretation' : '结果与分析'}</h2>
     {result ? <>
       <div className={`mt-4 grid gap-4 rounded-lg p-4 sm:grid-cols-2 ${darkMode ? 'bg-blue-950/40' : 'bg-blue-50'}`}>
-        <div><p className={`text-sm ${muted}`}>{en ? 'Calculated Q' : '计算 Q 值'}</p><p className={`mt-1 text-2xl font-bold tabular-nums ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>{formatQValue(result.q)}</p></div>
-        <div><p className={`text-sm ${muted}`}>{en ? 'Barton rock-mass class' : '巴顿岩体质量等级'}</p><p className="mt-1 text-2xl font-bold">{result.grade.label[language]}</p><p className={`mt-1 text-xs ${muted}`}>{en ? result.grade.rangeEn ?? result.grade.range : result.grade.range}</p></div>
+        <div><p className={`text-sm ${muted}`}>{en ? 'Calculated Q' : '计算 Q 值'}</p><p className={`mt-1 text-3xl font-bold tabular-nums ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>{formatQValue(result.q)}</p></div>
+        <div><p className={`text-sm ${muted}`}>{en ? 'Barton rock-mass class' : '巴顿岩体质量等级'}</p><p className="mt-1 text-3xl font-bold">{result.grade.label[language]}</p><p className={`mt-1 text-xs ${muted}`}>{en ? result.grade.rangeEn ?? result.grade.range : result.grade.range}</p></div>
       </div>
-      <p className={`mt-3 text-sm leading-relaxed ${muted}`}>{en ? 'Substitution' : '计算代入'}：Q = ({result.effectiveRqd} / {result.factors.jn.value}) × ({result.factors.jr.value} / {result.factors.ja.value}) × ({result.factors.jw.value} / {result.factors.srf.value}) = {formatQValue(result.q)}</p>
+      <p data-testid="q-result-substitution" className={`mt-3 text-sm leading-relaxed ${muted}`}>{en ? 'Substitution' : '计算代入'}：<Km math={`Q=\\frac{${result.effectiveRqd}}{${result.factors.jn.value}}\\times\\frac{${result.factors.jr.value}}{${result.factors.ja.value}}\\times\\frac{${result.factors.jw.value}}{${result.factors.srf.value}}=${formatQValue(result.q)}`} /></p>
       <div className="mt-4 grid gap-3 2xl:grid-cols-3">{getQAnalysis(result).map((item) => <div key={item.key} className={`rounded-lg border p-3 ${border}`}><h3 className="text-sm font-semibold">{item.title[language]}</h3><p className="mt-1 text-lg font-semibold tabular-nums">{item.value}</p><p className={`mt-1 text-sm leading-relaxed ${muted}`}>{item.description[language]}</p></div>)}</div>
       {result.warnings.length > 0 ? <ul className={`mt-3 space-y-1 text-sm ${darkMode ? 'text-amber-200' : 'text-amber-800'}`}>{result.warnings.map((warning) => <li key={`${warning.field}-${warning.code}`}>{warning.message[language]}</li>)}</ul> : null}
     </> : <p className={`mt-3 text-sm ${muted}`}>{en ? 'Complete the six parameters to show the Q value, class and interpretation.' : '完成六项参数后，显示 Q 值、质量等级与参数分析。'}</p>}

@@ -9,11 +9,14 @@
  * the conservative (lower-Q) end and records the decision in the result.
  */
 
+import { supportFromChart } from './qSupportChart'
+
 export type QIssueSeverity = 'error' | 'warning'
 export type QFactorSymbol = 'Jn' | 'Jr' | 'Ja' | 'Jw' | 'SRF'
 export type QGradeId = 'I' | 'II' | 'III' | 'IV' | 'V'
 export type QJnSite = '' | 'normal' | 'intersection' | 'portal'
 export type QSupportStatus = 'required' | 'not-required' | 'boundary' | 'outside-chart'
+export type QSupportMode = 'limit' | 'chart'
 
 export interface QFactorModifiers {
   jnSite: QJnSite
@@ -83,6 +86,8 @@ export interface QFormState {
   span: number | null
   esrId: string
   esrValue: number | null
+  /** Limit screening vs NGI Figure 7 chart. Defaults to limit. */
+  supportMode: QSupportMode
 }
 
 export interface QValidationIssue {
@@ -127,12 +132,21 @@ export interface QQualityBand {
 }
 
 export interface QSupportRecommendation {
+  mode: QSupportMode
   status: QSupportStatus
   maximumUnsupportedDimension: number
   demandRatio: number
   label: QLocalizedText
   recommendation: QLocalizedText
   sourceNote: QLocalizedText
+  category?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+  boltSpacingWithSfrM?: number | null
+  boltSpacingWithoutSfrM?: number | null
+  shotcreteThicknessCm?: number | null
+  energyAbsorptionJ?: 500 | 700 | 1000 | null
+  boltLengthM?: number | null
+  rrs?: { class: 'I' | 'II' | 'III'; spacingM: number | null } | null
+  inDashedRegion?: boolean
 }
 
 export interface QResult {
@@ -210,6 +224,16 @@ export const Q_JN_OPTIONS: readonly QFactorOption[] = [
   { id: 'one_set', symbol: 'Jn', letter: 'B', group: jointSetGroup, label: text('一组节理', 'One joint set'), range: range(2), sourceRef: 'Q-system Jn table' },
   { id: 'one_set_random', symbol: 'Jn', letter: 'C', group: jointSetGroup, label: text('一组节理与任一节理', 'One joint set plus a random joint'), range: range(3), sourceRef: 'Q-system Jn table' },
   { id: 'two_sets', symbol: 'Jn', letter: 'D', group: jointSetGroup, label: text('两组节理', 'Two joint sets'), range: range(4), sourceRef: 'Q-system Jn table' },
+  {
+    id: 'columnar',
+    symbol: 'Jn',
+    letter: 'D',
+    group: jointSetGroup,
+    label: text('柱状节理（三个节理方向）', 'Columnar jointing (three joint directions)'),
+    range: range(4),
+    note: text('节理方向数不一定等于节理组数，仍取 Jn = 4。', 'The number of joint directions is not always the same as the number of joint sets; Jn remains 4.'),
+    sourceRef: 'Q-system Jn table',
+  },
   { id: 'two_sets_random', symbol: 'Jn', letter: 'E', group: jointSetGroup, label: text('两组节理与任一节理', 'Two joint sets plus a random joint'), range: range(6), sourceRef: 'Q-system Jn table' },
   { id: 'three_sets', symbol: 'Jn', letter: 'F', group: jointSetGroup, label: text('三组节理', 'Three joint sets'), range: range(9), sourceRef: 'Q-system Jn table' },
   { id: 'three_sets_random', symbol: 'Jn', letter: 'G', group: jointSetGroup, label: text('三组节理与任一节理', 'Three joint sets plus a random joint'), range: range(12), sourceRef: 'Q-system Jn table' },
@@ -226,10 +250,10 @@ export const Q_JN_OPTIONS: readonly QFactorOption[] = [
 ]
 
 const wallContactGroup = text(
-  '（a）节理面完全接触；（b）剪切错动 10 cm 前属于接触',
-  '(a) Walls in contact; (b) contact before 10 cm shear'
+  '（1）节理面完全接触；（2）节理面在剪切错动 10 cm 位移前属于接触',
+  '(1) Rock-wall contact; (2) Rock-wall contact before 10 cm of shear movement'
 )
-const noContactGroup = text('（c）剪切过程中节理面不接触', '(c) No wall contact during shear')
+const noContactGroup = text('（3）剪切过程中节理面不接触', '(3) No rock-wall contact when sheared')
 
 export const Q_JR_OPTIONS: readonly QFactorOption[] = [
   { id: 'discontinuous', symbol: 'Jr', letter: 'A', group: wallContactGroup, label: text('非连续节理', 'Discontinuous joints'), range: range(4), sourceRef: 'Q-system Jr table' },
@@ -638,6 +662,7 @@ export const createInitialQState = (): QFormState => ({
   span: null,
   esrId: '',
   esrValue: null,
+  supportMode: 'limit',
 })
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -678,6 +703,7 @@ export function normalizeQState(value: unknown): QFormState {
     span: finiteNumber(raw.span ?? raw.excavationSpan ?? raw.diameterOrHeight),
     esrId: knownId(raw.esrId, Q_ESR_OPTIONS, initial.esrId),
     esrValue: finiteNumber(raw.esrValue ?? raw.ESR),
+    supportMode: raw.supportMode === 'chart' ? 'chart' : 'limit',
   }
 }
 
@@ -954,6 +980,7 @@ function supportFromQ(q: number, equivalentDimension: number): QSupportRecommend
     },
   }
   return {
+    mode: 'limit',
     status,
     maximumUnsupportedDimension: limit,
     demandRatio,
@@ -982,6 +1009,25 @@ export function calculateQ(input: QFormState | unknown): QResult {
   const activeStress = jw.value / srf.value
   const q = blockSize * jointShearStrength * activeStress
   const equivalentDimension = state.span != null && esr ? state.span / esr.value : null
+  const warnings = issues.filter((item) => item.severity === 'warning')
+  if (
+    state.supportMode === 'chart' &&
+    equivalentDimension != null &&
+    q <= 0.1 &&
+    esr != null &&
+    esr.value > 1 &&
+    (state.esrId === 'circular_shaft' || state.esrId === 'rectangular_shaft' || state.esrId === 'permanent_general' || state.esrId === 'storage_minor')
+  ) {
+    warnings.push(
+      issue(
+        'esrValue',
+        'low_q_esr',
+        'warning',
+        '当 Q≤0.1 时，竖井、永久矿山巷道及小型交通隧洞建议采用 ESR＝1.0；当前未改写已选 ESR。',
+        'When Q ≤ 0.1, ESR = 1.0 is recommended for shafts, permanent mine openings and minor traffic tunnels; the selected ESR is left unchanged.'
+      )
+    )
+  }
 
   return {
     standard: Q_STANDARD,
@@ -999,8 +1045,8 @@ export function calculateQ(input: QFormState | unknown): QResult {
     span: state.span,
     esr,
     equivalentDimension,
-    support: equivalentDimension == null ? null : supportFromQ(q, equivalentDimension),
-    warnings: issues.filter((item) => item.severity === 'warning'),
+    support: equivalentDimension == null ? null : state.supportMode === 'chart' ? supportFromChart(q, equivalentDimension) : supportFromQ(q, equivalentDimension),
+    warnings,
     formula: text('Q = (RQD / Jn) × (Jr / Ja) × (Jw / SRF)', 'Q = (RQD / Jn) × (Jr / Ja) × (Jw / SRF)'),
     sourceNote: Q_STANDARD.sourceNote,
   }
@@ -1125,11 +1171,39 @@ export function describeQ(input: QFormState | unknown, suppliedResult?: QResult)
       },
       {
         key: 'support',
-        label: text('支护需求判定', 'Unsupported-limit screening'),
+        label: text('支护需求判定', result.support.mode === 'chart' ? 'Support chart' : 'Unsupported-limit screening'),
         value: result.support.label.zh,
         basis: result.support.sourceNote,
       }
     )
+    if (result.support.mode === 'chart') {
+      const chart = result.support
+      if (chart.shotcreteThicknessCm != null) {
+        rows.push({
+          key: 'shotcrete',
+          label: text('喷层厚度', 'Shotcrete thickness'),
+          value: `${formatQValue(chart.shotcreteThicknessCm)} cm`,
+          basis: text('支护图等值线内插', 'Interpolated from support-chart isolines'),
+        })
+      }
+      const spacing = chart.boltSpacingWithSfrM ?? chart.boltSpacingWithoutSfrM
+      if (spacing != null) {
+        rows.push({
+          key: 'boltSpacing',
+          label: text(chart.boltSpacingWithSfrM != null ? '锚杆间距（有 Sfr）' : '锚杆间距（无 Sfr）', chart.boltSpacingWithSfrM != null ? 'Bolt spacing with Sfr' : 'Bolt spacing without Sfr'),
+          value: `${formatQValue(spacing)} m`,
+          basis: text('支护图等值线内插', 'Interpolated from support-chart isolines'),
+        })
+      }
+      if (chart.boltLengthM != null) {
+        rows.push({
+          key: 'boltLength',
+          label: text('锚杆长度', 'Bolt length'),
+          value: `${formatQValue(chart.boltLengthM)} m`,
+          basis: text('L = 2 + 0.15 De（ESR = 1 尺）', 'L = 2 + 0.15 De (ESR = 1 scale)'),
+        })
+      }
+    }
   }
   return rows
 }

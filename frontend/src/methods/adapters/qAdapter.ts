@@ -72,6 +72,9 @@ export const qAdapter: AnyClassificationAdapter = {
         { key: 'de', label: '等效尺寸 De', labelEn: 'Equivalent dimension De', value: `${result.equivalentDimension} m` },
         { key: 'support', label: '支护需求判定', labelEn: 'Support requirement assessment', value: result.support.label.zh, valueEn: result.support.label.en },
       )
+      if (result.support.mode === 'chart' && result.support.category != null) {
+        metrics.push({ key: 'supportCategory', label: '支护类别', labelEn: 'Support category', value: String(result.support.category) })
+      }
     }
     return {
       value: result.q,

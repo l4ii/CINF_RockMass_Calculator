@@ -6,6 +6,7 @@ import {
   Q_STANDARD,
   calculateQ,
   createInitialQState,
+  describeQ,
   formatQValue,
   getQAnalysis,
   maximumUnsupportedDimension,
@@ -14,6 +15,8 @@ import {
   validateQState,
   type QFormState,
 } from './methods/q'
+import { classifySupportChart, supportFromChart } from './methods/qSupportChart'
+import { boltLengthM, orangeTopDe } from './methods/qSupportChartGeometry'
 
 function complete(partial: Partial<QFormState> = {}): QFormState {
   return {
@@ -87,6 +90,13 @@ describe('Q domain calculations', () => {
     expect(adapted.metrics.some((item) => item.key === 'block')).toBe(true)
     expect(adapted.metrics.some((item) => item.key === 'blockSize')).toBe(true)
     expect(adapted.metrics.some((item) => item.key === 'support')).toBe(false)
+  })
+
+  it('treats columnar jointing as the same table value as two joint sets', () => {
+    const result = calculateQ(complete({ jnId: 'columnar', jnValue: 4 }))
+    expect(result.factors.jn.value).toBe(4)
+    expect(result.factors.jn.optionId).toBe('columnar')
+    expect(result.q).toBe(60)
   })
 
   it('multiplies Jn by 3 at a tunnel intersection', () => {
@@ -180,6 +190,7 @@ describe('Q domain calculations', () => {
     expect(below.support?.status).toBe('not-required')
     expect(above.support?.status).toBe('required')
     expect(atBoundary.support).not.toHaveProperty('category')
+    expect(atBoundary.support?.mode).toBe('limit')
   })
 
   it('does not make an automatic support decision outside the schematic chart bounds', () => {
@@ -230,5 +241,120 @@ describe('Q domain calculations', () => {
     expect(described.find((item) => item.key === 'quality')).toBeUndefined()
     expect(described.find((item) => item.key === 'blockSize')?.score).toContain('80 / 4')
     expect(Q_STANDARD.title).toEqual({ zh: 'Q分级', en: 'Q classification' })
+  })
+
+  it('defaults supportMode to limit and keeps chart fields off the limit result', () => {
+    expect(createInitialQState().supportMode).toBe('limit')
+    expect(calculateQ(complete({ span: 5, esrId: 'major_civil', esrValue: 1 })).support?.mode).toBe('limit')
+    expect(calculateQ({ ...complete({ span: 5, esrId: 'major_civil', esrValue: 1 }), supportMode: undefined }).support).not.toHaveProperty('category')
+  })
+})
+
+describe('Q support chart (NGI Figure 7)', () => {
+  it('places the unsupported band in category 1 and spot bolting in category 2', () => {
+    expect(classifySupportChart(100, 5).category).toBe(1)
+    expect(classifySupportChart(80, 20).category).toBe(2)
+  })
+
+  it('reads systematic shotcrete categories 3–8 inside the empirical envelope', () => {
+    expect(classifySupportChart(4, 8).category).toBeGreaterThanOrEqual(3)
+    expect(classifySupportChart(4, 8).category).toBeLessThanOrEqual(8)
+    expect(classifySupportChart(0.01, 15).category).toBe(8)
+  })
+
+  it('assigns known (Q, De) points to categories 1–9', () => {
+    expect(classifySupportChart(100, 5).category).toBe(1)
+    expect(classifySupportChart(80, 20).category).toBe(2)
+    expect(classifySupportChart(20, 20).category).toBe(3)
+    expect(classifySupportChart(4, 18).category).toBe(4)
+    expect(classifySupportChart(1, 15).category).toBe(5)
+    expect(classifySupportChart(0.1, 7).category).toBe(6)
+    expect(classifySupportChart(0.01, 6).category).toBe(7)
+    expect(classifySupportChart(0.01, 15).category).toBe(8)
+    expect(classifySupportChart(0.4, 2)).toEqual({ category: 3, inDashedRegion: true, outside: false })
+    expect(classifySupportChart(500, 30)).toEqual({ category: 2, inDashedRegion: true, outside: false })
+  })
+
+  it('describes chart-mode support with category, thickness and bolt length', () => {
+    const state = complete({ span: 8, esrId: 'major_civil', esrValue: 1, supportMode: 'chart' })
+    const rows = describeQ(state)
+    expect(rows.find((row) => row.key === 'support')?.value).toContain('类别 1')
+    expect(rows.find((row) => row.key === 'boltLength')?.value).toBe('3.2 m')
+    expect(qAdapter.calculate(state as unknown as Record<string, unknown>).metrics.some((item) => item.key === 'supportCategory' && item.value === '1')).toBe(true)
+  })
+
+  it('does not invent thickness in the dashed band or above the envelope', () => {
+    const dashed = supportFromChart(0.1, 2)
+    expect(dashed.category).toBe(4)
+    expect(dashed.inDashedRegion).toBe(true)
+    expect(dashed.shotcreteThicknessCm).toBeNull()
+    const above = supportFromChart(0.1, 80)
+    expect(above.category).toBe(9)
+    expect(above.shotcreteThicknessCm).toBeNull()
+  })
+
+  it('interpolates thickness, energy, RRS and bolt length on a category-6 point', () => {
+    const result = supportFromChart(0.1, 7)
+    expect(result.category).toBe(6)
+    expect(result.shotcreteThicknessCm).toBeGreaterThanOrEqual(12)
+    expect(result.shotcreteThicknessCm).toBeLessThanOrEqual(15)
+    expect(result.energyAbsorptionJ).toBe(700)
+    expect(result.rrs?.class).toBe('I')
+    expect(result.rrs?.spacingM).toBeGreaterThan(0)
+    expect(result.boltLengthM).toBe(boltLengthM(7))
+    expect(result.boltLengthM).toBeCloseTo(3.05)
+  })
+
+  it('marks axis-out points as outside the chart', () => {
+    const result = supportFromChart(1, 0.5)
+    expect(result.status).toBe('outside-chart')
+    expect(result.boltLengthM).toBeNull()
+    expect(result.label.zh).toContain('范围外')
+  })
+
+  it('follows the Figure 7 envelope from about De 14 on the left toward the top of the plot', () => {
+    expect(orangeTopDe(0.001)).toBeCloseTo(13.6, 0)
+    expect(orangeTopDe(1)).toBeGreaterThan(40)
+    expect(orangeTopDe(100)).toBeGreaterThan(80)
+    expect(classifySupportChart(1, 40).category).toBeGreaterThanOrEqual(3)
+    expect(classifySupportChart(1, 40).category).toBeLessThanOrEqual(8)
+    expect(classifySupportChart(0.1, 80).category).toBe(9)
+  })
+
+  it('takes the higher-support class on a contour boundary', () => {
+    expect(classifySupportChart(20, 20).category).toBe(3)
+    expect(classifySupportChart(80, 20).category).toBe(2)
+  })
+
+  it('feeds chart results through calculateQ when supportMode is chart', () => {
+    const result = calculateQ(complete({ span: 8, esrId: 'major_civil', esrValue: 1, supportMode: 'chart' }))
+    expect(result.q).toBe(60)
+    expect(result.equivalentDimension).toBe(8)
+    expect(result.support?.mode).toBe('chart')
+    expect(result.support?.category).toBe(1)
+    expect(result.support?.boltLengthM).toBeCloseTo(3.2)
+  })
+
+  it('warns that ESR = 1 is recommended when Q is very low on B–D excavations', () => {
+    const result = calculateQ(
+      complete({
+        rqd: 10,
+        jnId: 'crushed',
+        jnValue: 20,
+        jrId: 'slickensided_planar',
+        jrValue: 0.5,
+        jaId: 'banded_silty_sandy_clay',
+        jaValue: 5,
+        srfId: 'high_stress_stable',
+        srfValue: 0.5,
+        span: 4,
+        esrId: 'permanent_general',
+        esrValue: 1.6,
+        supportMode: 'chart',
+      })
+    )
+    expect(result.q).toBeLessThanOrEqual(0.1)
+    expect(result.warnings.some((item) => item.code === 'low_q_esr')).toBe(true)
+    expect(result.esr?.value).toBe(1.6)
   })
 })

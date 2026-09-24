@@ -412,7 +412,7 @@ function BqFoundationResult({ darkMode, language, grade }: { darkMode: boolean; 
   return (
     <div data-testid="bq-foundation-result" className={`mt-4 border-t pt-3 ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
       <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-3">
-        <h3 className={`text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Corrected BQ evaluation result' : '修正 BQ 评价结果'}</h3>
+        <h3 className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Corrected BQ evaluation result' : '修正 BQ 评价结果'}</h3>
         <p className={`text-sm font-medium sm:text-center ${grade ? (darkMode ? 'text-green-300' : 'text-green-800') : mutedClass(darkMode)}`}>{gradeLine}</p>
         <div data-testid="bq-foundation-f0" className={`font-semibold tabular-nums sm:text-right ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
           <span className={`mr-2 text-sm font-normal ${mutedClass(darkMode)}`}>{en ? <>Reference <Km math="f_0" /></> : <>参考 <Km math="f_0" /></>}</span>
@@ -440,7 +440,7 @@ function BqLimitationPanel({ darkMode, language, result }: { darkMode: boolean; 
         : (en ? 'No code limit triggered; input values adopted.' : '未触发规范限制，采用输入值')
   return (
     <section data-testid="bq-limitation-formulas" className={`rounded-lg border p-4 sm:p-5 ${darkMode ? 'border-gray-600 bg-gray-800/50' : 'border-gray-200 bg-white'}`}>
-      <h3 className={`mb-3 text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Code limits' : '规范限定'}</h3>
+      <h3 className={`mb-3 text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Code limits' : '规范限定'}</h3>
       <FormulaFrame darkMode={darkMode}>
         <div className={`space-y-1 text-center ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
           <Kblock math={String.raw`R_c>90K_v+30\quad\Rightarrow\quad R_c=90K_v+30`} />
@@ -463,8 +463,8 @@ function BqResultSection({ darkMode, language, result, baseReady, mode, enteredC
   return (
     <section data-testid="bq-result-section" className={sectionClass(darkMode)}>
       <div className="flex flex-wrap items-baseline justify-between gap-3">
-        <h2 className={`text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'BQ evaluation result' : 'BQ评价结果'}</h2>
-        <span className={`text-2xl font-bold tabular-nums ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>{result ? result.basicBq : '—'}</span>
+        <h2 className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'BQ evaluation result' : 'BQ评价结果'}</h2>
+        <span className={`text-3xl font-bold tabular-nums ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>{result ? result.basicBq : '—'}</span>
       </div>
       {grade ? <p className={`mt-2 text-sm ${darkMode ? 'text-green-300' : 'text-green-800'}`}>{en ? `${grade.label.en} · ${grade.quality.en}` : `${grade.label.zh} · ${grade.quality.zh}`}</p> : <p className={`mt-2 text-sm ${mutedClass(darkMode)}`}>{en ? <>Enter <Km math={SYM.Rc} /> and <Km math={SYM.Kv} /> to calculate the basic <Km math="\mathrm{BQ}" />.</> : <>请输入 <Km math={SYM.Rc} /> 和 <Km math={SYM.Kv} /> 后查看基本 <Km math="\mathrm{BQ}" /> 结果。</>}</p>}
       <BqGradeTable darkMode={darkMode} language={language} activeGrade={grade?.id ?? null} />
@@ -486,7 +486,7 @@ function BqCorrectedResult({ darkMode, language, result, variant = 'underground'
     : String.raw`\left[\mathrm{BQ}\right]=\mathrm{BQ}-100\left(K_1+K_2+K_3\right)`
   return (
     <section data-testid="bq-corrected-result" className={sectionClass(darkMode)}>
-      <div className="flex items-center justify-between gap-3"><h2 className={`text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? '[BQ] evaluation result' : '[BQ]评价结果'}</h2><span className={`text-2xl font-bold tabular-nums ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>{result ? result.engineeringBq : '—'}</span></div>
+      <div className="flex items-center justify-between gap-3"><h2 className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? '[BQ] evaluation result' : '[BQ]评价结果'}</h2><span className={`text-3xl font-bold tabular-nums ${darkMode ? 'text-blue-200' : 'text-blue-800'}`}>{result ? result.engineeringBq : '—'}</span></div>
       <FormulaFrame darkMode={darkMode} compact>
         <div className={`text-center ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}><Kblock math={formula} /></div>
       </FormulaFrame>
@@ -567,7 +567,7 @@ function BqSlopeK5Table({
   const cellClass = (selected: boolean) => `border px-2 py-1.5 text-center tabular-nums cursor-pointer ${selected ? (darkMode ? 'bg-blue-900/50 text-blue-100' : 'bg-blue-100 text-blue-900') : (darkMode ? 'hover:bg-gray-700/40' : 'hover:bg-gray-50')}`
   return (
     <div data-testid="bq-k5-table" className="mt-3 space-y-1.5">
-      <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{en ? 'Main discontinuity orientation correction coefficient (K₅ = F₁ × F₂ × F₃)' : '主要结构面产状影响修正系数（K₅ = F₁ × F₂ × F₃）'}</div>
+      <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{en ? <>Main discontinuity orientation correction coefficient (<Km math="K_5=F_1\times F_2\times F_3" />)</> : <>主要结构面产状影响修正系数（<Km math="K_5=F_1\times F_2\times F_3" />）</>}</div>
       <div className="overflow-x-auto">
         <table className={`w-full min-w-[720px] border-collapse border text-sm ${border}`}>
           <thead className={head}>
@@ -752,7 +752,7 @@ function BqPreview({ darkMode, language, state, correctionStep, result }: { dark
   )
   return (
     <aside data-testid="calculation-result-pane" className={panel}>
-      <h3 className={`mb-1 text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Rating preview' : '分值预览'}</h3>
+      <h3 className={`mb-1 text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Rating preview' : '分值预览'}</h3>
       <p className={`mb-3 text-xs ${mutedClass(darkMode)}`}>{en ? `${completedItems} / ${totalItems} selected` : `已选 ${completedItems} / ${totalItems} 项`}</p>
       <ul className="space-y-2">
         {row(<span data-testid="bq-preview-rc-label"><span data-testid="bq-preview-effective-rc-label"><Km math={rcLimited ? 'R_c^{*}' : 'R_c'} /></span></span>, rcLimited ? `${result?.effective.rc ?? '—'} MPa` : (state.rc == null ? '—' : `${state.rc} MPa`), rcLimited ? result != null : state.rc != null, 'bq-preview-rc-row')}
@@ -1010,7 +1010,7 @@ export default function BqClassificationPage(props: BqProps) {
 
             <div className="mt-2 space-y-4">
             <section className={`rounded-lg border p-4 sm:p-5 ${darkMode ? 'border-gray-600 bg-gray-800/50' : 'border-gray-200 bg-white'}`}>
-            <div className="mb-2 flex items-center gap-2"><h2 data-testid="bq-basic-quality-title" className={`text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Basic rock-mass quality' : '岩体基本质量'}</h2></div>
+            <div className="mb-2 flex items-center gap-2"><h2 data-testid="bq-basic-quality-title" className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Basic rock-mass quality' : '岩体基本质量'}</h2></div>
             <p className={`mb-4 text-sm leading-relaxed ${mutedClass(darkMode)}`}>{en ? <>Use representative measured <Km math={SYM.Rc} /> and <Km math={SYM.Kv} /> from the same engineering zone whenever available. If direct test results are unavailable, use one of the auxiliary methods below to obtain an estimate, review its applicability against the geological data, and apply it only after confirmation.</> : <>有条件时应优先采用同一工程分区内具有代表性的实测 <Km math={SYM.Rc} /> 和 <Km math={SYM.Kv} />。缺少直接试验成果时，可使用下方辅助方法进行估算；估算结果应结合工程地质资料复核，确认后方可应用。</>}</p>
             <div data-field="rc" className={`border-t pt-4 ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
               <MeasuredNumberField darkMode={darkMode} language={language} inputId="bq-rc" name={en ? 'Saturated UCS' : '饱和岩石单轴抗压强度'} symbol="R_c" unit="MPa" ariaLabel={en ? 'Rc input (MPa)' : 'Rc 输入值（MPa）'} value={state.rc} min={0} onChange={(raw) => patch({ rc: raw === '' ? null : Number(raw) })} />
@@ -1034,7 +1034,7 @@ export default function BqClassificationPage(props: BqProps) {
             {correctionOpen || state.mode !== 'basic' ? <>
             <section data-testid="bq-correction-scenario" className={sectionClass(darkMode)}>
               <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                <h2 className={`text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Corrected BQ' : '修正 BQ'}</h2>
+                <h2 className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Corrected BQ' : '修正 BQ'}</h2>
                 <div className="min-w-[220px] max-w-sm flex-1">
                   <CenteredSelect
                     darkMode={darkMode}

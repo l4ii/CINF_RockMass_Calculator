@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { Km } from '../math/Katex'
+import { SYM } from '../math/symbols'
 import { Maximize2, X } from 'lucide-react'
 import { GSI_STRUCTURE_OPTIONS, chartScaleBToY } from '../../methods/gsi'
 import {
@@ -22,6 +24,17 @@ const PAD = { left: 26, right: 10, top: 10, bottom: 20 }
 const PLOT = 100
 const VIEW_WIDTH = PAD.left + PLOT + PAD.right
 const VIEW_HEIGHT = PAD.top + PLOT + PAD.bottom
+
+function GsiAxisFormulas({ language, testId }: { language: 'zh' | 'en'; testId?: string }) {
+  const en = language === 'en'
+  return (
+    <p data-testid={testId} className="mt-2 text-center text-xs leading-relaxed text-gray-500">
+      {en ? 'Scale A' : '刻度 A'} = <Km math={SYM.JCond89_scaled} />
+      <span className="mx-2" aria-hidden>·</span>
+      {en ? 'Scale B' : '刻度 B'} = <Km math={SYM.RQD_over_2} />
+    </p>
+  )
+}
 
 function px(chartX: number) {
   return PAD.left + chartX
@@ -109,10 +122,10 @@ function GsiCloudPlot({ darkMode, language, cloud, showLabels, className }: GsiC
         )
       })}
       <text x={px(50)} y={VIEW_HEIGHT - 2.2} fontSize="3.2" textAnchor="middle" fill={ink}>
-        {en ? 'Scale A = 1.5 JCond89' : '刻度 A = 1.5 JCond89'}
+        {en ? 'Scale A' : '刻度 A'}
       </text>
       <text x={9} y={py(50)} fontSize="3.2" textAnchor="middle" fill={ink} transform={`rotate(-90 9 ${py(50)})`}>
-        {en ? 'Scale B = RQD/2' : '刻度 B = RQD/2'}
+        {en ? 'Scale B' : '刻度 B'}
       </text>
       {cloud.map((point) => {
         const { x, y } = gsiChartPoint(point.scaleA, point.scaleB)
@@ -228,14 +241,17 @@ export default function GsiOverviewCharts({ darkMode, language, stats }: GsiOver
             </div>
           </div>
           {stats.cloud.length ? (
-            <button
-              type="button"
-              className="block w-full cursor-zoom-in rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-              onClick={() => setEnlarged(true)}
-              aria-label={enlargeLabel}
-            >
-              <GsiCloudPlot darkMode={darkMode} language={language} cloud={stats.cloud} showLabels={false} className="h-80 w-full" />
-            </button>
+            <>
+              <button
+                type="button"
+                className="block w-full cursor-zoom-in rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                onClick={() => setEnlarged(true)}
+                aria-label={enlargeLabel}
+              >
+                <GsiCloudPlot darkMode={darkMode} language={language} cloud={stats.cloud} showLabels={false} className="h-80 w-full" />
+              </button>
+              <GsiAxisFormulas language={language} testId="gsi-overview-axis-caption" />
+            </>
           ) : <p className={`py-12 text-center text-sm ${muted}`}>{en ? 'No Scale A/B pairs in the current selection.' : '当前筛选中没有可绘制的刻度 A/B 数据。'}</p>}
         </div>
 
@@ -306,6 +322,7 @@ export default function GsiOverviewCharts({ darkMode, language, stats }: GsiOver
               </div>
             </div>
             <GsiCloudPlot darkMode={darkMode} language={language} cloud={stats.cloud} showLabels className="h-[min(78vh,44rem)] w-full" />
+            <GsiAxisFormulas language={language} />
           </div>
         </div>
       ) : null}

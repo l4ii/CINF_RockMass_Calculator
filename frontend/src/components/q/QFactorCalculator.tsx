@@ -13,6 +13,7 @@ import {
   type QFactorSymbol,
   type QJnSite,
 } from '../../methods/q'
+import { Q_AUXILIARY_DIALOG_CLASS, Q_AUXILIARY_OVERLAY_CLASS } from '../calculationUiPrimitives'
 import QFactorQuickTable from './QFactorQuickTable'
 
 interface QFactorCalculatorProps {
@@ -109,13 +110,13 @@ export default function QFactorCalculator({
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/45 px-4" onMouseDown={onClose}>
+    <div className={Q_AUXILIARY_OVERLAY_CLASS} onMouseDown={onClose}>
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="q-factor-quick-title"
         data-testid="q-factor-calculator"
-        className={`max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-xl border p-5 shadow-xl ${panel}`}
+        className={`${Q_AUXILIARY_DIALOG_CLASS} ${panel}`}
         onMouseDown={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3">
@@ -133,7 +134,9 @@ export default function QFactorCalculator({
           </button>
         </div>
 
-        <p className={`mt-3 text-sm leading-relaxed ${muted}`}>{intro}</p>
+        <div data-testid={`q-${symbol.toLowerCase()}-intro`} className={`mt-3 space-y-2 text-sm leading-relaxed ${muted}`}>
+          {intro}
+        </div>
 
         <div className="mt-4">
           {symbol === 'Jn' ? (
@@ -182,7 +185,7 @@ export default function QFactorCalculator({
               </label>
             </div>
           ) : null}
-          {letterGroup.length > 1 ? (
+          {letterGroup.length > 1 && symbol === 'Ja' ? (
             <div className="mb-2 flex justify-end">
               <label className={`flex items-center gap-2 whitespace-nowrap text-sm ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
                 <span>{en ? `Clay condition for ${selected?.letter}` : `${selected?.letter} 档黏土状况`}</span>

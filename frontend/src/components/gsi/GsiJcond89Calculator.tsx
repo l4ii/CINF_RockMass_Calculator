@@ -118,7 +118,7 @@ export default function GsiJcond89Calculator({ darkMode, language, state, onClos
         aria-modal="true"
         aria-labelledby="gsi-jcond89-quick-title"
         data-testid="gsi-jcond89-calculator"
-        className={`max-h-[90vh] w-full max-w-6xl overflow-y-auto rounded-xl border p-5 shadow-xl ${panel}`}
+        className={`thin-scroll max-h-[90vh] w-full max-w-6xl overflow-y-auto rounded-xl border p-5 shadow-xl ${panel}`}
         onMouseDown={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3">

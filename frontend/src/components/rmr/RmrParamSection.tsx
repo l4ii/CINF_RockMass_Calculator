@@ -40,7 +40,7 @@ export default function RmrParamSection({
   return (
     <section ref={sectionRef} id={sectionId} className={`scroll-mt-4 rounded-lg border ${border} ${bg} p-4 sm:p-5`}>
       <div className="mb-2 flex items-center justify-between gap-2">
-        <h3 className={`text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{title}</h3>
+        <h3 className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{title}</h3>
         <span
           className={`shrink-0 rounded-md px-2.5 py-1 text-sm font-semibold tabular-nums ${
             score != null

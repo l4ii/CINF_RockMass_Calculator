@@ -20,7 +20,7 @@ export default function RmrScorePreview({ darkMode, language, scores }: RmrScore
 
   return (
     <aside className={`sticky top-0 ${panel}`}>
-      <h3 className={`text-base font-semibold mb-1 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{isEn ? 'Rating preview' : '分值预览'}</h3>
+      <h3 className={`text-lg font-semibold mb-1 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{isEn ? 'Rating preview' : '分值预览'}</h3>
       <p className={`text-xs mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
         {isEn ? `${scores.completedCount} / 6 selected` : `已选 ${scores.completedCount} / 6 项`}
       </p>

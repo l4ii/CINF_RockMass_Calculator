@@ -189,33 +189,143 @@ export default function QClassificationPage({
   const factorMeta: Record<QFactorSymbol, { title: ReactNode; intro: ReactNode }> = {
     Jn: {
       title: en ? <>Joint-set number <Km math={SYM.Jn} /></> : <>节理组数 <Km math={SYM.Jn} /> 取值</>,
-      intro: en
-        ? <>Select the rating that matches the number of joint sets in the rock mass. If the assessed heading is a tunnel intersection or a cross-cut, apply the site factor above the table.</>
-        : <>根据岩体中结构面组数及其随机节理发育程度点选相应档位。评分断面位于巷道交叉点或穿脉时，请在表格右上方选取部位修正系数。</>,
+      intro: en ? (
+        <>
+          <p>
+            <Km math={SYM.Jn} /> is the joint-set number: how many joint sets (including random joints) actually cut the rock into blocks. Together with RQD it forms the block-size quotient <Km math={SYM.RQD_over_Jn} />.
+          </p>
+          <p>
+            Count only joints that occur at the same location and form definite blocks. If spacing is generally greater than the span or height, those joints rarely allow fallout and should be treated as random. Adding every set seen along a long stretch of tunnel overestimates <Km math={SYM.Jn} />.
+          </p>
+          <p>
+            The number of joint directions is not always the same as the number of joint sets. Columnar jointing often has three directions, yet <Km math={SYM.Jn} /> = 4 is usually more reasonable. Use the site factor for tunnel intersections (×3) or portals and cross-cuts (×2).
+          </p>
+        </>
+      ) : (
+        <>
+          <p>
+            <Km math={SYM.Jn} /> 为节理组数，表示在同一部位切割岩体、形成块体的节理组数量（含随机节理）。它与 RQD 组成块体尺寸指标 <Km math={SYM.RQD_over_Jn} />。
+          </p>
+          <p>
+            只计入同一位置、确实构成块体的节理。若某组间距普遍大于巷道跨度或高度，由其形成的块体通常过大而不易掉落，应按随机节理考虑。沿较长洞段把见到的各组简单累加，会使 <Km math={SYM.Jn} /> 偏大。
+          </p>
+          <p>
+            节理方向数不一定等于节理组数。柱状节理常有三个方向，但更合理的取值多为 <Km math={SYM.Jn} /> = 4。巷道交叉点按 3 倍计，洞口或穿脉按 2 倍计，请在表上方选取部位修正。
+          </p>
+        </>
+      ),
     },
     Jr: {
       title: en ? <>Joint roughness <Km math={SYM.Jr} /></> : <>节理粗糙度 <Km math={SYM.Jr} /> 取值</>,
-      intro: en
-        ? <>Rate the least favourable joint or joint set that controls stability, using the same discontinuity as for <Km math={SYM.Ja} />. Read each row as small-scale texture (mm–cm) on top of medium-scale form (dm–m). Extra modifiers are selected above the table.</>
-        : <>按控制稳定的最不利节理或节理组评定粗糙度，必须与 <Km math={SYM.Ja} /> 取自同一条结构面。各档按小尺度（mm–cm）起伏叠加中尺度（dm–m）形态的顺序描述，对照剖面示意选档；附加修正在表格右上方选取。</>,
+      intro: en ? (
+        <>
+          <p>
+            <Km math={SYM.Jr} /> is the joint roughness number. Joint friction depends on whether the walls are stepped, undulating or planar, and whether they are rough, smooth or slickensided. With <Km math={SYM.Ja} /> it forms the inter-block shear-strength quotient <Km math={SYM.Jr_over_Ja} />.
+          </p>
+          <p>
+            Rate every set, then adopt the least favourable one for excavation stability—the set most likely to shear—and use the same discontinuity for <Km math={SYM.Ja} />. Small-scale texture (mm–cm: rough, smooth, slickensided) can be felt by running a finger along the wall. Medium-scale form (dm–m: stepped, undulating, planar) is judged with a ~1 m straightedge, relative to block size and the probable slide direction.
+          </p>
+          <p>
+            If filling prevents wall contact during shear, roughness no longer counts and <Km math={SYM.Jr} /> = 1. If only a few joints of that set are exposed, <Km math={SYM.Jr} /> + 1 may be used; the same +1 applies when mean spacing exceeds 3 m.
+          </p>
+        </>
+      ) : (
+        <>
+          <p>
+            <Km math={SYM.Jr} /> 为节理粗糙度系数。结构面摩擦取决于壁面是阶坎状、波状还是平面状，以及粗糙、光滑还是带擦痕。它与 <Km math={SYM.Ja} /> 组成块间抗剪强度指标 <Km math={SYM.Jr_over_Ja} />。
+          </p>
+          <p>
+            须评价该处各组节理，再取对开挖稳定最不利、最可能发生剪切的一组，并与 <Km math={SYM.Ja} /> 取自同一条结构面。小尺度（mm–cm）的粗糙、光滑、擦痕可用手指沿壁面感知；中尺度（dm–m）的阶坎、波状、平面可用约 1 m 直尺量起伏幅值，并对照块体尺寸与可能滑动方向。
+          </p>
+          <p>
+            充填使剪切过程中壁面不能接触时，粗糙度不再起作用，<Km math={SYM.Jr} /> 取 1。该组仅局部出露或平均间距大于 3 m 时，可按 <Km math={SYM.Jr} /> + 1 取值。
+          </p>
+        </>
+      ),
     },
     Ja: {
       title: en ? <>Joint alteration <Km math={SYM.Ja} /></> : <>节理蚀变 <Km math={SYM.Ja} /> 取值</>,
-      intro: en
-        ? <>Rate the alteration, coating or filling of the same discontinuity used for <Km math={SYM.Jr} />. The three groups depend on whether the joint walls still touch after shearing. The <Km math={SYM.phiR} /> column is the residual friction angle and is a cross-check only. Rows K and M cover a range of clay conditions; select the matching one above the table.</>
-        : <>按与 <Km math={SYM.Jr} /> 相同的结构面评定蚀变、涂层或充填物。三段分组取决于剪切后节理面是否仍然接触：闭合无充填、薄层充填（错动 10 cm 前接触）、厚层充填（剪切时不接触）。<Km math={SYM.phiR} /> 列为残余摩擦角，仅供对照校核，不参与计算。K、M 两档对应多种黏土状况，选中后在表格右上方选取。</>,
+      intro: en ? (
+        <>
+          <p>
+            <Km math={SYM.Ja} /> is the joint alteration number. Besides roughness, filling thickness and strength control friction; both depend on mineralogy. Use the same discontinuity as for <Km math={SYM.Jr} />.
+          </p>
+          <p>
+            Fillings are grouped by whether the walls still touch when the joint is sheared: (a) rock-wall contact, coatings only; (b) contact before 10 cm of shear; (c) no contact during shear. For smooth joints a millimetre of fill may suffice to prevent contact; rough undulating joints may need several millimetres or centimetres.
+          </p>
+          <p>
+            The residual friction angle <Km math={SYM.phiR} /> is a cross-check only and does not enter Q. Rows K and M cover a range of clay conditions; choose the matching one above the table.
+          </p>
+        </>
+      ) : (
+        <>
+          <p>
+            <Km math={SYM.Ja} /> 为节理蚀变系数。除粗糙度外，充填物的厚度与强度对摩擦同样关键，二者取决于矿物组成。必须与 <Km math={SYM.Jr} /> 取自同一条结构面。
+          </p>
+          <p>
+            按剪切时壁面是否接触分为三类：（a）无充填或仅有薄膜、壁面接触；（b）薄层充填，错动 10 cm 前接触；（c）厚层充填，剪切过程中不接触。光滑面约 1 mm 充填即可隔开壁面；粗糙波状面可能需要数毫米甚至数厘米。
+          </p>
+          <p>
+            残余摩擦角 <Km math={SYM.phiR} /> 仅供对照校核，不代入 Q。K、M 两档对应多种黏土状况，选中后在表上方选取。
+          </p>
+        </>
+      ),
     },
     Jw: {
       title: en ? <>Joint-water reduction <Km math={SYM.Jw} /></> : <>裂隙水状态 <Km math={SYM.Jw} /> 取值</>,
-      intro: en
-        ? <>Select the row that matches the observed inflow, using the approximate water-pressure column to settle borderline cases. Rows C–F are rough estimates: if drainage measures are installed, a larger <Km math={SYM.Jw} /> may be adopted. Special problems caused by ice formation are not covered by this table.</>
-        : <>按实测涌水情况点选一行，边界情况对照水压近似值列判断。C～F 各档均为粗略估计值，如采取排水措施，<Km math={SYM.Jw} /> 可适当取大。本表未考虑结冰引起的特殊问题。</>,
+      intro: en ? (
+        <>
+          <p>
+            <Km math={SYM.Jw} /> is the joint-water reduction factor. Water can soften or wash out mineral fill, lowering joint friction, and water pressure reduces normal stress so blocks shear more easily. With SRF it forms the active-stress quotient <Km math={SYM.Jw_over_SRF} />.
+          </p>
+          <p>
+            Rate the inflow and water pressure actually observed in the opening. The lowest values (<Km math={SYM.Jw} /> &lt; 0.2) imply severe stability problems. Isolated drips in a limited area correspond to 1.0; a trickle, small jets, or widespread dripping correspond to 0.66.
+          </p>
+          <p>
+            Rows C–F are crude estimates: increase <Km math={SYM.Jw} /> if the rock is drained or grouted. Inflow may vary with season or develop after excavation. Ice-related problems are not covered.
+          </p>
+        </>
+      ) : (
+        <>
+          <p>
+            <Km math={SYM.Jw} /> 为裂隙水折减系数。地下水可软化或冲走充填物、降低结构面摩擦，水压还会减小壁面法向应力，使块体更易剪切。它与 SRF 组成应力指标 <Km math={SYM.Jw_over_SRF} />。
+          </p>
+          <p>
+            按开挖中实际观测到的涌水量与水压取值。最低档（<Km math={SYM.Jw} /> &lt; 0.2）对应严重稳定问题。局部零星滴水取 1.0；集中细流、小股射流或大范围频繁滴水取 0.66。
+          </p>
+          <p>
+            C～F 各档为粗略估计，排水或注浆后可适当增大。涌水可能随季节变化，也可能在开挖后才出现。本表未考虑结冰问题。
+          </p>
+        </>
+      ),
     },
     SRF: {
       title: en ? <>Stress reduction factor <Km math={SYM.SRF} /></> : <>应力折减 <Km math={SYM.SRF} /> 取值</>,
-      intro: en
-        ? <>Pick the single governing condition among the four groups: weakness zones intersecting the excavation, rock-stress problems in competent rock, squeezing rock, and swelling rock. Only the first group is reproduced in full here; the remaining groups are abbreviated. Do not multiply unrelated branches together.</>
-        : <>在四类工况中只选一个控制性条件：软弱区穿切开挖体、坚硬完整岩体中的应力问题、塑性岩体挤压变形、膨胀岩化学膨胀。目前仅第（1）组按原表逐条列出，其余三组为简表。不要把无关分支叠乘。</>,
+      intro: en ? (
+        <>
+          <p>
+            SRF is the stress reduction factor. It describes the relationship between rock stress and rock strength around an underground opening. Effects may appear as spalling, slabbing, deformation, squeezing, dilatancy or block release, sometimes only days to months after excavation.
+          </p>
+          <p>
+            Choose the governing category first, then the rating from the table—do not multiply unrelated branches: (a) weakness zones intersecting the opening; (b) stress problems in competent rock; (c) squeezing of incompetent rock under moderate to high stress; (d) chemical swelling in the presence of water. Group (a) is listed in full here; the other groups are abbreviated.
+          </p>
+          <p>
+            In massive rock SRF may also be estimated from <Km math={String.raw`\sigma_c/\sigma_1`} /> or <Km math={String.raw`\sigma_\theta/\sigma_c`} />, but that relation is intended only where <Km math={String.raw`\mathrm{RQD}/J_n \gg 10`} />. Immediate mapping after blasting can miss delayed squeezing or joint growth.
+          </p>
+        </>
+      ) : (
+        <>
+          <p>
+            SRF 为应力折减系数，描述地下开挖周边地应力与岩石强度的关系。应力效应可表现为剥落、片帮、变形、挤出、扩容或块体松脱，有的要在开挖后数日、数周甚至数月才显现。
+          </p>
+          <p>
+            先判定所属类别，再按表取值，只取一个控制性条件，不要把无关分支叠乘：（a）软弱区穿切开挖体；（b）坚硬完整岩体中的应力问题；（c）软弱岩体在中–高应力下的塑性挤出；（d）有水时的化学膨胀。本窗口第（a）组按原表列出，其余三组为简表。
+          </p>
+          <p>
+            完整岩体中也可由 <Km math={String.raw`\sigma_c/\sigma_1`} /> 或 <Km math={String.raw`\sigma_\theta/\sigma_c`} /> 估算，但经验上仅当 <Km math={String.raw`\mathrm{RQD}/J_n \gg 10`} /> 时适用。爆破后立即编录可能低估滞后出现的挤出或新生节理。
+          </p>
+        </>
+      ),
     },
   }
 
@@ -262,7 +372,7 @@ export default function QClassificationPage({
           </section>
 
           <section data-testid="q-method-introduction" className={card}>
-            <h2 className={`mb-3 text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+            <h2 className={`mb-3 text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
               {en ? 'Barton rock-mass quality classification (Q)' : '巴顿岩体质量分类（Q）'}
             </h2>
             <p className={`mb-4 text-sm leading-relaxed ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -292,7 +402,7 @@ export default function QClassificationPage({
           </section>
 
           <section data-testid="q-group-block" className={card}>
-            <h2 className={`text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+            <h2 className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
               {en ? <>Rock structure · <Km math={SYM.RQD_over_Jn} /></> : <>岩体结构 / 块体尺寸 · <Km math={SYM.RQD_over_Jn} /></>}
             </h2>
             <p className={`mt-1 mb-3 text-sm leading-relaxed ${muted}`}>
@@ -334,7 +444,7 @@ export default function QClassificationPage({
           </section>
 
           <section data-testid="q-group-shear" className={card}>
-            <h2 className={`text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+            <h2 className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
               {en ? <>Joint shear · <Km math={SYM.Jr_over_Ja} /></> : <>节理抗剪 · <Km math={SYM.Jr_over_Ja} /></>}
             </h2>
             <p className={`mt-1 mb-3 text-sm leading-relaxed ${muted}`}>
@@ -375,7 +485,7 @@ export default function QClassificationPage({
           </section>
 
           <section data-testid="q-group-stress" className={card}>
-            <h2 className={`text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+            <h2 className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
               {en ? <>Active stress · <Km math={SYM.Jw_over_SRF} /></> : <>主动应力 · <Km math={SYM.Jw_over_SRF} /></>}
             </h2>
             <p className={`mt-1 mb-3 text-sm leading-relaxed ${muted}`}>

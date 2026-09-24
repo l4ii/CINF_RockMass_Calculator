@@ -46,6 +46,11 @@ export default function GsiScorePreview({ darkMode, language, state, result }: G
     ? (en ? <>Enter <Km math={SYM.JCond89} /> and <Km math={SYM.RQD} /> to show the class.</> : <>输入 <Km math={SYM.JCond89} /> 和 <Km math={SYM.RQD} /> 后显示正式等级</>)
     : (en ? 'Select a point on the chart to show the class.' : '在图上点选点位后显示正式等级')
   const gradeLine = result ? (en ? result.grade.labelEn : result.grade.label) : null
+  const quantitativeScaleA = state.surfaceMethod === 'jcond76'
+    ? <Km math={String.raw`2,mathrm{JCond}_{76}`} />
+    : state.surfaceMethod === 'jr_ja'
+      ? <Km math={String.raw`52.5,(J_r/J_a)/(1+J_r/J_a)`} />
+      : <Km math={SYM.JCond89_scaled} />
 
   const row = (label: ReactNode, value: ReactNode, done: boolean) => (
     <li className={`flex items-center justify-between rounded-lg px-2.5 py-2 text-sm ${done ? (darkMode ? 'bg-blue-950/35' : 'bg-blue-50/80') : (darkMode ? 'bg-gray-700/40' : 'bg-gray-50')}`}>
@@ -61,7 +66,7 @@ export default function GsiScorePreview({ darkMode, language, state, result }: G
 
   return (
     <aside className={panel} data-testid="gsi-result-preview">
-      <h3 className={`mb-1 text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Rating preview' : '分值预览'}</h3>
+      <h3 className={`mb-1 text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Rating preview' : '分值预览'}</h3>
       <p className={`mb-3 text-xs ${muted}`}>{en ? `${completedItems} / 2 selected` : `已选 ${completedItems} / 2 项`}</p>
       <ul className="space-y-2">
         {quantitative ? (
@@ -75,8 +80,20 @@ export default function GsiScorePreview({ darkMode, language, state, result }: G
             {row(en ? 'Surface condition' : '表面条件', surface ? (en ? surface.labelEn : surface.label) : '—', Boolean(surface))}
           </>
         )}
-        {row(en ? 'Scale A' : '刻度 A', scaleA == null ? '—' : scaleA, scaleA != null)}
-        {row(en ? 'Scale B' : '刻度 B', scaleB == null ? '—' : scaleB, scaleB != null)}
+        {row(
+          quantitative
+            ? (en ? <>Scale A ({quantitativeScaleA})</> : <>刻度 A（{quantitativeScaleA}）</>)
+            : (en ? 'Scale A' : '刻度 A'),
+          scaleA == null ? '—' : scaleA,
+          scaleA != null,
+        )}
+        {row(
+          quantitative
+            ? (en ? <>Scale B (<Km math={SYM.RQD_over_2} />)</> : <>刻度 B（<Km math={SYM.RQD_over_2} />）</>)
+            : (en ? 'Scale B' : '刻度 B'),
+          scaleB == null ? '—' : scaleB,
+          scaleB != null,
+        )}
       </ul>
       <div className={`mt-4 border-t pt-3 ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
         <div data-testid="gsi-preview-result">

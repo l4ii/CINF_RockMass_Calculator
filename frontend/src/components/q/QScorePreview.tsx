@@ -63,7 +63,7 @@ export default function QScorePreview({ darkMode, language, state, result }: QSc
 
   return (
     <aside className={panel} data-testid="q-result-preview">
-      <h3 className={`mb-1 text-base font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Rating preview' : '分值预览'}</h3>
+      <h3 className={`mb-1 text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{en ? 'Rating preview' : '分值预览'}</h3>
       <p className={`mb-3 text-xs ${muted}`}>{en ? `${completedItems} / 6 selected` : `已选 ${completedItems} / 6 项`}</p>
       <ul className="space-y-2">
         {row(<Km math={SYM.RQD} />, rqdReady ? `${state.rqd}%` : '—', rqdReady)}
