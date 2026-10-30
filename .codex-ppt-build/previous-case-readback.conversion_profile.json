@@ -1,0 +1,28 @@
+{
+  "schema": "ppt-master.source_to_md.profile.v1",
+  "converter": "ppt_to_md.py",
+  "conversion_type": "pptx",
+  "source": {
+    "path": "D:/软件/CINF_RockMass_Calculator/deliverables/岩体质量分级工作流程与工作量_终版2.pptx",
+    "name": "岩体质量分级工作流程与工作量_终版2.pptx",
+    "suffix": ".pptx",
+    "kind": "file",
+    "exists": true,
+    "size_bytes": 467082
+  },
+  "outputs": {
+    "markdown": "previous-case-readback.md",
+    "asset_dir": "previous-case-readback_files",
+    "image_manifest": "previous-case-readback_files/image_manifest.json",
+    "image_count": 3
+  },
+  "markdown": {
+    "line_count": 94,
+    "char_count": 837,
+    "heading_count": 3,
+    "table_count": 0,
+    "image_ref_count": 3,
+    "link_count": 0
+  },
+  "warnings": []
+}

@@ -1,0 +1,1209 @@
+{
+  "schema": "ppt-master.svg-quality-report.v1",
+  "stage": "final",
+  "target": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261026_reviewed",
+  "source_fingerprint": {
+    "algorithm": "sha256",
+    "digest": "7dec58041c25d828ca18e096ac6bd65f9f39c229e639a6b5760799ca334d8910",
+    "file_count": 14,
+    "files": [
+      {
+        "file": "01_cover.svg",
+        "sha256": "39857bf8f569fc4665773e13ebe55528e4c9cf4c9e244117f1868d23e3e74cf5"
+      },
+      {
+        "file": "02_contents.svg",
+        "sha256": "1b2d5221b96dd368fbe46d13eb287154c8b503d690281fe62d2cae58b2558805"
+      },
+      {
+        "file": "03_section_background.svg",
+        "sha256": "44005187f2e6f2d5e4f31c6fda81ef258abc2895a8f753c618afa34cc3f6fad3"
+      },
+      {
+        "file": "04_background_pain.svg",
+        "sha256": "29ff9907a9930968d2c91405cbacc9bfbdfa663eb326d78bfe251bc62cc05603"
+      },
+      {
+        "file": "05_solution.svg",
+        "sha256": "224eeadfa737b6553cc70c57268191175874f4530a9bbc6f5f68d7d47e18b1cc"
+      },
+      {
+        "file": "06_section_innovation.svg",
+        "sha256": "1fed4983fb2c1dd2617e8391418128877d5073a34fe42458c5b5b0cac650244c"
+      },
+      {
+        "file": "07_formula_collection.svg",
+        "sha256": "2bb8cc1f3816ae13a6097683ae104e47eef20f2fc55a84871ac4033f09f5cc6f"
+      },
+      {
+        "file": "08_traceability.svg",
+        "sha256": "8bd87db63e5bad0ed9caaac0654c8ddfe6dfd6a81a50edca9f37baa5ad39e68f"
+      },
+      {
+        "file": "09_local_model.svg",
+        "sha256": "2d09065bbc3ed3977cb5a958b7b5f467ae5678f5414a1a39aac25e36320e141c"
+      },
+      {
+        "file": "10_image_assistant.svg",
+        "sha256": "f0b5eca24fefedb1f8fcf4e34f933684dc2079c9755ed493e7d3489166dd57c3"
+      },
+      {
+        "file": "11_section_application.svg",
+        "sha256": "b900e167a9490235e0cca462a85072a2b39382e18a7538c15b528fc7177c9ffd"
+      },
+      {
+        "file": "12_software_report.svg",
+        "sha256": "6ce07592e48f4e154b2b3f635d2a24ac5dc7cac5c1edb4327b629a95f17b25c4"
+      },
+      {
+        "file": "13_application_value.svg",
+        "sha256": "c40efea748d8f02c8cd2aad8e000e4d0d0ae8abcc13fa79904ac5663d0440307"
+      },
+      {
+        "file": "14_summary_thanks.svg",
+        "sha256": "c0ee44d09c004f7879a675028482313965fbb4978d16f974fe1ae0efb383c140"
+      }
+    ]
+  },
+  "summary": {
+    "total": 14,
+    "passed": 0,
+    "warnings": 14,
+    "errors": 0
+  },
+  "issue_types": {},
+  "categories": {
+    "blocking": {
+      "count": 0,
+      "issues": []
+    },
+    "introduced": {
+      "count": 14,
+      "issues": [
+        {
+          "file": "01_cover.svg",
+          "message": "13 ungrouped top-level Slide-local element(s) in svg_output (<polygon> #2, <polygon> #3, <polygon> #4, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+        },
+        {
+          "file": "02_contents.svg",
+          "message": "12 ungrouped top-level Slide-local element(s) in svg_output (<text> #3, <text> #4, <line> #5, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+        },
+        {
+          "file": "03_section_background.svg",
+          "message": "9 ungrouped top-level Slide-local element(s) in svg_output (<polygon> #2, <polygon> #3, <polygon> #4, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+        },
+        {
+          "file": "04_background_pain.svg",
+          "message": "39 ungrouped top-level Slide-local element(s) in svg_output (<text> #3, <text> #4, <text> #5, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+        },
+        {
+          "file": "05_solution.svg",
+          "message": "32 ungrouped top-level Slide-local element(s) in svg_output (<text> #3, <text> #4, <text> #5, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+        },
+        {
+          "file": "06_section_innovation.svg",
+          "message": "9 ungrouped top-level Slide-local element(s) in svg_output (<polygon> #2, <polygon> #3, <polygon> #4, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+        },
+        {
+          "file": "07_formula_collection.svg",
+          "message": "27 ungrouped top-level Slide-local element(s) in svg_output (<text> #3, <text> #4, <text> #5, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+        },
+        {
+          "file": "08_traceability.svg",
+          "message": "31 ungrouped top-level Slide-local element(s) in svg_output (<text> #3, <text> #4, <text> #5, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+        },
+        {
+          "file": "09_local_model.svg",
+          "message": "28 ungrouped top-level Slide-local element(s) in svg_output (<text> #3, <text> #4, <rect> #5, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+        },
+        {
+          "file": "10_image_assistant.svg",
+          "message": "23 ungrouped top-level Slide-local element(s) in svg_output (<text> #3, <text> #4, <rect> #5, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+        },
+        {
+          "file": "11_section_application.svg",
+          "message": "9 ungrouped top-level Slide-local element(s) in svg_output (<polygon> #2, <polygon> #3, <polygon> #4, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+        },
+        {
+          "file": "12_software_report.svg",
+          "message": "13 ungrouped top-level Slide-local element(s) in svg_output (<text> #3, <text> #4, <text> #5, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+        },
+        {
+          "file": "13_application_value.svg",
+          "message": "35 ungrouped top-level Slide-local element(s) in svg_output (<text> #3, <text> #4, <rect> #5, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+        },
+        {
+          "file": "14_summary_thanks.svg",
+          "message": "17 ungrouped top-level Slide-local element(s) in svg_output (<polygon> #2, <polygon> #3, <text> #4, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+        }
+      ]
+    },
+    "inherited": {
+      "count": 0,
+      "issues": []
+    },
+    "source-import": {
+      "count": 0,
+      "summary": {
+        "warning_count": 0,
+        "by_code": {}
+      }
+    }
+  },
+  "drift": {
+    "colors": {
+      "#173F56": [
+        "01_cover.svg",
+        "04_background_pain.svg",
+        "05_solution.svg",
+        "08_traceability.svg",
+        "09_local_model.svg",
+        "10_image_assistant.svg",
+        "12_software_report.svg",
+        "13_application_value.svg"
+      ]
+    },
+    "fonts": {
+      "Arial": [
+        "01_cover.svg",
+        "02_contents.svg",
+        "03_section_background.svg",
+        "04_background_pain.svg",
+        "05_solution.svg",
+        "06_section_innovation.svg",
+        "07_formula_collection.svg",
+        "08_traceability.svg",
+        "09_local_model.svg",
+        "10_image_assistant.svg",
+        "11_section_application.svg",
+        "12_software_report.svg",
+        "13_application_value.svg",
+        "14_summary_thanks.svg"
+      ],
+      "Consolas": [
+        "08_traceability.svg"
+      ]
+    },
+    "sizes": {
+      "62": [
+        "01_cover.svg"
+      ]
+    }
+  },
+  "carrier_receipt": {
+    "scope": "informational-not-a-quota",
+    "pages": 14,
+    "totals": {
+      "text_elements": 202,
+      "image_placements": 2,
+      "icons": 0,
+      "svg_geometry_elements": 125,
+      "preset_shapes": 0,
+      "page_frame_elements": 0,
+      "marker_uses": 0,
+      "inline_emphasis_runs": 0,
+      "gradient_uses": 0,
+      "filter_uses": 0,
+      "text_effects": 0
+    },
+    "pages_with": {
+      "images": 1,
+      "icons": 0,
+      "presets": 0,
+      "charts": 0,
+      "tables": 0,
+      "formulas": 0,
+      "inline_emphasis_runs": 0,
+      "gradient_uses": 0,
+      "filter_uses": 0,
+      "text_effects": 0
+    },
+    "relationship_pages": 0,
+    "geometry_elements": {
+      "circle": 13,
+      "ellipse": 0,
+      "line": 35,
+      "path": 0,
+      "polygon": 15,
+      "polyline": 0,
+      "rect": 62
+    },
+    "preset_names": {},
+    "native_objects": {
+      "chart": 0,
+      "formula_block": 0,
+      "formula_inline": 0,
+      "other": 0,
+      "table": 0
+    },
+    "image_page_max_frame_share_range": [
+      0.2921,
+      0.2921
+    ]
+  },
+  "project_issues": {
+    "template": [],
+    "animation": [],
+    "illustration": [],
+    "communication_trace": [],
+    "pptx_structure": []
+  },
+  "files": [
+    {
+      "file": "01_cover.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261026_reviewed\\svg_output\\01_cover.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [
+        "13 ungrouped top-level Slide-local element(s) in svg_output (<polygon> #2, <polygon> #3, <polygon> #4, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+      ],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 8,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 1,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 1,
+              "polyline": 0,
+              "polygon": 4,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 0,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 8,
+        "tspan_elements": 0,
+        "contextual_values": {
+          "colors": [
+            "#173F56"
+          ],
+          "font_families": [
+            "Arial"
+          ]
+        },
+        "sparse_typography_sizes": {
+          "62": 2
+        }
+      },
+      "passed": true,
+      "source_sha256": "39857bf8f569fc4665773e13ebe55528e4c9cf4c9e244117f1868d23e3e74cf5"
+    },
+    {
+      "file": "02_contents.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261026_reviewed\\svg_output\\02_contents.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [
+        "12 ungrouped top-level Slide-local element(s) in svg_output (<text> #3, <text> #4, <line> #5, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+      ],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 13,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 1,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 1,
+              "polyline": 0,
+              "polygon": 0,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 0,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 13,
+        "tspan_elements": 0,
+        "contextual_values": {
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "1b2d5221b96dd368fbe46d13eb287154c8b503d690281fe62d2cae58b2558805"
+    },
+    {
+      "file": "03_section_background.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261026_reviewed\\svg_output\\03_section_background.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [
+        "9 ungrouped top-level Slide-local element(s) in svg_output (<polygon> #2, <polygon> #3, <polygon> #4, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+      ],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 5,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 1,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 1,
+              "polyline": 0,
+              "polygon": 3,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 0,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 5,
+        "tspan_elements": 0,
+        "contextual_values": {
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "44005187f2e6f2d5e4f31c6fda81ef258abc2895a8f753c618afa34cc3f6fad3"
+    },
+    {
+      "file": "04_background_pain.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261026_reviewed\\svg_output\\04_background_pain.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [
+        "39 ungrouped top-level Slide-local element(s) in svg_output (<text> #3, <text> #4, <text> #5, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+      ],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 23,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 15,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 4,
+              "polyline": 0,
+              "polygon": 0,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 0,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 23,
+        "tspan_elements": 0,
+        "contextual_values": {
+          "colors": [
+            "#173F56"
+          ],
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "29ff9907a9930968d2c91405cbacc9bfbdfa663eb326d78bfe251bc62cc05603"
+    },
+    {
+      "file": "05_solution.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261026_reviewed\\svg_output\\05_solution.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [
+        "32 ungrouped top-level Slide-local element(s) in svg_output (<text> #3, <text> #4, <text> #5, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+      ],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 23,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 3,
+              "circle": 5,
+              "ellipse": 0,
+              "line": 4,
+              "polyline": 0,
+              "polygon": 0,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 0,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 23,
+        "tspan_elements": 0,
+        "contextual_values": {
+          "colors": [
+            "#173F56"
+          ],
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "224eeadfa737b6553cc70c57268191175874f4530a9bbc6f5f68d7d47e18b1cc"
+    },
+    {
+      "file": "06_section_innovation.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261026_reviewed\\svg_output\\06_section_innovation.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [
+        "9 ungrouped top-level Slide-local element(s) in svg_output (<polygon> #2, <polygon> #3, <polygon> #4, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+      ],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 5,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 1,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 1,
+              "polyline": 0,
+              "polygon": 3,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 0,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 5,
+        "tspan_elements": 0,
+        "contextual_values": {
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "1fed4983fb2c1dd2617e8391418128877d5073a34fe42458c5b5b0cac650244c"
+    },
+    {
+      "file": "07_formula_collection.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261026_reviewed\\svg_output\\07_formula_collection.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [
+        "27 ungrouped top-level Slide-local element(s) in svg_output (<text> #3, <text> #4, <text> #5, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+      ],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 20,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 8,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 2,
+              "polyline": 0,
+              "polygon": 0,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 0,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 20,
+        "tspan_elements": 0,
+        "contextual_values": {
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "2bb8cc1f3816ae13a6097683ae104e47eef20f2fc55a84871ac4033f09f5cc6f"
+    },
+    {
+      "file": "08_traceability.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261026_reviewed\\svg_output\\08_traceability.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [
+        "31 ungrouped top-level Slide-local element(s) in svg_output (<text> #3, <text> #4, <text> #5, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+      ],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 20,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 9,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 5,
+              "polyline": 0,
+              "polygon": 0,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 0,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Consolas",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 20,
+        "tspan_elements": 0,
+        "contextual_values": {
+          "colors": [
+            "#173F56"
+          ],
+          "font_families": [
+            "Arial",
+            "Consolas"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "8bd87db63e5bad0ed9caaac0654c8ddfe6dfd6a81a50edca9f37baa5ad39e68f"
+    },
+    {
+      "file": "09_local_model.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261026_reviewed\\svg_output\\09_local_model.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [
+        "28 ungrouped top-level Slide-local element(s) in svg_output (<text> #3, <text> #4, <rect> #5, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+      ],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 18,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 9,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 4,
+              "polyline": 0,
+              "polygon": 0,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 0,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 18,
+        "tspan_elements": 0,
+        "contextual_values": {
+          "colors": [
+            "#173F56"
+          ],
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "2d09065bbc3ed3977cb5a958b7b5f467ae5678f5414a1a39aac25e36320e141c"
+    },
+    {
+      "file": "10_image_assistant.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261026_reviewed\\svg_output\\10_image_assistant.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [
+        "23 ungrouped top-level Slide-local element(s) in svg_output (<text> #3, <text> #4, <rect> #5, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+      ],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 16,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 3,
+              "circle": 4,
+              "ellipse": 0,
+              "line": 3,
+              "polyline": 0,
+              "polygon": 0,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 0,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 16,
+        "tspan_elements": 0,
+        "contextual_values": {
+          "colors": [
+            "#173F56"
+          ],
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "f0b5eca24fefedb1f8fcf4e34f933684dc2079c9755ed493e7d3489166dd57c3"
+    },
+    {
+      "file": "11_section_application.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261026_reviewed\\svg_output\\11_section_application.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [
+        "9 ungrouped top-level Slide-local element(s) in svg_output (<polygon> #2, <polygon> #3, <polygon> #4, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+      ],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 5,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 1,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 1,
+              "polyline": 0,
+              "polygon": 3,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 0,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 5,
+        "tspan_elements": 0,
+        "contextual_values": {
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "b900e167a9490235e0cca462a85072a2b39382e18a7538c15b528fc7177c9ffd"
+    },
+    {
+      "file": "12_software_report.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261026_reviewed\\svg_output\\12_software_report.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [
+        "13 ungrouped top-level Slide-local element(s) in svg_output (<text> #3, <text> #4, <text> #5, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+      ],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 10,
+          "images": {
+            "placements": 2,
+            "files": [
+              "01-rmr-calculation.png",
+              "03-engineering-overview.png"
+            ],
+            "max_frame_share": 0.2921
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 4,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 0,
+              "polyline": 0,
+              "polygon": 0,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 0,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 10,
+        "tspan_elements": 0,
+        "contextual_values": {
+          "colors": [
+            "#173F56"
+          ],
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "6ce07592e48f4e154b2b3f635d2a24ac5dc7cac5c1edb4327b629a95f17b25c4"
+    },
+    {
+      "file": "13_application_value.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261026_reviewed\\svg_output\\13_application_value.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [
+        "35 ungrouped top-level Slide-local element(s) in svg_output (<text> #3, <text> #4, <rect> #5, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+      ],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 23,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 5,
+              "circle": 4,
+              "ellipse": 0,
+              "line": 6,
+              "polyline": 0,
+              "polygon": 0,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 0,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 23,
+        "tspan_elements": 0,
+        "contextual_values": {
+          "colors": [
+            "#173F56"
+          ],
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "c40efea748d8f02c8cd2aad8e000e4d0d0ae8abcc13fa79904ac5663d0440307"
+    },
+    {
+      "file": "14_summary_thanks.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261026_reviewed\\svg_output\\14_summary_thanks.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [
+        "17 ungrouped top-level Slide-local element(s) in svg_output (<polygon> #2, <polygon> #3, <text> #4, ...); group only logical content units in a top-level <g id=\"...\">. Keep genuine static page framing as a root primitive and declare a supported data-pptx-role such as \"background\" or \"decoration\""
+      ],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 13,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 1,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 2,
+              "polyline": 0,
+              "polygon": 2,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 0,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 13,
+        "tspan_elements": 0,
+        "contextual_values": {
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "c0ee44d09c004f7879a675028482313965fbb4978d16f974fe1ae0efb383c140"
+    }
+  ]
+}

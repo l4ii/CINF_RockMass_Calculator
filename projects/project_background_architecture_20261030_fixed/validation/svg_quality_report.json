@@ -1,0 +1,112 @@
+{
+  "schema": "ppt-master.svg-quality-report.v1",
+  "stage": "final",
+  "target": "D:\\软件\\CINF_RockMass_Calculator\\projects\\project_background_architecture_20261030_fixed",
+  "source_fingerprint": {
+    "algorithm": "sha256",
+    "digest": "845caef6beebe00088b80950a7105219cc571ec3fb946454d736d1968844af04",
+    "file_count": 1,
+    "files": [
+      {
+        "file": "authoring-svg-flat/slide_01.svg",
+        "sha256": "424036c37a08d0d0754a9552b4cffc5e7f61cae7d0ff05bc940d2ed71bf9f60c"
+      }
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "passed": 1,
+    "warnings": 0,
+    "errors": 0
+  },
+  "issue_types": {},
+  "categories": {
+    "blocking": {
+      "count": 0,
+      "issues": []
+    },
+    "introduced": {
+      "count": 0,
+      "issues": []
+    },
+    "inherited": {
+      "count": 0,
+      "issues": []
+    },
+    "source-import": {
+      "count": 0,
+      "summary": {
+        "warning_count": 0,
+        "by_code": {}
+      }
+    }
+  },
+  "drift": {
+    "colors": {},
+    "fonts": {},
+    "sizes": {}
+  },
+  "carrier_receipt": {
+    "scope": "informational-not-a-quota",
+    "pages": 0,
+    "totals": {
+      "text_elements": 0,
+      "image_placements": 0,
+      "icons": 0,
+      "svg_geometry_elements": 0,
+      "preset_shapes": 0,
+      "page_frame_elements": 0,
+      "marker_uses": 0,
+      "inline_emphasis_runs": 0,
+      "gradient_uses": 0,
+      "filter_uses": 0,
+      "text_effects": 0
+    },
+    "pages_with": {
+      "images": 0,
+      "icons": 0,
+      "presets": 0,
+      "charts": 0,
+      "tables": 0,
+      "formulas": 0,
+      "inline_emphasis_runs": 0,
+      "gradient_uses": 0,
+      "filter_uses": 0,
+      "text_effects": 0
+    },
+    "relationship_pages": null,
+    "geometry_elements": {},
+    "preset_names": {},
+    "native_objects": {},
+    "image_page_max_frame_share_range": []
+  },
+  "project_issues": {
+    "template": [],
+    "animation": [],
+    "illustration": [],
+    "communication_trace": [],
+    "pptx_structure": []
+  },
+  "files": [
+    {
+      "file": "slide_01.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\project_background_architecture_20261030_fixed\\authoring-svg-flat\\slide_01.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": {
+        "output_page": 1,
+        "source_slide": 1,
+        "viewbox": "0 0 1280 720",
+        "edited_text_elements": 27,
+        "roundtrip_text_calibration": {
+          "factor": 0.024146118721461107,
+          "measured_unchanged": 13,
+          "positive_unchanged": 1
+        }
+      },
+      "passed": true,
+      "source_sha256": "424036c37a08d0d0754a9552b4cffc5e7f61cae7d0ff05bc940d2ed71bf9f60c"
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="1279.9999" height="720" viewBox="0 0 1279.9999 720" font-family="&quot;Microsoft YaHei&quot;, sans-serif"><rect x="0" y="0" width="1280" height="720" fill="#FBFCFC" />
+<g id="shape-2" data-pptx-object="shape" data-pptx-frame="0 0 1280 6.72" data-pptx-prst="rect" data-pptx-source-ref="slide:2" data-pptx-semantic-object="shape">
+<path d="M 0 0 L 1280 0 L 1280 6.72 L 0 6.72 Z" fill="#E86A2C" stroke="none" stroke-width="1" data-pptx-part="geometry" />
+
+
+</g>
+<g id="shape-3" data-pptx-object="shape" data-pptx-frame="65.28 31.68 7.68 74.88" data-pptx-prst="rect" data-pptx-source-ref="slide:3" data-pptx-semantic-object="shape">
+<path d="M 65.28 31.68 L 72.96 31.68 L 72.96 106.56 L 65.28 106.56 Z" fill="#05A7D2" stroke="none" stroke-width="1" data-pptx-part="geometry" />
+
+
+</g>
+<g id="shape-4" data-pptx-object="shape" data-pptx-frame="86.4 32.64 624 24" data-pptx-prst="rect" data-pptx-source-ref="slide:4" data-pptx-semantic-object="shape">
+<path d="M 86.4 32.64 L 710.4 32.64 L 710.4 56.64 L 86.4 56.64 Z" fill="none" data-pptx-part="geometry" />
+
+
+<text x="90.24" y="49.81333333" text-anchor="start" xml:space="preserve" font-size="13.33" fill="#05A7D2" font-weight="bold" data-pptx-text-baseline="metrics-v1">02 核心创新点</text>
+</g>
+<g id="shape-5" data-pptx-object="shape" data-pptx-frame="86.4 59.52 1132.8 59.52" data-pptx-prst="rect" data-pptx-source-ref="slide:5" data-pptx-semantic-object="shape">
+<path d="M 86.4 59.52 L 1219.2 59.52 L 1219.2 119.04 L 86.4 119.04 Z" fill="none" data-pptx-part="geometry" />
+
+
+<text x="90.24" y="95.36" text-anchor="start" xml:space="preserve" font-size="33.33" fill="#242B33" font-weight="bold" data-pptx-text-baseline="metrics-v1">创新点二：多模态视觉分析融入岩体评价流程</text>
+</g>
+<g id="shape-6" data-pptx-object="connector" data-pptx-frame="69.12 673.92 1142.4 0" data-pptx-prst="line" data-pptx-source-ref="slide:6" data-pptx-semantic-object="shape">
+<path d="M 69.12 673.92 L 1211.52 673.92" stroke-width="1.06667" stroke="#D7E0E3" fill="none" data-pptx-part="geometry" />
+
+</g>
+<g id="shape-7" data-pptx-object="shape" data-pptx-frame="72 679.68 1046.4 21.12" data-pptx-prst="rect" data-pptx-source-ref="slide:7" data-pptx-semantic-object="shape">
+<path d="M 72 679.68 L 1118.4 679.68 L 1118.4 700.8 L 72 700.8 Z" fill="none" data-pptx-part="geometry" />
+
+
+<text x="75.84" y="695.52" text-anchor="start" xml:space="preserve" font-size="12" fill="#687581" data-pptx-text-baseline="metrics-v1">来源：项目方提供的目标能力描述；仓库未验证完整视觉链路，实测素材待补。</text>
+</g>
+<g id="shape-8" data-pptx-object="shape" data-pptx-frame="1152 678.72 52.8 22.08" data-pptx-prst="rect" data-pptx-source-ref="slide:8" data-pptx-semantic-object="shape">
+<path d="M 1152 678.72 L 1204.8 678.72 L 1204.8 700.8 L 1152 700.8 Z" fill="none" data-pptx-part="geometry" />
+
+
+<text x="1200.96" y="695.89333333" text-anchor="end" xml:space="preserve" font-size="13.33" fill="#05A7D2" font-weight="bold" data-pptx-text-baseline="metrics-v1">08</text>
+</g>
+<g id="shape-9" data-pptx-object="shape" data-pptx-frame="933.12 35.52 246.72 24" data-pptx-prst="rect" data-pptx-source-ref="slide:9" data-pptx-semantic-object="shape">
+<path d="M 933.12 35.52 L 1179.84 35.52 L 1179.84 59.52 L 933.12 59.52 Z" fill="none" data-pptx-part="geometry" />
+
+
+<text x="1176" y="52.69333333" text-anchor="end" xml:space="preserve" font-size="13.33" fill="#E86A2C" font-weight="bold" data-pptx-text-baseline="metrics-v1">流程示意 · 识别结果待实测</text>
+</g>
+<g id="shape-10" data-pptx-object="shape" data-pptx-frame="84.48 161.28 398.4 241.92" data-pptx-prst="rect" data-pptx-source-ref="slide:10" data-pptx-semantic-object="shape">
+<path d="M 84.48 161.28 L 482.88 161.28 L 482.88 403.2 L 84.48 403.2 Z" fill="#F3F7F8" stroke-width="1.73333" stroke="#05A7D2" stroke-dasharray="4 4" data-pptx-part="geometry" />
+
+
+</g>
+<g id="shape-11" data-pptx-object="shape" data-pptx-frame="99.84 237.85 367.68 40.32" data-pptx-prst="rect" data-pptx-source-ref="slide:11" data-pptx-semantic-object="shape">
+<path d="M 99.84 237.85 L 467.52 237.85 L 467.52 278.17 L 99.84 278.17 Z" fill="none" data-pptx-part="geometry" />
+
+
+<text x="283.68" y="265.20955381" text-anchor="middle" xml:space="preserve" font-size="21.33" fill="#05A7D2" font-weight="bold" data-pptx-text-baseline="metrics-v1">粘贴现场图像</text>
+</g>
+<g id="shape-12" data-pptx-object="shape" data-pptx-frame="101.76 287.08 363.84 52.8" data-pptx-prst="rect" data-pptx-source-ref="slide:12" data-pptx-semantic-object="shape">
+<path d="M 101.76 287.08 L 465.6 287.08 L 465.6 339.88 L 101.76 339.88 Z" fill="none" data-pptx-part="geometry" />
+
+
+<text x="283.68" y="305.58498688" text-anchor="middle" xml:space="preserve" font-size="14.67" fill="#687581" data-pptx-text-baseline="metrics-v1">使用实际采集的工程图像</text>
+</g>
+<g id="shape-13" data-pptx-object="shape" data-pptx-frame="494.4 256.32 52.8 38.4" data-pptx-prst="rect" data-pptx-source-ref="slide:13" data-pptx-semantic-object="shape">
+<path d="M 494.4 256.32 L 547.2 256.32 L 547.2 294.72 L 494.4 294.72 Z" fill="none" data-pptx-part="geometry" />
+
+
+<text x="520.8" y="290.82666667" text-anchor="middle" xml:space="preserve" font-size="32" fill="#E86A2C" font-weight="bold" data-pptx-text-baseline="metrics-v1">→</text>
+</g>
+<g id="shape-14" data-pptx-object="shape" data-pptx-frame="566.4 190.08 151.68 178.56" data-pptx-prst="rect" data-pptx-source-ref="slide:14" data-pptx-semantic-object="shape">
+<path d="M 566.4 190.08 L 718.08 190.08 L 718.08 368.64 L 566.4 368.64 Z" fill="#E9F5F8" stroke-width="1.2" stroke="#B9DCE5" data-pptx-part="geometry" />
+
+
+</g>
+<g id="shape-15" data-pptx-object="shape" data-pptx-frame="577.92 237.12 128.64 76.8" data-pptx-prst="rect" data-pptx-source-ref="slide:15" data-pptx-semantic-object="shape">
+<path d="M 577.92 237.12 L 706.56 237.12 L 706.56 313.92 L 577.92 313.92 Z" fill="none" data-pptx-part="geometry" />
+
+
+<text x="642.24" y="269.92" text-anchor="middle" xml:space="preserve" font-size="21.33" fill="#242B33" font-weight="bold" data-pptx-text-baseline="metrics-v1" data-pptx-text-model="paragraphs" data-paragraph-line-height="25.6"><tspan><tspan>视觉分析</tspan></tspan><tspan><tspan>特征与依据</tspan></tspan></text>
+</g>
+<g id="shape-16" data-pptx-object="shape" data-pptx-frame="731.52 256.32 52.8 38.4" data-pptx-prst="rect" data-pptx-source-ref="slide:16" data-pptx-semantic-object="shape">
+<path d="M 731.52 256.32 L 784.32 256.32 L 784.32 294.72 L 731.52 294.72 Z" fill="none" data-pptx-part="geometry" />
+
+
+<text x="757.92" y="290.82666667" text-anchor="middle" xml:space="preserve" font-size="32" fill="#E86A2C" font-weight="bold" data-pptx-text-baseline="metrics-v1">→</text>
+</g>
+<g id="shape-17" data-pptx-object="shape" data-pptx-frame="801.6 161.28 391.68 241.92" data-pptx-prst="rect" data-pptx-source-ref="slide:17" data-pptx-semantic-object="shape">
+<path d="M 801.6 161.28 L 1193.28 161.28 L 1193.28 403.2 L 801.6 403.2 Z" fill="#F3F7F8" stroke-width="1.73333" stroke="#05A7D2" stroke-dasharray="4 4" data-pptx-part="geometry" />
+
+
+</g>
+<g id="shape-18" data-pptx-object="shape" data-pptx-frame="816.96 237.85 360.96 40.32" data-pptx-prst="rect" data-pptx-source-ref="slide:18" data-pptx-semantic-object="shape">
+<path d="M 816.96 237.85 L 1177.92 237.85 L 1177.92 278.17 L 816.96 278.17 Z" fill="none" data-pptx-part="geometry" />
+
+
+<text x="997.44" y="265.20955381" text-anchor="middle" xml:space="preserve" font-size="21.33" fill="#05A7D2" font-weight="bold" data-pptx-text-baseline="metrics-v1">粘贴识别结果</text>
+</g>
+<g id="shape-19" data-pptx-object="shape" data-pptx-frame="818.88 287.08 357.12 52.8" data-pptx-prst="rect" data-pptx-source-ref="slide:19" data-pptx-semantic-object="shape">
+<path d="M 818.88 287.08 L 1176 287.08 L 1176 339.88 L 818.88 339.88 Z" fill="none" data-pptx-part="geometry" />
+
+
+<text x="997.44" y="305.58498688" text-anchor="middle" xml:space="preserve" font-size="14.67" fill="#687581" data-pptx-text-baseline="metrics-v1">候选参数、特征依据或智能体解释</text>
+</g>
+<g id="shape-20" data-pptx-object="shape" data-pptx-frame="84.48 422.4 398.4 28.8" data-pptx-prst="rect" data-pptx-source-ref="slide:20" data-pptx-semantic-object="shape">
+<path d="M 84.48 422.4 L 482.88 422.4 L 482.88 451.2 L 84.48 451.2 Z" fill="none" data-pptx-part="geometry" />
+
+
+<text x="283.68" y="443.57333333" text-anchor="middle" xml:space="preserve" font-size="17.33" fill="#687581" data-pptx-text-baseline="metrics-v1">图像输入</text>
+</g>
+<g id="shape-21" data-pptx-object="shape" data-pptx-frame="549.12 422.4 187.2 28.8" data-pptx-prst="rect" data-pptx-source-ref="slide:21" data-pptx-semantic-object="shape">
+<path d="M 549.12 422.4 L 736.32 422.4 L 736.32 451.2 L 549.12 451.2 Z" fill="none" data-pptx-part="geometry" />
+
+
+<text x="642.72" y="443.57333333" text-anchor="middle" xml:space="preserve" font-size="17.33" fill="#E86A2C" font-weight="bold" data-pptx-text-baseline="metrics-v1">工程师确认</text>
+</g>
+<g id="shape-22" data-pptx-object="shape" data-pptx-frame="801.6 422.4 391.68 28.8" data-pptx-prst="rect" data-pptx-source-ref="slide:22" data-pptx-semantic-object="shape">
+<path d="M 801.6 422.4 L 1193.28 422.4 L 1193.28 451.2 L 801.6 451.2 Z" fill="none" data-pptx-part="geometry" />
+
+
+<text x="997.44" y="443.57333333" text-anchor="middle" xml:space="preserve" font-size="17.33" fill="#687581" data-pptx-text-baseline="metrics-v1">点位记录与分级计算</text>
+</g>
+<g id="shape-23" data-pptx-object="connector" data-pptx-frame="84.48 497.28 1108.8 0" data-pptx-prst="line" data-pptx-source-ref="slide:23" data-pptx-semantic-object="shape">
+<path d="M 84.48 497.28 L 1193.28 497.28" stroke-width="1.33333" stroke="#D7E0E3" fill="none" data-pptx-part="geometry" />
+
+</g>
+<g id="shape-24" data-pptx-object="shape" data-pptx-frame="87.36 529.92 1099.2 51.84" data-pptx-prst="rect" data-pptx-source-ref="slide:24" data-pptx-semantic-object="shape">
+<path d="M 87.36 529.92 L 1186.56 529.92 L 1186.56 581.76 L 87.36 581.76 Z" fill="none" data-pptx-part="geometry" />
+
+
+<text x="636.96" y="563.04" text-anchor="middle" xml:space="preserve" font-size="21.33" fill="#242B33" font-weight="bold" data-pptx-text-baseline="metrics-v1">图像识别为参数判断提供现场信息和可核对依据；最终采用值由工程师结合工程条件确认。</text>
+</g></svg>

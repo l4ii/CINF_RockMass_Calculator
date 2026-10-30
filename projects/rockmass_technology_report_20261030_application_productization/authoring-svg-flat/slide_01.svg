@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="1279.9999" height="720" viewBox="0 0 1279.9999 720" font-family="&quot;楷体&quot;, sans-serif"><defs><clipPath id="clip1" clipPathUnits="userSpaceOnUse"><path d="M 0.31521 0.00185 L 0.65084 0.00185 L 0.77446 0.99704 L 0.31521 0.99704 Z" /></clipPath><linearGradient id="ggrad1" x1="0.5" y1="0" x2="0.5" y2="1"><stop offset="0" stop-color="#F9A618" /><stop offset="0.74" stop-color="#DA6E2D" stop-opacity="0.9" /><stop offset="1" stop-color="#CC382E" /></linearGradient></defs><rect x="0" y="0" width="1280" height="720" fill="#FFFFFF" />
+<g id="shape-24" data-pptx-object="picture" data-pptx-frame="0 0 504.22 720" data-pptx-source-ref="slide:24">
+<svg data-pptx-object="picture" data-pptx-frame="0 0 504.22 720" data-pptx-crop="1" x="0" y="0" width="504.22" height="720" viewBox="0.31521 0.00185 0.45925 0.99519" preserveAspectRatio="none" overflow="hidden"><image clip-path="url(#clip1)" href="../images/image6.png" x="0" y="0" width="1" height="1" preserveAspectRatio="none" /></svg>
+</g>
+<g id="shape-9" data-pptx-object="group" data-pptx-frame="238.1 0 266.62 720" data-pptx-source-ref="slide:9">
+<g id="shape-15" data-pptx-object="shape" data-pptx-frame="238.1 0 266.62 720" data-pptx-prst="triangle" data-pptx-av-adj="val 48937" data-pptx-source-ref="slide:15" data-pptx-semantic-object="shape">
+<path d="M 238.1 720 L 368.57 0 L 504.71 720 Z" fill="url(#ggrad1)" stroke="none" stroke-width="1" data-pptx-part="geometry" />
+
+
+</g>
+<g id="shape-17" data-pptx-object="shape" data-pptx-frame="368.82 0.67 134.31 359.67" data-pptx-prst="triangle" data-pptx-av-adj="val 50558" transform="translate(435.97 180.5) scale(1 -1) translate(-435.97 -180.5)" data-pptx-source-ref="slide:17" data-pptx-semantic-object="shape">
+<path d="M 368.82 360.33 L 436.72 0.67 L 503.13 360.33 Z" fill="#FDD305" fill-opacity="0.9" stroke="none" stroke-width="1" data-pptx-part="geometry" />
+
+
+</g>
+</g>
+<g id="shape-26" data-pptx-object="shape" data-pptx-frame="512.8 650.8 686 35.4" data-pptx-prst="rect" data-pptx-source-ref="slide:26" data-pptx-semantic-object="shape">
+<path d="M 512.8 650.8 L 1198.8 650.8 L 1198.8 686.2 L 512.8 686.2 Z" fill="none" stroke="none" data-pptx-part="geometry" />
+
+
+<text x="855.8" y="675.6" text-anchor="middle" xml:space="preserve" font-size="21.33" fill="#808080" font-weight="bold" data-pptx-text-baseline="metrics-v1"><tspan>致力</tspan><tspan>于成为世界一流的矿山和重有色</tspan><tspan>冶金领域的综合解决方案</tspan><tspan>服务商</tspan></text>
+</g>
+<g id="shape-12" data-pptx-object="group" data-pptx-frame="460.92 459.82 795.76 133.22" data-pptx-source-ref="slide:12">
+<g id="shape-44" data-pptx-object="shape" data-pptx-frame="643.58 473.67 513 106.53" data-pptx-prst="rect" data-pptx-source-ref="slide:44" data-pptx-semantic-object="shape">
+<path d="M 643.58 473.67 L 1156.58 473.67 L 1156.58 580.21 L 643.58 580.21 Z" fill="none" data-pptx-part="geometry" />
+
+
+<text x="653.18" y="514.47254593" text-anchor="start" xml:space="preserve" font-family="Arial, &quot;微软雅黑&quot;, sans-serif" font-size="26.67" fill="#404040" font-weight="bold" data-pptx-text-baseline="metrics-v1" data-pptx-text-model="paragraphs" data-paragraph-line-height="40.005"><tspan><tspan>长沙有色冶金设计研究院有限公司</tspan></tspan><tspan data-paragraph-space-before="7.995"><tspan>科研创新</tspan><tspan>中心</tspan></tspan></text>
+</g>
+<g id="shape-8" data-pptx-object="connector" data-pptx-frame="460.92 526.68 91.41 0" data-pptx-prst="line" data-pptx-source-ref="slide:8" data-pptx-semantic-object="shape">
+<path d="M 460.92 526.68 L 552.33 526.68" stroke="#000000" stroke-width="1" fill="none" data-pptx-part="geometry" />
+
+</g>
+<g id="shape-23" data-pptx-object="connector" data-pptx-frame="1165.27 526.68 91.41 0" data-pptx-prst="line" data-pptx-source-ref="slide:23" data-pptx-semantic-object="shape">
+<path d="M 1165.27 526.68 L 1256.68 526.68" stroke="#000000" stroke-width="1" fill="none" data-pptx-part="geometry" />
+
+</g>
+<g id="shape-22" data-pptx-object="connector" data-pptx-frame="552.33 459.82 0 132.28" data-pptx-prst="line" data-pptx-source-ref="slide:22" data-pptx-semantic-object="shape">
+<path d="M 552.33 459.82 L 552.33 592.1" stroke="#000000" stroke-width="1" fill="none" data-pptx-part="geometry" />
+
+</g>
+<g id="shape-25" data-pptx-object="connector" data-pptx-frame="1165.05 460.75 0 132.28" data-pptx-prst="line" data-pptx-source-ref="slide:25" data-pptx-semantic-object="shape">
+<path d="M 1165.05 460.75 L 1165.05 593.03" stroke="#000000" stroke-width="1" fill="none" data-pptx-part="geometry" />
+
+</g>
+</g>
+<g id="shape-3" data-pptx-object="shape" data-pptx-frame="324.8 169.53 955.2 271.33" data-pptx-prst="rect" data-pptx-source-ref="slide:3" data-pptx-semantic-object="shape">
+<path d="M 324.8 169.53 L 1280 169.53 L 1280 440.87 L 324.8 440.87 Z" fill="none" data-pptx-part="geometry" />
+
+
+<text x="328.64" y="235.66666667" text-anchor="start" xml:space="preserve" font-family="&quot;Microsoft YaHei&quot;, &quot;方正小标宋简体&quot;, sans-serif" font-size="45.33" fill="#252A30" font-weight="bold" data-pptx-text-baseline="metrics-v1" data-pptx-text-model="lines" data-paragraph-line-height="81.6"><tspan><tspan>矿山岩体质量分级智能化系统</tspan></tspan><tspan data-paragraph-line-break="1">研发与应用</tspan></text>
+</g>
+<g id="shape-4" data-pptx-object="picture" data-pptx-frame="832.24 31.24 438.85 83.56" data-pptx-source-ref="slide:4">
+<image data-pptx-object="picture" data-pptx-frame="832.24 31.24 438.85 83.56" href="../images/image8.png" x="832.24" y="31.24" width="438.85" height="83.56" preserveAspectRatio="none" />
+</g>
+<g id="shape-5" data-pptx-object="picture" data-pptx-frame="567.05 495.58 68.03 70.94" data-pptx-source-ref="slide:5">
+<image data-pptx-object="picture" data-pptx-frame="567.05 495.58 68.03 70.94" href="../images/image5.png" x="567.05" y="495.58" width="68.03" height="70.94" preserveAspectRatio="none" />
+</g>
+<g id="shape-45" data-pptx-object="shape" data-pptx-frame="513.6 580.8 652.8 53.76" data-pptx-prst="rect" data-pptx-source-ref="slide:45" data-pptx-semantic-object="shape">
+<path d="M 513.6 580.8 L 1166.4 580.8 L 1166.4 634.56 L 513.6 634.56 Z" fill="none" data-pptx-part="geometry" />
+
+
+<text x="515.52" y="597.76" text-anchor="start" xml:space="preserve" font-family="&quot;Microsoft YaHei&quot;, sans-serif" font-size="16" fill="#4F5962" data-pptx-text-baseline="metrics-v1" data-pptx-text-model="paragraphs" data-paragraph-line-height="19.2"><tspan><tspan>完成单位：长沙有色冶金设计研究院有限公司</tspan></tspan><tspan><tspan>汇报人：[姓名]    2026年10月</tspan></tspan></text>
+</g></svg>

@@ -1,0 +1,3 @@
+第二项技术解决工程记录与成果交付。案例管理工程名称、部位和备注，案例下维护多个点位，每个点位保留方法、标准、输入版本和参数。本页左侧是真实运行界面，六个点位全部使用虚构演示输入，不是现场工程数据。BQ与Q等方法保存原始输入和采用口径，例如Q的原始RQD与计算采用值可分别解释。软件支持本地项目文件及Word计算书导出，右侧为实际导出界面，本次已经点击原生导出获得计算书文件并校验DOCX包内容。Q和GSI的报告代码支持带点位的附图，但MRMR的参数细表仍待完善。当前环境缺少Word或LibreOffice排版引擎，所以没有伪造报告截图，也未验证计算书分页效果。
+
+依据为frontend/src/types/rockmassCase.ts、frontend/src/utils/reportDocxTemplate.ts、frontend/src/utils/reportProfiles/qReport.ts和gsiReport.ts。MRMR导出边界见frontend/src/utils/classificationReportDocx.ts。截图与导出文件来自本次独立临时浏览器运行，输入和结果留存在rockmass_presentation_assets_20261025目录的demo-inputs-and-results.json。

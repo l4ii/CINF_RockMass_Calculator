@@ -1,0 +1,1114 @@
+{
+  "schema": "ppt-master.svg-quality-report.v1",
+  "stage": "final",
+  "target": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261025",
+  "source_fingerprint": {
+    "algorithm": "sha256",
+    "digest": "91d2d1b3ad01dbc0f8dd3c169c455d91fcaaf9f63631afd1214efe0ff9f1deb8",
+    "file_count": 14,
+    "files": [
+      {
+        "file": "01_cover.svg",
+        "sha256": "40aeb102871653529d88e462aa4654afcf165581d46672032e177ebce73fc395"
+      },
+      {
+        "file": "02_background.svg",
+        "sha256": "0f4ecb585459e83fde2b7bf183ea811a3ef4187011074f0ea96db6ea14919b22"
+      },
+      {
+        "file": "03_landscape.svg",
+        "sha256": "71af15ac6d042a7d1717501ee22f0f03edbfd6aa7c91bb4e917bf2afc44ad167"
+      },
+      {
+        "file": "04_roadmap.svg",
+        "sha256": "c7d66d6da25eb25d9d9c8437fc0c0d0dec82c44dc02035c1ad84c634801c30f6"
+      },
+      {
+        "file": "05_engine.svg",
+        "sha256": "3488925cd03001e0e95d910735243cf27e2c2c576aa055b287d8b4ad81ad30d7"
+      },
+      {
+        "file": "06_case_report.svg",
+        "sha256": "1b18d7148193b2309b80d55d35937aa2e86b6744bd1dcc2efd9214a2c9f0d146"
+      },
+      {
+        "file": "07_local_assistant.svg",
+        "sha256": "6ebf6ddaca124a3b1c92e67c8d0cd471cc86314839355239a0e131ec9ef7be93"
+      },
+      {
+        "file": "08_multimodal.svg",
+        "sha256": "1d9d548c51443e3c066bd8d84708f834d649a3f6fab0ae2341434910de53b665"
+      },
+      {
+        "file": "09_software.svg",
+        "sha256": "5aeae69b876be7dbdf36113b9cb48a0dd469efe759937d88e59b54eec26097f2"
+      },
+      {
+        "file": "10_verification.svg",
+        "sha256": "3ce229d950c635fb58e1141211d3220576ac4e50c62201f5efd67f72ad70602e"
+      },
+      {
+        "file": "11_institute_effects.svg",
+        "sha256": "fd530028200f72f8925cc7e6e2c366cc96e398b4a167e54e6628c2c546f05897"
+      },
+      {
+        "file": "12_application.svg",
+        "sha256": "d5ed3f7ab91eaa28c64b9be53ffb48bf0c539410259b41368b3fe7eaf72d385f"
+      },
+      {
+        "file": "13_summary.svg",
+        "sha256": "0e52be2622ab50b8645a2494af8e2a88289d493c79aedd2876eb9e5d57ce4796"
+      },
+      {
+        "file": "14_thanks.svg",
+        "sha256": "f98bd322f09a1ba458ece55842075d07791fbb42b025a26387818bf552d07dad"
+      }
+    ]
+  },
+  "summary": {
+    "total": 14,
+    "passed": 14,
+    "warnings": 0,
+    "errors": 0
+  },
+  "issue_types": {},
+  "categories": {
+    "blocking": {
+      "count": 0,
+      "issues": []
+    },
+    "introduced": {
+      "count": 0,
+      "issues": []
+    },
+    "inherited": {
+      "count": 0,
+      "issues": []
+    },
+    "source-import": {
+      "count": 0,
+      "summary": {
+        "warning_count": 0,
+        "by_code": {}
+      }
+    }
+  },
+  "drift": {
+    "colors": {
+      "#103451": [
+        "01_cover.svg",
+        "14_thanks.svg"
+      ],
+      "#173F56": [
+        "04_roadmap.svg",
+        "05_engine.svg",
+        "07_local_assistant.svg",
+        "08_multimodal.svg"
+      ]
+    },
+    "fonts": {
+      "Arial": [
+        "01_cover.svg",
+        "02_background.svg",
+        "03_landscape.svg",
+        "04_roadmap.svg",
+        "05_engine.svg",
+        "06_case_report.svg",
+        "07_local_assistant.svg",
+        "08_multimodal.svg",
+        "09_software.svg",
+        "10_verification.svg",
+        "11_institute_effects.svg",
+        "12_application.svg",
+        "13_summary.svg",
+        "14_thanks.svg"
+      ]
+    },
+    "sizes": {}
+  },
+  "carrier_receipt": {
+    "scope": "informational-not-a-quota",
+    "pages": 14,
+    "totals": {
+      "text_elements": 219,
+      "image_placements": 4,
+      "icons": 0,
+      "svg_geometry_elements": 66,
+      "preset_shapes": 5,
+      "page_frame_elements": 14,
+      "marker_uses": 10,
+      "inline_emphasis_runs": 1,
+      "gradient_uses": 2,
+      "filter_uses": 0,
+      "text_effects": 0
+    },
+    "pages_with": {
+      "images": 2,
+      "icons": 0,
+      "presets": 1,
+      "charts": 0,
+      "tables": 3,
+      "formulas": 0,
+      "inline_emphasis_runs": 1,
+      "gradient_uses": 2,
+      "filter_uses": 0,
+      "text_effects": 0
+    },
+    "relationship_pages": 0,
+    "geometry_elements": {
+      "circle": 0,
+      "ellipse": 0,
+      "line": 35,
+      "path": 0,
+      "polygon": 0,
+      "polyline": 0,
+      "rect": 31
+    },
+    "preset_names": {
+      "chevron": 5
+    },
+    "native_objects": {
+      "chart": 0,
+      "formula_block": 0,
+      "formula_inline": 0,
+      "other": 0,
+      "table": 3
+    },
+    "image_page_max_frame_share_range": [
+      0.3397,
+      0.3525
+    ]
+  },
+  "project_issues": {
+    "template": [],
+    "animation": [],
+    "illustration": [],
+    "communication_trace": [],
+    "pptx_structure": []
+  },
+  "files": [
+    {
+      "file": "01_cover.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261025\\svg_output\\01_cover.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 7,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 1,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 1,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 1,
+              "polyline": 0,
+              "polygon": 0,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 1,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 7,
+        "tspan_elements": 2,
+        "contextual_values": {
+          "colors": [
+            "#103451"
+          ],
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "40aeb102871653529d88e462aa4654afcf165581d46672032e177ebce73fc395"
+    },
+    {
+      "file": "02_background.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261025\\svg_output\\02_background.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 14,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 2,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 2,
+              "polyline": 0,
+              "polygon": 0,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 1,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 14,
+        "tspan_elements": 10,
+        "contextual_values": {
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "0f4ecb585459e83fde2b7bf183ea811a3ef4187011074f0ea96db6ea14919b22"
+    },
+    {
+      "file": "03_landscape.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261025\\svg_output\\03_landscape.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 18,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 2,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 3,
+              "polyline": 0,
+              "polygon": 0,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 1,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 1,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 18,
+        "tspan_elements": 12,
+        "contextual_values": {
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "71af15ac6d042a7d1717501ee22f0f03edbfd6aa7c91bb4e917bf2afc44ad167"
+    },
+    {
+      "file": "04_roadmap.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261025\\svg_output\\04_roadmap.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 21,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 1,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 0,
+              "polyline": 0,
+              "polygon": 0,
+              "path": 0
+            },
+            "preset_shapes": 5,
+            "preset_names": {
+              "chevron": 5
+            },
+            "page_frame_elements": 1,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 21,
+        "tspan_elements": 4,
+        "contextual_values": {
+          "colors": [
+            "#173F56"
+          ],
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "c7d66d6da25eb25d9d9c8437fc0c0d0dec82c44dc02035c1ad84c634801c30f6"
+    },
+    {
+      "file": "05_engine.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261025\\svg_output\\05_engine.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 20,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 6,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 5,
+              "polyline": 0,
+              "polygon": 0,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 1,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial",
+          "Microsoft YaHei, Consolas"
+        ],
+        "text_elements": 20,
+        "tspan_elements": 5,
+        "contextual_values": {
+          "colors": [
+            "#173F56"
+          ],
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "3488925cd03001e0e95d910735243cf27e2c2c576aa055b287d8b4ad81ad30d7"
+    },
+    {
+      "file": "06_case_report.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261025\\svg_output\\06_case_report.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 9,
+          "images": {
+            "placements": 2,
+            "files": [
+              "02-project-points.png",
+              "04-export-dialog.png"
+            ],
+            "max_frame_share": 0.3525
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 1,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 0,
+              "polyline": 0,
+              "polygon": 0,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 1,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 9,
+        "tspan_elements": 3,
+        "contextual_values": {
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "1b18d7148193b2309b80d55d35937aa2e86b6744bd1dcc2efd9214a2c9f0d146"
+    },
+    {
+      "file": "07_local_assistant.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261025\\svg_output\\07_local_assistant.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 19,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 5,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 5,
+              "polyline": 0,
+              "polygon": 0,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 1,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 4
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 19,
+        "tspan_elements": 8,
+        "contextual_values": {
+          "colors": [
+            "#173F56"
+          ],
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "6ebf6ddaca124a3b1c92e67c8d0cd471cc86314839355239a0e131ec9ef7be93"
+    },
+    {
+      "file": "08_multimodal.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261025\\svg_output\\08_multimodal.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 17,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 5,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 3,
+              "polyline": 0,
+              "polygon": 0,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 1,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 3
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 17,
+        "tspan_elements": 12,
+        "contextual_values": {
+          "colors": [
+            "#173F56"
+          ],
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "1d9d548c51443e3c066bd8d84708f834d649a3f6fab0ae2341434910de53b665"
+    },
+    {
+      "file": "09_software.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261025\\svg_output\\09_software.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 18,
+          "images": {
+            "placements": 2,
+            "files": [
+              "01-rmr-calculation.png",
+              "03-engineering-overview.png"
+            ],
+            "max_frame_share": 0.3397
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 2,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 5,
+              "polyline": 0,
+              "polygon": 0,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 1,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 1,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 18,
+        "tspan_elements": 0,
+        "contextual_values": {
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "5aeae69b876be7dbdf36113b9cb48a0dd469efe759937d88e59b54eec26097f2"
+    },
+    {
+      "file": "10_verification.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261025\\svg_output\\10_verification.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 31,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 2,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 3,
+              "polyline": 0,
+              "polygon": 0,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 1,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 1,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 31,
+        "tspan_elements": 2,
+        "contextual_values": {
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "3ce229d950c635fb58e1141211d3220576ac4e50c62201f5efd67f72ad70602e"
+    },
+    {
+      "file": "11_institute_effects.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261025\\svg_output\\11_institute_effects.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 16,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 1,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 2,
+              "polyline": 0,
+              "polygon": 0,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 1,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 16,
+        "tspan_elements": 0,
+        "contextual_values": {
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "fd530028200f72f8925cc7e6e2c366cc96e398b4a167e54e6628c2c546f05897"
+    },
+    {
+      "file": "12_application.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261025\\svg_output\\12_application.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 13,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 1,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 4,
+              "polyline": 0,
+              "polygon": 0,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 1,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 3
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 13,
+        "tspan_elements": 8,
+        "contextual_values": {
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "d5ed3f7ab91eaa28c64b9be53ffb48bf0c539410259b41368b3fe7eaf72d385f"
+    },
+    {
+      "file": "13_summary.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261025\\svg_output\\13_summary.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 11,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 1,
+            "gradient_uses": 0,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 1,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 1,
+              "polyline": 0,
+              "polygon": 0,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 1,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 11,
+        "tspan_elements": 7,
+        "contextual_values": {
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "0e52be2622ab50b8645a2494af8e2a88289d493c79aedd2876eb9e5d57ce4796"
+    },
+    {
+      "file": "14_thanks.svg",
+      "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261025\\svg_output\\14_thanks.svg",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": {
+        "viewbox": "0 0 1280 720",
+        "carrier_receipt": {
+          "text_elements": 5,
+          "images": {
+            "placements": 0,
+            "files": [],
+            "max_frame_share": 0.0
+          },
+          "icons": 0,
+          "effects": {
+            "inline_emphasis_runs": 0,
+            "gradient_uses": 1,
+            "filter_uses": 0,
+            "text_effects": 0
+          },
+          "geometry": {
+            "svg_elements": {
+              "rect": 1,
+              "circle": 0,
+              "ellipse": 0,
+              "line": 1,
+              "polyline": 0,
+              "polygon": 0,
+              "path": 0
+            },
+            "preset_shapes": 0,
+            "preset_names": {},
+            "page_frame_elements": 1,
+            "marker_uses": {
+              "start": 0,
+              "mid": 0,
+              "end": 0
+            }
+          },
+          "native_objects": {
+            "chart": 0,
+            "table": 0,
+            "formula_block": 0,
+            "formula_inline": 0,
+            "other": 0
+          }
+        },
+        "fonts": [
+          "Arial",
+          "Microsoft YaHei, Arial"
+        ],
+        "text_elements": 5,
+        "tspan_elements": 0,
+        "contextual_values": {
+          "colors": [
+            "#103451"
+          ],
+          "font_families": [
+            "Arial"
+          ]
+        }
+      },
+      "passed": true,
+      "source_sha256": "f98bd322f09a1ba458ece55842075d07791fbb42b025a26387818bf552d07dad"
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+项目定位需要建立在对既有工具的客观认识上。Rocscience现行RSData提供多类材料强度准则、GSI估参、多材料分析及Excel导出，不能概括为只能计算一种方法。强度准则也不等同于六种岩体分级体系。NGI已经提供二〇二五年修订的Q-system手册及App或PDF指南，手册列有数字测绘平台的应用，不能称国外仍全部手工。Excel表格可以按工程需求定制，其能力取决于具体实现。本项目将重点放在设计院工作流中的多方法组织、点位记录和报告交付；这属于本次材料的集成定位，不是穷尽市场后得出的首创结论。
+
+RSData产品及技术规格依据为 https://www.rocscience.com/software/rsdata 与 https://www.rocscience.com/help/rsdata/overview/technical-specifications 。NGI公开说明见 https://www.ngi.no/en/research-and-consulting/infrastructure-container/tunnels-and-the-q-system/ 。二〇二五年四月手册见 https://prod.ngi.no/globalassets/bilder/forskning-og-radgivning/bygg-og-anlegg/q-handbook_2025_english_final.pdf ，数字测绘示例在印刷页第四十四至四十五页。Excel栏为项目工作流分析，不代表对某个具体商业表格的测试。

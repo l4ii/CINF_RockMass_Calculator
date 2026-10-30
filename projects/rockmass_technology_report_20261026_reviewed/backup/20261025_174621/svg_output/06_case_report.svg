@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720" font-family="Microsoft YaHei, Arial" data-pptx-page-role="content">
+<rect id="background" data-pptx-role="background" width="1280" height="720" fill="#07182B"/>
+<g id="title" data-pptx-bounds="56 40 1168 94"><text x="56" y="61" font-size="14" fill="#5CB8FF">02 / 关键技术 02</text><text x="56" y="114" font-size="42" font-weight="bold" fill="#EAF2FA">案例点位与成果输出</text></g>
+<g id="case-evidence" data-pptx-bounds="56 158 760 480"><text x="56" y="183" font-size="18" fill="#49E0D0">项目 / 多点位 / 方法输入 / 结果汇总</text><image href="../images/02-project-points.png" x="56" y="202" width="760" height="427.5" preserveAspectRatio="xMidYMid meet"/></g>
+<g id="record-fields" data-pptx-bounds="856 158 368 198"><text x="856" y="189" font-size="28" font-weight="bold" fill="#EAF2FA">点位记录</text><text x="856" y="233" font-size="24" fill="#EAF2FA"><tspan x="856">工程名称、部位与备注</tspan><tspan x="856" dy="38">原始输入与采用口径</tspan><tspan x="856" dy="38">方法、标准与输入版本</tspan></text><text x="856" y="345" font-size="18" fill="#A8BDD3">项目文件可导入、导出与归档</text></g>
+<g id="export-evidence" data-pptx-bounds="856 378 368 260"><image href="../images/04-export-dialog.png" x="856" y="378" width="368" height="207" preserveAspectRatio="xMidYMid meet"/><text x="856" y="615" font-size="18" fill="#A8BDD3">已实际导出演示计算书DOCX</text></g>
+<text id="footer" data-pptx-role="footer" x="56" y="672" font-size="14" fill="#A8BDD3">截图为虚构演示输入；Q/GSI支持附图，MRMR参数细表待完善；本页为导出界面，计算书分页未作视觉校验</text><text id="page" data-pptx-role="page-number" x="1200" y="679" font-family="Arial" font-size="14" fill="#A8BDD3">06</text>
+</svg>

@@ -1,0 +1,323 @@
+{
+  "schema": "ppt-master.native-structure.v1",
+  "source": {
+    "name": "source_normalized.pptx",
+    "templateFile": "sources/source.pptx",
+    "sha256": "49fcbd8c4cef3a6e5992823f0f82b881caa45170c7b39e8c020c54c1dd72a82a"
+  },
+  "slideSize": {
+    "width_emu": 12192000,
+    "height_emu": 6858000,
+    "width_px": 1280.0,
+    "height_px": 720.0
+  },
+  "strategy": {
+    "preservationEligible": true,
+    "reusableStructureDetected": false,
+    "recommendedMode": "template",
+    "recommendationScope": "source-structure-assessment",
+    "templateOutputMode": "template",
+    "downstreamTemplateAdherence": "strategist-confirmed-explicit-structure",
+    "hasMultipleMasters": false,
+    "reasonCodes": [
+      "source-structure-is-minimal"
+    ]
+  },
+  "masters": [
+    {
+      "key": "master_01",
+      "name": "Master",
+      "packagePart": "ppt/slideMasters/slideMaster1.xml",
+      "themePart": null,
+      "theme": {
+        "colors": {},
+        "fonts": {}
+      },
+      "backgroundAsset": null,
+      "imageAssets": [],
+      "shapeImageAssets": [],
+      "drawableShapeCount": 0,
+      "placeholders": [],
+      "layoutKeys": [
+        "layout_01",
+        "layout_02",
+        "layout_03",
+        "layout_04",
+        "layout_05",
+        "layout_06"
+      ]
+    }
+  ],
+  "layouts": [
+    {
+      "key": "layout_01",
+      "name": "Title Slide",
+      "type": null,
+      "packagePart": "ppt/slideLayouts/slideLayout1.xml",
+      "masterKey": "master_01",
+      "showMasterShapes": true,
+      "backgroundAsset": null,
+      "imageAssets": [],
+      "shapeImageAssets": [],
+      "drawableShapeCount": 0,
+      "placeholders": [
+        {
+          "type": "title",
+          "idx": "0",
+          "size": null,
+          "orient": null,
+          "semanticRole": "title",
+          "shapeId": "3",
+          "shapeName": "Title",
+          "geometry": {
+            "x": 128,
+            "y": 272,
+            "width": 1024,
+            "height": 104
+          },
+          "textSamples": []
+        },
+        {
+          "type": "subTitle",
+          "idx": "1",
+          "size": null,
+          "orient": null,
+          "semanticRole": "subtitle",
+          "shapeId": "2",
+          "shapeName": "Subtitle",
+          "geometry": {
+            "x": 192,
+            "y": 396,
+            "width": 896,
+            "height": 80
+          },
+          "textSamples": []
+        }
+      ],
+      "usedBySlides": [],
+      "svgFile": null
+    },
+    {
+      "key": "layout_02",
+      "name": "Section Header",
+      "type": null,
+      "packagePart": "ppt/slideLayouts/slideLayout2.xml",
+      "masterKey": "master_01",
+      "showMasterShapes": true,
+      "backgroundAsset": null,
+      "imageAssets": [],
+      "shapeImageAssets": [],
+      "drawableShapeCount": 0,
+      "placeholders": [
+        {
+          "type": "title",
+          "idx": "0",
+          "size": null,
+          "orient": null,
+          "semanticRole": "title",
+          "shapeId": "2",
+          "shapeName": "Section title",
+          "geometry": {
+            "x": 128,
+            "y": 300,
+            "width": 1024,
+            "height": 120
+          },
+          "textSamples": []
+        }
+      ],
+      "usedBySlides": [],
+      "svgFile": null
+    },
+    {
+      "key": "layout_03",
+      "name": "Title and Body",
+      "type": null,
+      "packagePart": "ppt/slideLayouts/slideLayout3.xml",
+      "masterKey": "master_01",
+      "showMasterShapes": true,
+      "backgroundAsset": null,
+      "imageAssets": [],
+      "shapeImageAssets": [],
+      "drawableShapeCount": 0,
+      "placeholders": [
+        {
+          "type": "title",
+          "idx": "0",
+          "size": null,
+          "orient": null,
+          "semanticRole": "title",
+          "shapeId": "3",
+          "shapeName": "Title",
+          "geometry": {
+            "x": 72,
+            "y": 56,
+            "width": 1136,
+            "height": 88
+          },
+          "textSamples": []
+        },
+        {
+          "type": "body",
+          "idx": "1",
+          "size": null,
+          "orient": null,
+          "semanticRole": "body",
+          "shapeId": "2",
+          "shapeName": "Body",
+          "geometry": {
+            "x": 72,
+            "y": 200,
+            "width": 1136,
+            "height": 448
+          },
+          "textSamples": []
+        }
+      ],
+      "usedBySlides": [],
+      "svgFile": null
+    },
+    {
+      "key": "layout_04",
+      "name": "Title and Two Column",
+      "type": null,
+      "packagePart": "ppt/slideLayouts/slideLayout4.xml",
+      "masterKey": "master_01",
+      "showMasterShapes": true,
+      "backgroundAsset": null,
+      "imageAssets": [],
+      "shapeImageAssets": [],
+      "drawableShapeCount": 0,
+      "placeholders": [
+        {
+          "type": "title",
+          "idx": "0",
+          "size": null,
+          "orient": null,
+          "semanticRole": "title",
+          "shapeId": "4",
+          "shapeName": "Title",
+          "geometry": {
+            "x": 72,
+            "y": 56,
+            "width": 1136,
+            "height": 88
+          },
+          "textSamples": []
+        },
+        {
+          "type": "body",
+          "idx": "1",
+          "size": null,
+          "orient": null,
+          "semanticRole": "body",
+          "shapeId": "2",
+          "shapeName": "Left column",
+          "geometry": {
+            "x": 72,
+            "y": 200,
+            "width": 528,
+            "height": 448
+          },
+          "textSamples": []
+        },
+        {
+          "type": "body",
+          "idx": "2",
+          "size": null,
+          "orient": null,
+          "semanticRole": "body",
+          "shapeId": "3",
+          "shapeName": "Right column",
+          "geometry": {
+            "x": 680,
+            "y": 200,
+            "width": 528,
+            "height": 448
+          },
+          "textSamples": []
+        }
+      ],
+      "usedBySlides": [],
+      "svgFile": null
+    },
+    {
+      "key": "layout_05",
+      "name": "Title and One Column",
+      "type": null,
+      "packagePart": "ppt/slideLayouts/slideLayout5.xml",
+      "masterKey": "master_01",
+      "showMasterShapes": true,
+      "backgroundAsset": null,
+      "imageAssets": [],
+      "shapeImageAssets": [],
+      "drawableShapeCount": 0,
+      "placeholders": [
+        {
+          "type": "title",
+          "idx": "0",
+          "size": null,
+          "orient": null,
+          "semanticRole": "title",
+          "shapeId": "3",
+          "shapeName": "Title",
+          "geometry": {
+            "x": 72,
+            "y": 56,
+            "width": 1136,
+            "height": 88
+          },
+          "textSamples": []
+        },
+        {
+          "type": "body",
+          "idx": "1",
+          "size": null,
+          "orient": null,
+          "semanticRole": "body",
+          "shapeId": "2",
+          "shapeName": "Left column",
+          "geometry": {
+            "x": 72,
+            "y": 200,
+            "width": 528,
+            "height": 448
+          },
+          "textSamples": []
+        }
+      ],
+      "usedBySlides": [],
+      "svgFile": null
+    },
+    {
+      "key": "layout_06",
+      "name": "Blank",
+      "type": null,
+      "packagePart": "ppt/slideLayouts/slideLayout6.xml",
+      "masterKey": "master_01",
+      "showMasterShapes": true,
+      "backgroundAsset": null,
+      "imageAssets": [],
+      "shapeImageAssets": [],
+      "drawableShapeCount": 0,
+      "placeholders": [],
+      "usedBySlides": [
+        1
+      ],
+      "svgFile": null
+    }
+  ],
+  "slides": [
+    {
+      "index": 1,
+      "packagePart": "ppt/slides/slide1.xml",
+      "pageType": null,
+      "layoutKey": "layout_06",
+      "masterKey": "master_01",
+      "showInheritedShapes": true,
+      "placeholders": [],
+      "layeredSvgFile": "slide_01.svg",
+      "flatSvgFile": null
+    }
+  ]
+}

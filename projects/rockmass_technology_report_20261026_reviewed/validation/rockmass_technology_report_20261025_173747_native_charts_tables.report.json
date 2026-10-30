@@ -1,0 +1,248 @@
+{
+  "schema": "ppt-master.pptx-postflight-report.v1",
+  "status": "passed",
+  "output": {
+    "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261025\\exports\\rockmass_technology_report_20261025_173747_native_charts_tables.pptx",
+    "bytes": 786423
+  },
+  "source": {
+    "svg_slide_count": 14,
+    "layout_definition_count": 0,
+    "fingerprint": {
+      "algorithm": "sha256",
+      "digest": "f4ce550c5676484cb201067aaa0c8c6878bd3a81efd89dc7cb224517fbc76e8c",
+      "file_count": 14,
+      "files": [
+        {
+          "file": "01_cover.svg",
+          "sha256": "40aeb102871653529d88e462aa4654afcf165581d46672032e177ebce73fc395"
+        },
+        {
+          "file": "02_background.svg",
+          "sha256": "0f4ecb585459e83fde2b7bf183ea811a3ef4187011074f0ea96db6ea14919b22"
+        },
+        {
+          "file": "03_landscape.svg",
+          "sha256": "e4762dc2bcb03039c228f8076712a4fd464cc13cf8db19e7a6a1f0cb63a07c7e"
+        },
+        {
+          "file": "04_roadmap.svg",
+          "sha256": "c7d66d6da25eb25d9d9c8437fc0c0d0dec82c44dc02035c1ad84c634801c30f6"
+        },
+        {
+          "file": "05_engine.svg",
+          "sha256": "3488925cd03001e0e95d910735243cf27e2c2c576aa055b287d8b4ad81ad30d7"
+        },
+        {
+          "file": "06_case_report.svg",
+          "sha256": "1b18d7148193b2309b80d55d35937aa2e86b6744bd1dcc2efd9214a2c9f0d146"
+        },
+        {
+          "file": "07_local_assistant.svg",
+          "sha256": "6ebf6ddaca124a3b1c92e67c8d0cd471cc86314839355239a0e131ec9ef7be93"
+        },
+        {
+          "file": "08_multimodal.svg",
+          "sha256": "1d9d548c51443e3c066bd8d84708f834d649a3f6fab0ae2341434910de53b665"
+        },
+        {
+          "file": "09_software.svg",
+          "sha256": "5aeae69b876be7dbdf36113b9cb48a0dd469efe759937d88e59b54eec26097f2"
+        },
+        {
+          "file": "10_verification.svg",
+          "sha256": "3ce229d950c635fb58e1141211d3220576ac4e50c62201f5efd67f72ad70602e"
+        },
+        {
+          "file": "11_institute_effects.svg",
+          "sha256": "fd530028200f72f8925cc7e6e2c366cc96e398b4a167e54e6628c2c546f05897"
+        },
+        {
+          "file": "12_application.svg",
+          "sha256": "d5ed3f7ab91eaa28c64b9be53ffb48bf0c539410259b41368b3fe7eaf72d385f"
+        },
+        {
+          "file": "13_summary.svg",
+          "sha256": "0e52be2622ab50b8645a2494af8e2a88289d493c79aedd2876eb9e5d57ce4796"
+        },
+        {
+          "file": "14_thanks.svg",
+          "sha256": "f98bd322f09a1ba458ece55842075d07791fbb42b025a26387818bf552d07dad"
+        }
+      ]
+    },
+    "authoring_roundtrip": null
+  },
+  "package": {
+    "zip_integrity": "passed",
+    "corrupt_member": null,
+    "slides": 14,
+    "notes": 14,
+    "masters": 1,
+    "layouts": 1
+  },
+  "checks": {
+    "zip_integrity": "passed",
+    "slide_count": "passed",
+    "internal_relationships": "enforced-at-build",
+    "structured_package": "not-applicable",
+    "transitions": "enforced-at-build",
+    "animations": "enforced-at-build",
+    "project_svg_contract": "enforced-at-build",
+    "compatibility_normalization": "not-applicable",
+    "authoring_roundtrip": "not-applicable",
+    "quality_gate": "passed",
+    "quality_warnings": "passed",
+    "template_tokens": "passed",
+    "external_images": "passed",
+    "font_portability": "passed"
+  },
+  "quality": {
+    "status": "loaded",
+    "path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261025\\validation\\svg_quality_report.json",
+    "schema": "ppt-master.svg-quality-report.v1",
+    "stage": "final",
+    "source_match": "passed",
+    "source_fingerprint": {
+      "algorithm": "sha256",
+      "digest": "f4ce550c5676484cb201067aaa0c8c6878bd3a81efd89dc7cb224517fbc76e8c",
+      "file_count": 14,
+      "files": [
+        {
+          "file": "01_cover.svg",
+          "sha256": "40aeb102871653529d88e462aa4654afcf165581d46672032e177ebce73fc395"
+        },
+        {
+          "file": "02_background.svg",
+          "sha256": "0f4ecb585459e83fde2b7bf183ea811a3ef4187011074f0ea96db6ea14919b22"
+        },
+        {
+          "file": "03_landscape.svg",
+          "sha256": "e4762dc2bcb03039c228f8076712a4fd464cc13cf8db19e7a6a1f0cb63a07c7e"
+        },
+        {
+          "file": "04_roadmap.svg",
+          "sha256": "c7d66d6da25eb25d9d9c8437fc0c0d0dec82c44dc02035c1ad84c634801c30f6"
+        },
+        {
+          "file": "05_engine.svg",
+          "sha256": "3488925cd03001e0e95d910735243cf27e2c2c576aa055b287d8b4ad81ad30d7"
+        },
+        {
+          "file": "06_case_report.svg",
+          "sha256": "1b18d7148193b2309b80d55d35937aa2e86b6744bd1dcc2efd9214a2c9f0d146"
+        },
+        {
+          "file": "07_local_assistant.svg",
+          "sha256": "6ebf6ddaca124a3b1c92e67c8d0cd471cc86314839355239a0e131ec9ef7be93"
+        },
+        {
+          "file": "08_multimodal.svg",
+          "sha256": "1d9d548c51443e3c066bd8d84708f834d649a3f6fab0ae2341434910de53b665"
+        },
+        {
+          "file": "09_software.svg",
+          "sha256": "5aeae69b876be7dbdf36113b9cb48a0dd469efe759937d88e59b54eec26097f2"
+        },
+        {
+          "file": "10_verification.svg",
+          "sha256": "3ce229d950c635fb58e1141211d3220576ac4e50c62201f5efd67f72ad70602e"
+        },
+        {
+          "file": "11_institute_effects.svg",
+          "sha256": "fd530028200f72f8925cc7e6e2c366cc96e398b4a167e54e6628c2c546f05897"
+        },
+        {
+          "file": "12_application.svg",
+          "sha256": "d5ed3f7ab91eaa28c64b9be53ffb48bf0c539410259b41368b3fe7eaf72d385f"
+        },
+        {
+          "file": "13_summary.svg",
+          "sha256": "0e52be2622ab50b8645a2494af8e2a88289d493c79aedd2876eb9e5d57ce4796"
+        },
+        {
+          "file": "14_thanks.svg",
+          "sha256": "f98bd322f09a1ba458ece55842075d07791fbb42b025a26387818bf552d07dad"
+        }
+      ]
+    },
+    "summary": {
+      "total": 14,
+      "passed": 14,
+      "warnings": 0,
+      "errors": 0
+    },
+    "categories": {
+      "blocking": {
+        "count": 0,
+        "issues": []
+      },
+      "introduced": {
+        "count": 0,
+        "issues": []
+      },
+      "inherited": {
+        "count": 0,
+        "issues": []
+      },
+      "source-import": {
+        "count": 0,
+        "summary": {
+          "warning_count": 0,
+          "by_code": {}
+        }
+      }
+    }
+  },
+  "resources": {
+    "unresolved_template_tokens": [],
+    "fonts": {
+      "stacks": [
+        "Arial",
+        "Microsoft YaHei, Arial",
+        "Microsoft YaHei, Consolas"
+      ],
+      "generic_only_stacks": [],
+      "unsafe_exported_faces": []
+    },
+    "images": {
+      "data_uri": 0,
+      "local": 4,
+      "external": 0,
+      "external_references": []
+    }
+  },
+  "export_policy": {
+    "project_svg_contract": "strict",
+    "dangerous_normalization_count": 0
+  },
+  "deck_motion": {
+    "transition": {
+      "effect": "fade",
+      "effect_options": {},
+      "duration": 0.4,
+      "auto_advance": null,
+      "sound": null
+    },
+    "animation": {
+      "effect": "none",
+      "effect_request": null,
+      "duration": 0.4,
+      "stagger": 0.5,
+      "trigger": "after-previous"
+    },
+    "cli_overrides": {
+      "transition": false,
+      "transition_duration": false,
+      "auto_advance": false,
+      "transition_sound": false,
+      "animation": false,
+      "animation_duration": false,
+      "animation_stagger": false,
+      "animation_trigger": false
+    },
+    "narration_timings": false
+  },
+  "backup_path": "D:\\软件\\CINF_RockMass_Calculator\\projects\\rockmass_technology_report_20261025\\backup\\20261025_173747\\svg_output",
+  "conversion_trace_path": null
+}

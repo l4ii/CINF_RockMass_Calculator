@@ -1,0 +1,28 @@
+{
+  "schema": "ppt-master.source_to_md.profile.v1",
+  "converter": "ppt_to_md.py",
+  "conversion_type": "pptx",
+  "source": {
+    "path": "C:/Users/0303003/Downloads/参考.pptx",
+    "name": "参考.pptx",
+    "suffix": ".pptx",
+    "kind": "file",
+    "exists": true,
+    "size_bytes": 8392922
+  },
+  "outputs": {
+    "markdown": "reference_readback.md",
+    "asset_dir": "reference_readback_files",
+    "image_manifest": "reference_readback_files/image_manifest.json",
+    "image_count": 7
+  },
+  "markdown": {
+    "line_count": 80,
+    "char_count": 917,
+    "heading_count": 7,
+    "table_count": 0,
+    "image_ref_count": 10,
+    "link_count": 0
+  },
+  "warnings": []
+}

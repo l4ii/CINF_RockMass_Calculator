@@ -1,0 +1,3 @@
+本次验证有两类直接证据。首先实际运行了BQ、Q、GSI和MRMR四个域逻辑测试文件，七十九项测试全部通过，进程退出码为零。其次用三组合成输入直接调用计算函数，并以独立写出的基本算式断言结果。BQ取Rc五十兆帕、Kv零点五，结果三百七十五；Q取RQD八十、Jn四、Jr三、Ja一、Jw一和SRF一，结果六十；GSI采用JCond89二十五及RQD八十，结果七十七点五。三项软件值与人工期望均一致。它们用于内部回归和简单公式校核，不是规范书上逐字引用的算例，更不是第三方认证。真实工程、效率对比、Win7实机、本地模型以及完整六方法验收仍需补证。
+
+实际命令为npm.cmd --prefix frontend test -- src/bq.methods.test.ts src/q.methods.test.ts src/gsi.methods.test.ts src/mrmr.strict.test.ts，二〇二六年十月二十五日执行，四文件与七十九项通过。证据保存在sources/rockmass_test_evidence_20261025.md。公式实现分别见frontend/src/methods/bq.ts第八百一十二行附近、q.ts第九百九十二行附近及gsi.ts第一千零五行附近。

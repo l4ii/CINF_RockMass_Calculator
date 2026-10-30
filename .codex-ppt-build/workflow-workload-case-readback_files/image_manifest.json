@@ -1,0 +1,80 @@
+[
+  {
+    "index": 1,
+    "filename": "image.png",
+    "original_filename": "image.png",
+    "asset_kind": "bitmap",
+    "svg_renderable": true,
+    "pptx_native_supported": true,
+    "source_kind": "pptx_picture",
+    "source_ext": ".png",
+    "source_target": "ppt/media/image.png",
+    "content_type": "image/png",
+    "display_left_emu": 609600,
+    "display_top_emu": 2781300,
+    "display_width_emu": 3733800,
+    "display_height_emu": 2266950,
+    "display_width_in": 4.0833,
+    "display_height_in": 2.4792,
+    "display_ratio": 1.647059,
+    "pixel_width": 317,
+    "pixel_height": 189,
+    "pixel_ratio": 1.677249,
+    "occurrences": [
+      {
+        "slide_index": 1,
+        "shape_name": "",
+        "display_left_emu": 609600,
+        "display_top_emu": 2781300,
+        "display_width_emu": 3733800,
+        "display_height_emu": 2266950,
+        "display_width_in": 4.0833,
+        "display_height_in": 2.4792,
+        "display_ratio": 1.647059
+      }
+    ],
+    "usage_count": 1,
+    "display_ratio_variants": [
+      1.647059
+    ]
+  },
+  {
+    "index": 2,
+    "filename": "image2.png",
+    "original_filename": "image2.png",
+    "asset_kind": "bitmap",
+    "svg_renderable": true,
+    "pptx_native_supported": true,
+    "source_kind": "pptx_picture",
+    "source_ext": ".png",
+    "source_target": "ppt/media/image2.png",
+    "content_type": "image/png",
+    "display_left_emu": 9886635,
+    "display_top_emu": 6343650,
+    "display_width_emu": 2000881,
+    "display_height_emu": 381000,
+    "display_width_in": 2.1882,
+    "display_height_in": 0.4167,
+    "display_ratio": 5.251656,
+    "pixel_width": 793,
+    "pixel_height": 151,
+    "pixel_ratio": 5.251656,
+    "occurrences": [
+      {
+        "slide_index": 1,
+        "shape_name": "",
+        "display_left_emu": 9886635,
+        "display_top_emu": 6343650,
+        "display_width_emu": 2000881,
+        "display_height_emu": 381000,
+        "display_width_in": 2.1882,
+        "display_height_in": 0.4167,
+        "display_ratio": 5.251656
+      }
+    ],
+    "usage_count": 1,
+    "display_ratio_variants": [
+      5.251656
+    ]
+  }
+]

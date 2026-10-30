@@ -1,0 +1,16 @@
+{
+  "capturedAt": "2026-10-25T08:57:06.246Z",
+  "viewport": {
+    "width": 1600,
+    "height": 900
+  },
+  "source": "Unmodified Vite web preview, isolated headless Chrome context; demo-only localStorage; real UI clicks and native export download.",
+  "license": "App.tsx explicitly permits ordinary web preview when no electronAPI.license exists; no license mock or bypass was added.",
+  "pageErrors": [],
+  "serverPid": 23448,
+  "serverStopped": true,
+  "downloads": [
+    "演示项目｜矿山岩体分级_RMR分级计算书.docx",
+    "演示项目｜矿山岩体分级.rmcal"
+  ]
+}

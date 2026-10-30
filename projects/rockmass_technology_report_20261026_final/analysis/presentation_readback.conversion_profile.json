@@ -1,0 +1,28 @@
+{
+  "schema": "ppt-master.source_to_md.profile.v1",
+  "converter": "ppt_to_md.py",
+  "conversion_type": "pptx",
+  "source": {
+    "path": "D:/软件/CINF_RockMass_Calculator/projects/rockmass_technology_report_20261026_final/presentation_zh.pptx",
+    "name": "presentation_zh.pptx",
+    "suffix": ".pptx",
+    "kind": "file",
+    "exists": true,
+    "size_bytes": 7284361
+  },
+  "outputs": {
+    "markdown": "presentation_readback.md",
+    "asset_dir": "presentation_readback_files",
+    "image_manifest": "presentation_readback_files/image_manifest.json",
+    "image_count": 8
+  },
+  "markdown": {
+    "line_count": 413,
+    "char_count": 5040,
+    "heading_count": 29,
+    "table_count": 0,
+    "image_ref_count": 11,
+    "link_count": 0
+  },
+  "warnings": []
+}

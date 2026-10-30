@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="1279.9999" height="720" viewBox="0 0 1279.9999 720" font-family="&quot;Microsoft YaHei&quot;, &quot;方正小标宋简体&quot;, sans-serif"><rect x="0" y="0" width="1280" height="720" fill="#FFFFFF" />
+<g id="shape-3" data-pptx-object="picture" data-pptx-frame="0 0 1280 720" data-pptx-source-ref="slide:3">
+<image data-pptx-object="picture" data-pptx-frame="0 0 1280 720" href="../images/image9.png" x="0" y="0" width="1280" height="720" preserveAspectRatio="none" />
+</g>
+<g id="shape-2" data-pptx-object="shape" data-pptx-frame="0 380.01 670 339.99" data-pptx-prst="triangle" data-pptx-av-adj="val 14200" data-pptx-source-ref="slide:2" data-pptx-semantic-object="shape">
+<path d="M 0 720 L 95.14 380.01 L 670 720 Z" fill="#FDD71E" stroke="none" stroke-width="1" data-pptx-part="geometry" />
+
+
+</g>
+<g id="shape-4" data-pptx-object="shape" data-pptx-frame="459.37 499.74 577.48 220.26" data-pptx-prst="triangle" data-pptx-av-adj="val 52558" data-pptx-source-ref="slide:4" data-pptx-semantic-object="shape">
+<path d="M 459.37 720 L 762.88 499.74 L 1036.84 720 Z" fill="#FC5F08" fill-opacity="0.9" stroke="none" stroke-width="1" data-pptx-part="geometry" />
+
+
+</g>
+<g id="shape-5" data-pptx-object="shape" data-pptx-frame="249.64 561.23 577.48 158.77" data-pptx-prst="triangle" data-pptx-av-adj="val 47442" data-pptx-source-ref="slide:5" data-pptx-semantic-object="shape">
+<path d="M 249.64 720 L 523.61 561.23 L 827.12 720 Z" fill="#FFFFFF" fill-opacity="0.51" stroke="none" stroke-width="1" data-pptx-part="geometry" />
+
+
+</g>
+<g id="shape-6" data-pptx-object="shape" data-pptx-frame="696.66 380.01 583.34 339.99" data-pptx-geometry-kind="custom" data-pptx-source-ref="slide:6" data-pptx-semantic-object="shape">
+<path d="M 696.66 720 L 1113 380.01 L 1280 720 L 696.66 720 Z" data-pptx-part="geometry" fill="#FFFFFF" fill-opacity="0.46" stroke="none" stroke-width="1" />
+
+</g>
+<g id="shape-21" data-pptx-object="shape" data-pptx-frame="584.4 108.72 111.2 232.53" data-pptx-prst="rect" data-pptx-source-ref="slide:21" data-pptx-semantic-object="shape">
+<path d="M 584.4 108.72 L 695.6 108.72 L 695.6 341.25 L 584.4 341.25 Z" fill="none" data-pptx-part="geometry" />
+
+
+<text x="640" y="289.52125984" text-anchor="middle" xml:space="preserve" font-family="&quot;方正小标宋简体&quot;, &quot;Microsoft YaHei&quot;, sans-serif" font-size="184" fill="#FFFFFF" font-weight="bold" data-pptx-text-baseline="metrics-v1">2</text>
+</g>
+<g id="shape-22" data-pptx-object="shape" data-pptx-frame="371.53 333.33 537 106.53" data-pptx-prst="rect" data-pptx-source-ref="slide:22" data-pptx-semantic-object="shape">
+<path d="M 371.53 333.33 L 908.53 333.33 L 908.53 439.87 L 371.53 439.87 Z" fill="none" data-pptx-part="geometry" />
+
+
+<text x="640.03" y="410.13333333" text-anchor="middle" xml:space="preserve" font-size="53.33" fill="#FFFFFF" font-weight="bold" data-pptx-text-baseline="metrics-v1">核心创新点</text>
+</g>
+<g id="shape-23" data-pptx-object="group" data-pptx-frame="276 234.67 288.64 17.67" data-pptx-source-ref="slide:23">
+<g id="shape-24" data-pptx-object="connector" data-pptx-frame="276 243.5 283.46 0" data-pptx-prst="line" data-pptx-source-ref="slide:24" data-pptx-semantic-object="shape">
+<path d="M 276 243.5 L 559.46 243.5" stroke-width="2" stroke="#FFFFFF" fill="none" data-pptx-part="geometry" />
+
+</g>
+<g id="shape-25" data-pptx-object="shape" data-pptx-frame="546.97 234.67 17.67 17.67" data-pptx-prst="ellipse" data-pptx-source-ref="slide:25" data-pptx-semantic-object="shape">
+<path d="M 546.97 243.5 A 8.83 8.83 0 0 1 555.8 234.67 A 8.83 8.83 0 0 1 564.64 243.5 A 8.83 8.83 0 0 1 555.8 252.33 A 8.83 8.83 0 0 1 546.97 243.5 Z" fill="#FFFFFF" stroke="none" stroke-width="1" data-pptx-part="geometry" />
+
+
+</g>
+</g>
+<g id="shape-26" data-pptx-object="group" data-pptx-frame="715.36 234.67 289.89 17.67" transform="translate(860.31 243.5) scale(-1 1) translate(-860.31 -243.5)" data-pptx-source-ref="slide:26">
+<g id="shape-27" data-pptx-object="connector" data-pptx-frame="715.36 243.5 283.46 0" data-pptx-prst="line" data-pptx-source-ref="slide:27" data-pptx-semantic-object="shape">
+<path d="M 715.36 243.5 L 998.83 243.5" stroke-width="2" stroke="#FFFFFF" fill="none" data-pptx-part="geometry" />
+
+</g>
+<g id="shape-28" data-pptx-object="shape" data-pptx-frame="987.59 234.67 17.67 17.67" data-pptx-prst="ellipse" data-pptx-source-ref="slide:28" data-pptx-semantic-object="shape">
+<path d="M 987.59 243.5 A 8.83 8.83 0 0 1 996.42 234.67 A 8.83 8.83 0 0 1 1005.26 243.5 A 8.83 8.83 0 0 1 996.42 252.33 A 8.83 8.83 0 0 1 987.59 243.5 Z" fill="#FFFFFF" stroke="none" stroke-width="1" data-pptx-part="geometry" />
+
+
+</g>
+</g></svg>
