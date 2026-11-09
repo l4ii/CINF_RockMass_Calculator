@@ -1,3 +1,0 @@
-第一项技术是多方法分级计算。界面集成RQD、BQ、Q、RMR、MRMR和GSI六种入口，共用工程、点位和方法输入字段。代码中有ClassificationAdapter接口，包括初始化、归一化、校验、计算和结果描述。RQD、BQ、Q、MRMR和GSI有适配器实现，RMR保留专用评分与汇总模块，因此结构图明确分开两条实现路径。通用界面注册表目前直接注册RQD、BQ和Q，其余方法有专用页面，不能说全部已统一为同一个调用入口。各方法实现评分表、边界处理和适用限制。点位记录methodId、standardId和inputVersion，导入时检查兼容性。当前读取按现有代码重算，没有历史算法执行器，因此“版本记录”与“历史原样复现”应区别。
-
-接口与数据字段依据为frontend/src/methods/types.ts第四十八至五十八行、frontend/src/types/rockmassCase.ts第二十二至五十三行。具体适配器位于frontend/src/methods，RMR计算位于frontend/src/utils/rmrCalc.ts。导入契约见frontend/src/utils/rockmassCaseFile.ts。这里展示实现架构，不构成六方法全部外部规范一致性认证。
